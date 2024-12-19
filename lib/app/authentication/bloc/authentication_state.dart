@@ -1,6 +1,23 @@
 part of 'authentication_bloc.dart';
 
-@immutable
-sealed class AuthenticationState {}
+abstract class AuthenticationState extends Equatable {
+  const AuthenticationState();
 
-final class AuthenticationInitial extends AuthenticationState {}
+  @override
+  List<Object?> get props => [];
+}
+
+class AuthenticationInitial extends AuthenticationState {}
+
+class AuthenticationLoading extends AuthenticationState {}
+
+class AuthenticationAuthenticated extends AuthenticationState {}
+
+class AuthenticationFailure extends AuthenticationState {
+  final String error;
+
+  const AuthenticationFailure({required this.error});
+
+  @override
+  List<Object?> get props => [error];
+}
