@@ -13,14 +13,15 @@ class App extends StatelessWidget {
         brightness: Brightness.light,
         fontFamily: 'Montserrat',
         colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue),
-        primarySwatch: Colors.green,
       ),
       initialRoute: '/',
       onGenerateRoute: AppRouter.onGenerateRoutes,
       debugShowCheckedModeBanner: false,
+
+      //Device Preview
       builder: DevicePreview.appBuilder,
       // useInheritedMediaQuery: true, //-
-      // locale: DevicePreview.locale(context), //-
+      locale: DevicePreview.locale(context), //-
     );
   }
 }

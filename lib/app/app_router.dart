@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:primamobile/app/pages/splashscreen/splash_screen.dart';
 // import 'package:flutter_bloc/flutter_bloc.dart';
 // import 'package:mynpti_mv/app/bloc/authentication_bloc.dart';
-// import 'package:mynpti_mv/app/pages.dart';
+import 'package:primamobile/app/pages.dart';
 
 class AppRouterMissingArgumentException implements Exception {
   final String message = "Missing route parameters.";
@@ -18,7 +19,7 @@ class AppRouter {
     switch (settings.name) {
       case '/':
       case '/splash':
-        return MaterialPageRoute(builder: (_) => const Placeholder());
+        return MaterialPageRoute(builder: (_) => const SplashScreen());
       // case '/login':
       //   return MaterialPageRoute(
       //     builder: (_) => BlocProvider.value(
