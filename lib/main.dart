@@ -21,7 +21,7 @@ void main() async {
   runApp(
     DevicePreview(
       enabled: !kReleaseMode,
-      builder: (context) => const App(), // Wrap your app
+      builder: (context) => const App(),
     ),
   );
 }
