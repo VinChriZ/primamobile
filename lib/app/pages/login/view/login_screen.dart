@@ -63,7 +63,7 @@ class LoginScreen extends StatelessWidget {
                           ),
                         ),
                         TextSpan(
-                          text: 'Mob',
+                          text: 'Mo',
                           style: TextStyle(
                             fontSize: 48,
                             fontWeight: FontWeight.bold,

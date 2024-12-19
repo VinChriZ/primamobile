@@ -69,7 +69,7 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                       ),
                       TextSpan(
-                        text: "Mob",
+                        text: "Mo",
                         style: TextStyle(
                           fontSize: 50,
                           fontWeight: FontWeight.bold,
@@ -86,16 +86,16 @@ class _SplashScreenState extends State<SplashScreen>
               children: [
                 CircularProgressIndicator(
                   valueColor: _animationController.drive(
-                    ColorTween(begin: Colors.blue, end: Colors.lightBlue),
+                    ColorTween(begin: Colors.red, end: Colors.red),
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text(
+                const Text(
                   "Getting Started...",
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w400,
-                    color: Colors.grey[700],
+                    color: Colors.black,
                   ),
                 ),
               ],
