@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:primamobile/repository/user_session_repository.dart';
+import 'package:primamobile/app/models/user_session/user_session.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,12 +22,23 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
 
-    Timer(
-      const Duration(seconds: 3),
-      () {
-        Navigator.pushReplacementNamed(context, '/login');
-      },
-    );
+    _navigateAfterDelay();
+  }
+
+  Future<void> _navigateAfterDelay() async {
+    // Simulate a delay to mimic splash screen
+    await Future.delayed(const Duration(seconds: 3));
+
+    // Fetch the user session
+    UserSession userSession = await UserSessionRepository().getUserSession();
+
+    // Navigate to the appropriate screen based on the user session
+    _navigateToNext(userSession);
+  }
+
+  void _navigateToNext(UserSession userSession) {
+    String nextRoute = userSession.isLogin ? '/home' : '/login';
+    Navigator.pushReplacementNamed(context, nextRoute);
   }
 
   @override
