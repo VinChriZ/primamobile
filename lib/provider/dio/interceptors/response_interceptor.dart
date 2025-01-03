@@ -4,21 +4,31 @@ import 'package:primamobile/provider/exceptions/exceptions.dart';
 class ResponseInterceptor extends Interceptor {
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    if (response.statusCode! >= 400 && response.statusCode! < 500) {
-      throw ProviderBadRequestException();
-    }
-    if (response.statusCode! >= 500) {
-      throw ProviderInternalServerErrorException();
-    }
-    if (response.data == null) {
-      throw ProviderNoContentException();
-    }
+    print('Response received: ${response.data}'); // Log the raw response
 
-    var responseData = response.data as Map<String, dynamic>;
-    if (!responseData.containsKey('data')) {
-      throw ProviderBadRequestException();
-    }
+    try {
+      // Handle client-side errors
+      if (response.statusCode! >= 400 && response.statusCode! < 500) {
+        throw ProviderBadRequestException(
+            message: response.data?['message'] ?? 'Client error occurred.');
+      }
 
-    super.onResponse(response, handler);
+      // Handle server-side errors
+      if (response.statusCode! >= 500) {
+        throw ProviderInternalServerErrorException(
+            message: response.data?['message'] ?? 'Server error occurred.');
+      }
+
+      // Validate token existence
+      if (response.data is! Map || !response.data.containsKey('access_token')) {
+        throw ProviderBadRequestException(
+            message: 'Response does not contain access_token.');
+      }
+
+      handler.next(response); // Pass the response to the next handler
+    } catch (e) {
+      print('Error in ResponseInterceptor: $e');
+      throw e; // Throw the error for further handling
+    }
   }
 }

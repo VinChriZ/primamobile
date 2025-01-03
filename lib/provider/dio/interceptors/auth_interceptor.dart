@@ -1,30 +1,39 @@
-import 'dart:convert'; // Import dart:convert for base64 encoding
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:primamobile/repository/user_session_repository.dart';
 import 'package:primamobile/app/models/user_session/user_session.dart';
+import 'package:primamobile/provider/exceptions/exceptions.dart';
 
 class AuthInterceptor extends Interceptor {
   final UserSessionRepository _userSessionRepository = UserSessionRepository();
 
-  bool _needAuthHeader(RequestOptions options) => true;
+  bool _needAuthHeader(RequestOptions options) {
+    return !options.path.contains('/login'); // Skip auth for login endpoint
+  }
 
   @override
-  void onRequest(
+  Future<void> onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
-    if (_needAuthHeader(options)) {
-      // Retrieve the current user session
-      UserSession userSession = await _userSessionRepository.getUserSession();
+    try {
+      if (_needAuthHeader(options)) {
+        UserSession userSession = await _userSessionRepository.getUserSession();
 
-      // Check if the user session has a valid token
-      if (userSession.token != null && userSession.token!.isNotEmpty) {
-        // Base64 encode the token
-        String base64Token = base64.encode(utf8.encode(userSession.token!));
-
-        // Set the Authorization header with the encoded token
-        options.headers['Authorization'] = 'Basic $base64Token';
+        if (userSession.token != null && userSession.token!.isNotEmpty) {
+          String base64Token = base64.encode(utf8.encode(userSession.token!));
+          options.headers['Authorization'] = 'Bearer $base64Token';
+        } else {
+          print('No valid token found in user session.');
+          throw ProviderUnauthorizedException(
+              message: 'User is not authorized to perform this action.');
+        }
       }
+    } catch (e) {
+      print('Error in AuthInterceptor: $e');
+      // Throw the custom exception directly
+      throw e;
     }
 
-    super.onRequest(options, handler);
+    // Pass the request to the next handler
+    handler.next(options);
   }
 }

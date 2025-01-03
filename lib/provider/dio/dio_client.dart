@@ -9,6 +9,6 @@ Dio dioClient = Dio(
     connectTimeout: const Duration(seconds: 10),
     contentType: Headers.jsonContentType,
   ),
-);
-// ..interceptors.add(AuthInterceptor())
-  // ..interceptors.add(ResponseInterceptor());
+)
+  ..interceptors.add(AuthInterceptor())
+  ..interceptors.add(ResponseInterceptor());
