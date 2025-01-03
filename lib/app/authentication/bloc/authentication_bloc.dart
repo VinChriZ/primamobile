@@ -43,7 +43,7 @@ class AuthenticationBloc
       // Emit authenticated state
       emit(AuthenticationAuthenticated());
     } catch (e) {
-      emit(AuthenticationFailure(error: e.toString()));
+      emit(AuthenticationFailure(error: "Invalid username or password"));
     }
   }
 }

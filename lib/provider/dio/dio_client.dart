@@ -10,5 +10,5 @@ Dio dioClient = Dio(
     contentType: Headers.jsonContentType,
   ),
 );
-  // ..interceptors.add(AuthInterceptor())
+// ..interceptors.add(AuthInterceptor())
   // ..interceptors.add(ResponseInterceptor());

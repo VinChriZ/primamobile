@@ -38,8 +38,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   Future<void> _onLoginPressed(
       LoginPressed event, Emitter<LoginState> emit) async {
     emit(state.copyWith(status: LoginStatus.loading));
-    await Future.delayed(const Duration(seconds: 2));
-    emit(state.copyWith(status: LoginStatus.success));
+    // await Future.delayed(const Duration(seconds: 2));
+    // emit(state.copyWith(status: LoginStatus.success));
   }
 
   void _onPasswordVisibilityPressed(

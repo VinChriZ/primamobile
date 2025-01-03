@@ -4,18 +4,32 @@ import 'package:primamobile/app/authentication/bloc/authentication_bloc.dart';
 import 'package:primamobile/app/pages/login/bloc/login_bloc.dart';
 import 'package:primamobile/app/pages/login/view/login_painter.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  bool isButtonPressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    // Determine if the keyboard is visible
     final bool isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return BlocListener<AuthenticationBloc, AuthenticationState>(
       listener: (context, authState) {
         if (authState is AuthenticationFailure) {
+          setState(() {
+            isButtonPressed = false; // Re-enable inputs if login fails
+          });
           context.read<LoginBloc>().add(LoginReset());
+        } else if (authState is AuthenticationAuthenticated) {
+          setState(() {
+            isButtonPressed =
+                false; // Ensure inputs stay disabled after success
+          });
         }
       },
       child: Scaffold(
@@ -27,7 +41,7 @@ class LoginScreen extends StatelessWidget {
               painter: HeaderPainter(),
               child: SizedBox(
                 width: MediaQuery.of(context).size.width,
-                height: 200, // Adjust header height
+                height: 200,
               ),
             ),
             // Footer at the bottom, hidden when keyboard is visible
@@ -38,7 +52,7 @@ class LoginScreen extends StatelessWidget {
                   painter: FooterPainter(),
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    height: 100, // Adjust footer height
+                    height: 100,
                   ),
                 ),
               ),
@@ -48,8 +62,7 @@ class LoginScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 150), // Spacer for header
-                  // Title with PriMob
+                  const SizedBox(height: 150),
                   RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
@@ -74,10 +87,11 @@ class LoginScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  // Username Field
                   BlocBuilder<LoginBloc, LoginState>(
                     builder: (context, state) {
-                      final isDisabled = state.status == LoginStatus.loading;
+                      final isDisabled = isButtonPressed ||
+                          state.status == LoginStatus.loading ||
+                          state.status == LoginStatus.success;
                       return TextField(
                         onChanged: isDisabled
                             ? null
@@ -110,10 +124,11 @@ class LoginScreen extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: 20),
-                  // Password Field
                   BlocBuilder<LoginBloc, LoginState>(
                     builder: (context, state) {
-                      final isDisabled = state.status == LoginStatus.loading;
+                      final isDisabled = isButtonPressed ||
+                          state.status == LoginStatus.loading ||
+                          state.status == LoginStatus.success;
                       return TextField(
                         onChanged: isDisabled
                             ? null
@@ -159,10 +174,11 @@ class LoginScreen extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: 20),
-                  // Terms & Conditions Checkbox
                   BlocBuilder<LoginBloc, LoginState>(
                     builder: (context, state) {
-                      final isDisabled = state.status == LoginStatus.loading;
+                      final isDisabled = isButtonPressed ||
+                          state.status == LoginStatus.loading ||
+                          state.status == LoginStatus.success;
                       return Row(
                         children: [
                           Checkbox(
@@ -193,7 +209,6 @@ class LoginScreen extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: 20),
-                  // Login Button
                   BlocBuilder<LoginBloc, LoginState>(
                     builder: (context, state) {
                       final isLoading = state.status == LoginStatus.loading;
@@ -206,6 +221,10 @@ class LoginScreen extends StatelessWidget {
                             ? null
                             : () {
                                 if (isFilled) {
+                                  setState(() {
+                                    isButtonPressed =
+                                        true; // Disable inputs immediately
+                                  });
                                   context.read<LoginBloc>().add(LoginPressed());
                                   context.read<AuthenticationBloc>().add(
                                         LoginButtonPressed(
