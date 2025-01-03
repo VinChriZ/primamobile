@@ -15,19 +15,21 @@ class UserSessionRepository {
   Future<UserSession> getUserSession() async {
     try {
       if (!Globals.preferences.containsKey('user_session')) {
-        throw UserSessionInvalidException();
+        print('No user session found. Returning default session.');
+        return UserSession(); // Return a default session instead of throwing an exception
       }
 
       String? raw = await _userSessionProvider.readUserSession();
       if (raw == null) {
-        throw UserSessionNotFoundException();
+        print('User session data is null. Returning default session.');
+        return UserSession(); // Fallback to default session
       }
 
       Map<String, dynamic> data = jsonDecode(raw);
       return UserSession.fromJson(data);
     } catch (e) {
-      print('Error reading user session: $e'); // Debug for now
-      throw UserSessionInvalidException(); // Rethrow specific exception
+      print('Error reading user session: $e'); // Log the error
+      return UserSession(); // Return a default session on any error
     }
   }
 

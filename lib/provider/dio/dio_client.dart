@@ -6,9 +6,9 @@ import 'interceptors/response_interceptor.dart';
 Dio dioClient = Dio(
   BaseOptions(
     baseUrl: apiUrl,
-    connectTimeout: const Duration(seconds: 5),
+    connectTimeout: const Duration(seconds: 10),
     contentType: Headers.jsonContentType,
   ),
-)
-  ..interceptors.add(AuthInterceptor())
-  ..interceptors.add(ResponseInterceptor());
+);
+  // ..interceptors.add(AuthInterceptor())
+  // ..interceptors.add(ResponseInterceptor());

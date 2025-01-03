@@ -3,14 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/app_router.dart';
 import 'package:primamobile/app/authentication/bloc/authentication_bloc.dart';
+import 'package:primamobile/repository/login_repository.dart';
+import 'package:primamobile/repository/user_session_repository.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Create an instance of AuthenticationBloc
-    final authenticationBloc = AuthenticationBloc()..add(AppStarted());
+    // Create instances of repositories
+    final loginRepository = LoginRepository();
+    final userSessionRepository = UserSessionRepository();
+
+    // Create an instance of AuthenticationBloc with dependencies
+    final authenticationBloc = AuthenticationBloc(
+      loginRepository: loginRepository,
+      userSessionRepository: userSessionRepository,
+    )..add(AppStarted());
 
     // Pass the AuthenticationBloc to AppRouter
     final appRouter = AppRouter(authenticationBloc: authenticationBloc);
@@ -18,7 +27,7 @@ class App extends StatelessWidget {
     return BlocProvider.value(
       value: authenticationBloc,
       child: MaterialApp(
-        title: 'myNPTI',
+        title: 'PrimaMobile',
         theme: ThemeData(
           brightness: Brightness.light,
           fontFamily: 'Montserrat',
