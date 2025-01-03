@@ -10,11 +10,15 @@ class Globals {
   static late UserSession userSession;
 
   static Future<void> init() async {
-    preferences = await SharedPreferences.getInstance();
-    packageInfo = await PackageInfo.fromPlatform();
-    deviceInfo = await DeviceInfo.fromPlatform();
-    userSession = await UserSessionRepository().getUserSession();
-    print(
-        'Initialized UserSession IsLogin: ${userSession.isLogin}'); // Debug print
+    try {
+      preferences = await SharedPreferences.getInstance();
+      packageInfo = await PackageInfo.fromPlatform();
+      deviceInfo = await DeviceInfo.fromPlatform();
+      userSession = await UserSessionRepository().getUserSession();
+      print('Initialized UserSession IsLogin: ${userSession.isLogin}');
+    } catch (e) {
+      print('Error initializing Globals: $e');
+      userSession = UserSession(); // Fallback to default session
+    }
   }
 }

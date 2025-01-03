@@ -30,4 +30,19 @@ class User {
       'role_id': roleId,
     };
   }
+
+  // Add the copyWith method for immutability
+  User copyWith({
+    int? userId,
+    String? username,
+    String? passwordHash,
+    int? roleId,
+  }) {
+    return User(
+      userId: userId ?? this.userId,
+      username: username ?? this.username,
+      passwordHash: passwordHash ?? this.passwordHash,
+      roleId: roleId ?? this.roleId,
+    );
+  }
 }

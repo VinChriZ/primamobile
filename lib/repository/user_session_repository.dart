@@ -14,30 +14,20 @@ class UserSessionRepository {
 
   Future<UserSession> getUserSession() async {
     try {
-      bool hasKey = Globals.preferences.containsKey('user_session');
-      print('UserSession key exists: $hasKey'); // Debug print
-
-      if (!hasKey) {
+      if (!Globals.preferences.containsKey('user_session')) {
         throw UserSessionInvalidException();
       }
 
       String? raw = await _userSessionProvider.readUserSession();
-      // print('Raw user session read from preferences: $raw'); // Debug print
-
       if (raw == null) {
         throw UserSessionNotFoundException();
       }
 
       Map<String, dynamic> data = jsonDecode(raw);
-      // print('Decoded user session data: $data'); // Debug print
-
-      UserSession userSession = UserSession.fromJson(data);
-      // print('User session deserialized: ${userSession.toJson()}'); // Debug print
-
-      return userSession;
+      return UserSession.fromJson(data);
     } catch (e) {
-      print('Error reading user session: $e'); // Debug print
-      return UserSession();
+      print('Error reading user session: $e'); // Debug for now
+      throw UserSessionInvalidException(); // Rethrow specific exception
     }
   }
 
@@ -45,9 +35,8 @@ class UserSessionRepository {
     try {
       await _userSessionProvider.writeUserSession(userSession: userSession);
       Globals.userSession = userSession;
-      // print('User session saved: ${userSession.toJson()}'); // Debug print
     } catch (e) {
-      print('Error saving user session: $e'); // Debug print
+      print('Error saving user session: $e');
       throw UserSessionWriteException();
     }
   }
@@ -55,10 +44,10 @@ class UserSessionRepository {
   Future<void> clearUserSession() async {
     try {
       await _userSessionProvider.flushUserSession();
-      Globals.userSession = UserSession();
-      print('User session cleared');
+      Globals.userSession = UserSession(); // Reset Globals
     } catch (e) {
       print('Error clearing user session: $e');
+      throw UserSessionCacheFailException();
     }
   }
 }
