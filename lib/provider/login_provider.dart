@@ -3,8 +3,10 @@ import 'package:primamobile/provider/dio/dio_client.dart';
 import 'package:primamobile/provider/models/request_api/request_api.dart';
 
 class LoginProvider {
-  Future<String> login(
-      {required String username, required String password}) async {
+  Future<Map<String, dynamic>> login({
+    required String username,
+    required String password,
+  }) async {
     // Create a request parameter object
     final RequestParam param = RequestParam(parameters: {
       'username': username,
@@ -21,7 +23,7 @@ class LoginProvider {
     try {
       // Send the request using the dioClient
       final response = await dioClient.post(
-        '/login',
+        '/auth/login',
         data: await request.toJson(), // Serialize request object to JSON
       );
 
@@ -30,8 +32,8 @@ class LoginProvider {
 
       // Handle the response
       if (response.statusCode == 200) {
-        // Assuming the backend response includes an `access_token` field
-        return response.data['access_token'] as String;
+        // Return the entire response data as a map
+        return response.data as Map<String, dynamic>;
       } else {
         throw Exception(
             'Failed to login with status code: ${response.statusCode}');

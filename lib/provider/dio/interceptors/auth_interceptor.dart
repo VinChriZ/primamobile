@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:primamobile/repository/user_session_repository.dart';
 import 'package:primamobile/app/models/user_session/user_session.dart';
@@ -19,8 +18,8 @@ class AuthInterceptor extends Interceptor {
         UserSession userSession = await _userSessionRepository.getUserSession();
 
         if (userSession.token != null && userSession.token!.isNotEmpty) {
-          String base64Token = base64.encode(utf8.encode(userSession.token!));
-          options.headers['Authorization'] = 'Bearer $base64Token';
+          // String base64Token = base64.encode(utf8.encode(userSession.token!));
+          options.headers['Authorization'] = 'Bearer ${userSession.token!}';
         } else {
           print('No valid token found in user session.');
           throw ProviderUnauthorizedException(

@@ -7,30 +7,35 @@ class LoginRepository {
 
   Future<void> login(String username, String password) async {
     try {
-      // Fetch token from the LoginProvider
-      final token =
-          await _loginProvider.login(username: username, password: password);
+      // Fetch the login response from LoginProvider
+      final response = await _loginProvider.login(
+        username: username,
+        password: password,
+      );
+
+      // Extract token and user_id from the response
+      final String token = response['access_token'];
+      final int userId = response['user_id'] as int;
 
       // Fetch current user session
       final userSession = await _userSessionRepository.getUserSession();
 
-      // Update the employee object with the new username (nik)
-      final updatedUser = userSession.user.copyWith(username: username);
+      // Update the user object with the new user_id
+      final updatedUser = userSession.user.copyWith(userId: userId);
 
       // Create a new user session with the updated token and login status
       final updatedUserSession = userSession.copyWith(
         token: token,
         isLogin: true,
-        user: updatedUser, // Updated user object
+        user: updatedUser,
       );
 
       // Save the updated session to storage
       await _userSessionRepository.saveUserSession(updatedUserSession);
 
       print(
-          'Login successful. Updated session: ${updatedUserSession.user.username}');
+          'Login successful. Updated session: userId=${updatedUserSession.user.userId}, token=${updatedUserSession.token}');
     } catch (e) {
-      // Handle exceptions
       throw Exception('Login failed: ${e.toString()}');
     }
   }

@@ -20,10 +20,10 @@ class ResponseInterceptor extends Interceptor {
       }
 
       // Validate token existence
-      if (response.data is! Map || !response.data.containsKey('access_token')) {
-        throw ProviderBadRequestException(
-            message: 'Response does not contain access_token.');
-      }
+      // if (response.data is! Map || !response.data.containsKey('access_token')) {
+      //   throw ProviderBadRequestException(
+      //       message: 'Response does not contain access_token.');
+      // }
 
       handler.next(response); // Pass the response to the next handler
     } catch (e) {

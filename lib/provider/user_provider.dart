@@ -1,0 +1,26 @@
+import 'package:primamobile/app/models/users/users.dart';
+import 'package:primamobile/provider/dio/dio_client.dart';
+
+class UserProvider {
+  Future<User> getUserDetails(int userId) async {
+    try {
+      // Make an API call to fetch user details
+      final response = await dioClient.get('/users/$userId');
+
+      // Debug print the response
+      print('User Details Response: ${response.data}');
+
+      // Ensure the response is valid
+      if (response.statusCode == 200) {
+        final data = response.data as Map<String, dynamic>;
+        return User.fromJson(data); // Parse response into User model
+      } else {
+        throw Exception(
+            'Failed to fetch user details with status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching user details: $e');
+      rethrow;
+    }
+  }
+}
