@@ -14,8 +14,8 @@ class LoginProvider {
     });
 
     // Convert the request parameter object into a request object
-    final RequestObject request =
-        RequestObjectGET(requestParam: param); // Assuming POST is used here
+    final RequestObject request = RequestObjectFunction(
+        requestParam: param); // Assuming POST is used here
 
     // Debug print the request
     print('Request: ${jsonEncode(await request.toJson())}');

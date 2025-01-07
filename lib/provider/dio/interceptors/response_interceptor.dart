@@ -28,7 +28,7 @@ class ResponseInterceptor extends Interceptor {
       handler.next(response); // Pass the response to the next handler
     } catch (e) {
       print('Error in ResponseInterceptor: $e');
-      throw e; // Throw the error for further handling
+      rethrow; // Throw the error for further handling
     }
   }
 }

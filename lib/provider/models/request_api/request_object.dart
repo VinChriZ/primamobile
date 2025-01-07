@@ -32,8 +32,8 @@ abstract class RequestObject {
   }
 }
 
-class RequestObjectGET extends RequestObject {
-  RequestObjectGET({RequestParam? requestParam}) {
+class RequestObjectFunction extends RequestObject {
+  RequestObjectFunction({RequestParam? requestParam}) {
     this.requestParam = requestParam ?? RequestParam();
   }
 }

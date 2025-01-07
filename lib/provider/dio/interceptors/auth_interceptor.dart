@@ -29,7 +29,7 @@ class AuthInterceptor extends Interceptor {
     } catch (e) {
       print('Error in AuthInterceptor: $e');
       // Throw the custom exception directly
-      throw e;
+      rethrow;
     }
 
     // Pass the request to the next handler
