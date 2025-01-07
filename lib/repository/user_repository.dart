@@ -1,4 +1,4 @@
-import 'package:primamobile/app/models/users/users.dart';
+import 'package:primamobile/app/models/models.dart';
 import 'package:primamobile/provider/user_provider.dart';
 import 'package:primamobile/repository/user_session_repository.dart';
 

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:primamobile/app/models/user_session/user_session.dart';
+import 'package:primamobile/app/models/models.dart';
 import 'package:primamobile/utils/globals.dart';
 
 class UserSessionNotFoundException implements Exception {}

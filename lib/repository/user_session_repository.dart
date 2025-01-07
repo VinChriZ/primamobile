@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:primamobile/app/models/user_session/user_session.dart';
+import 'package:primamobile/app/models/models.dart';
 import 'package:primamobile/provider/user_session_provider.dart';
 import 'package:primamobile/utils/globals.dart';
 

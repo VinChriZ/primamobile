@@ -1,0 +1,29 @@
+import 'package:primamobile/app/models/models.dart';
+import 'package:primamobile/provider/transaction_detail_provider.dart';
+
+class TransactionDetailRepository {
+  final TransactionDetailProvider _provider = TransactionDetailProvider();
+
+  // Fetch all transaction details for a transaction ID
+  Future<List<TransactionDetail>> fetchTransactionDetails(
+      int transactionId) async {
+    return await _provider.getTransactionDetails(transactionId);
+  }
+
+  // Add a new transaction detail
+  Future<void> addTransactionDetail(
+      int transactionId, TransactionDetail detail) async {
+    await _provider.addTransactionDetail(transactionId, detail);
+  }
+
+  // Update an existing transaction detail
+  Future<void> updateTransactionDetail(
+      int transactionId, int detailId, TransactionDetail detail) async {
+    await _provider.updateTransactionDetail(transactionId, detailId, detail);
+  }
+
+  // Delete a transaction detail
+  Future<void> removeTransactionDetail(int transactionId, int detailId) async {
+    await _provider.deleteTransactionDetail(transactionId, detailId);
+  }
+}
