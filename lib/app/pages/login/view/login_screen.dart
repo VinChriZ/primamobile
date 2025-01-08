@@ -4,15 +4,8 @@ import 'package:primamobile/app/authentication/bloc/authentication_bloc.dart';
 import 'package:primamobile/app/pages/login/bloc/login_bloc.dart';
 import 'package:primamobile/app/pages/login/view/login_painter.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
-
-  @override
-  _LoginScreenState createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  bool isButtonPressed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -21,15 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocListener<AuthenticationBloc, AuthenticationState>(
       listener: (context, authState) {
         if (authState is AuthenticationFailure) {
-          setState(() {
-            isButtonPressed = false; // Re-enable inputs if login fails
-          });
           context.read<LoginBloc>().add(LoginReset());
-        } else if (authState is AuthenticationAuthenticated) {
-          setState(() {
-            isButtonPressed =
-                false; // Ensure inputs stay disabled after success
-          });
         }
       },
       child: Scaffold(
@@ -88,14 +73,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 40),
                   BlocBuilder<LoginBloc, LoginState>(
-                    builder: (context, state) {
-                      final isDisabled = isButtonPressed ||
-                          state.status == LoginStatus.loading ||
-                          state.status == LoginStatus.success;
+                    builder: (loginContext, loginState) {
+                      final isDisabled =
+                          loginState.status == LoginStatus.loading ||
+                              loginState.status == LoginStatus.success;
                       return TextField(
                         onChanged: isDisabled
                             ? null
-                            : (username) => context
+                            : (username) => loginContext
                                 .read<LoginBloc>()
                                 .add(LoginUsernameFilled(username)),
                         decoration: InputDecoration(
@@ -125,17 +110,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 20),
                   BlocBuilder<LoginBloc, LoginState>(
-                    builder: (context, state) {
-                      final isDisabled = isButtonPressed ||
-                          state.status == LoginStatus.loading ||
-                          state.status == LoginStatus.success;
+                    builder: (loginContext, loginState) {
+                      final isDisabled =
+                          loginState.status == LoginStatus.loading ||
+                              loginState.status == LoginStatus.success;
                       return TextField(
                         onChanged: isDisabled
                             ? null
-                            : (password) => context
+                            : (password) => loginContext
                                 .read<LoginBloc>()
                                 .add(LoginPasswordFilled(password)),
-                        obscureText: !state.isPasswordVisible,
+                        obscureText: !loginState.isPasswordVisible,
                         decoration: InputDecoration(
                           labelText: 'Password',
                           hintText: 'Enter your password...',
@@ -158,13 +143,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           suffixIcon: IconButton(
                             icon: Icon(
-                              state.isPasswordVisible
+                              loginState.isPasswordVisible
                                   ? Icons.visibility
                                   : Icons.visibility_off,
                             ),
                             onPressed: isDisabled
                                 ? null
-                                : () => context
+                                : () => loginContext
                                     .read<LoginBloc>()
                                     .add(LoginPasswordVisibilityPressed()),
                           ),
@@ -175,17 +160,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 20),
                   BlocBuilder<LoginBloc, LoginState>(
-                    builder: (context, state) {
-                      final isDisabled = isButtonPressed ||
-                          state.status == LoginStatus.loading ||
-                          state.status == LoginStatus.success;
+                    builder: (loginContext, loginState) {
+                      final isDisabled =
+                          loginState.status == LoginStatus.loading ||
+                              loginState.status == LoginStatus.success;
                       return Row(
                         children: [
                           Checkbox(
-                            value: state.isAgreedToTerms,
+                            value: loginState.isAgreedToTerms,
                             onChanged: isDisabled
                                 ? null
-                                : (value) => context.read<LoginBloc>().add(
+                                : (value) => loginContext.read<LoginBloc>().add(
                                       LoginTermsChecked(agreeToTerms: value!),
                                     ),
                           ),
@@ -193,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: GestureDetector(
                               onTap: isDisabled
                                   ? null
-                                  : () => _showTermsDialog(context),
+                                  : () => _showTermsDialog(loginContext),
                               child: Text(
                                 'I agree to the Terms & Conditions.',
                                 style: TextStyle(
@@ -210,30 +195,30 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 20),
                   BlocBuilder<LoginBloc, LoginState>(
-                    builder: (context, state) {
-                      final isLoading = state.status == LoginStatus.loading;
-                      final isFilled = state.username.isNotEmpty &&
-                          state.password.isNotEmpty &&
-                          state.isAgreedToTerms;
+                    builder: (loginContext, loginState) {
+                      final isLoading =
+                          loginState.status == LoginStatus.loading;
+                      final isFilled = loginState.username.isNotEmpty &&
+                          loginState.password.isNotEmpty &&
+                          loginState.isAgreedToTerms;
 
                       return ElevatedButton(
                         onPressed: isLoading
                             ? null
                             : () {
                                 if (isFilled) {
-                                  setState(() {
-                                    isButtonPressed =
-                                        true; // Disable inputs immediately
-                                  });
-                                  context.read<LoginBloc>().add(LoginPressed());
-                                  context.read<AuthenticationBloc>().add(
+                                  loginContext
+                                      .read<LoginBloc>()
+                                      .add(LoginPressed());
+                                  loginContext.read<AuthenticationBloc>().add(
                                         LoginButtonPressed(
-                                          username: state.username,
-                                          password: state.password,
+                                          username: loginState.username,
+                                          password: loginState.password,
                                         ),
                                       );
                                 } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
+                                  ScaffoldMessenger.of(loginContext)
+                                      .showSnackBar(
                                     const SnackBar(
                                       content: Text(
                                           'Please fill all fields and agree to terms.'),

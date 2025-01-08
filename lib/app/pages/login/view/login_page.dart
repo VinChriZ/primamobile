@@ -12,12 +12,12 @@ class LoginPage extends StatelessWidget {
     return BlocProvider(
       create: (context) => LoginBloc(),
       child: BlocListener<AuthenticationBloc, AuthenticationState>(
-        listener: (context, state) {
-          if (state is AuthenticationFailure) {
+        listener: (authenticationContext, authenticationState) {
+          if (authenticationState is AuthenticationFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error)),
+              SnackBar(content: Text(authenticationState.error)),
             );
-          } else if (state is AuthenticationAuthenticated) {
+          } else if (authenticationState is AuthenticationAuthenticated) {
             Navigator.pushReplacementNamed(context, '/home');
           }
         },
