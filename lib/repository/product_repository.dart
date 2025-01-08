@@ -38,4 +38,9 @@ class ProductRepository {
   Future<void> updateProductStock(String upc, int stock) async {
     await _provider.updateProductStock(upc, stock);
   }
+
+  // Upload product image
+  Future<String> uploadProductImage(String upc, String imagePath) async {
+    return await _provider.uploadProductImage(upc, imagePath);
+  }
 }

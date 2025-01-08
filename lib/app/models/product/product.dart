@@ -6,6 +6,8 @@ class Product {
   final int stock;
   final String category;
   final String brand;
+  final String? imageUrl; // New attribute
+  final DateTime lastUpdated;
 
   Product({
     required this.upc,
@@ -15,9 +17,10 @@ class Product {
     required this.stock,
     required this.category,
     required this.brand,
+    this.imageUrl, // Optional
+    required this.lastUpdated,
   });
 
-  // Create Product from JSON
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       upc: json['UPC'],
@@ -27,10 +30,11 @@ class Product {
       stock: json['Stock'],
       category: json['Category'],
       brand: json['Brand'],
+      imageUrl: json['image_url'], // Can be null
+      lastUpdated: DateTime.parse(json['last_updated']),
     );
   }
 
-  // Convert Product to JSON
   Map<String, dynamic> toJson() {
     return {
       'UPC': upc,
@@ -40,6 +44,8 @@ class Product {
       'Stock': stock,
       'Category': category,
       'Brand': brand,
+      if (imageUrl != null) 'image_url': imageUrl,
+      'last_updated': lastUpdated.toIso8601String(),
     };
   }
 }
