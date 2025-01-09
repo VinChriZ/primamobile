@@ -3,9 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/add_product.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/bloc/stock_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/product_detail.dart';
+import 'package:primamobile/repository/product_repository.dart';
 
 class StockScreen extends StatelessWidget {
-  const StockScreen({super.key});
+  final ProductRepository productRepository;
+
+  const StockScreen({super.key, required this.productRepository});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +33,6 @@ class StockScreen extends StatelessWidget {
                     subtitle:
                         Text('UPC: ${product.upc}\nStock: ${product.stock}'),
                     onTap: () {
-                      // Navigate to Product Detail Page
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -68,10 +70,13 @@ class StockScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Navigate directly to Add Product Page
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AddProductPage()),
+            MaterialPageRoute(
+              builder: (context) => AddProductPage(
+                productRepository: productRepository,
+              ),
+            ),
           );
         },
         child: const Icon(Icons.add),

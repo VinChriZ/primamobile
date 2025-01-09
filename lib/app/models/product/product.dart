@@ -7,7 +7,7 @@ class Product {
   final String category;
   final String brand;
   final String? imageUrl; // New attribute
-  final DateTime lastUpdated;
+  // final DateTime lastUpdated;
 
   Product({
     required this.upc,
@@ -18,7 +18,7 @@ class Product {
     required this.category,
     required this.brand,
     this.imageUrl, // Optional
-    required this.lastUpdated,
+    // required this.lastUpdated,
   });
 
   // Factory constructor for deserializing from JSON
@@ -32,7 +32,6 @@ class Product {
       category: json['category'] as String,
       brand: json['brand'] as String,
       imageUrl: json['image_url'] as String?,
-      lastUpdated: DateTime.parse(json['last_updated'] as String),
     );
   }
 
@@ -47,7 +46,6 @@ class Product {
       'category': category,
       'brand': brand,
       if (imageUrl != null) 'image_url': imageUrl,
-      'last_updated': lastUpdated.toIso8601String(),
     };
   }
 }

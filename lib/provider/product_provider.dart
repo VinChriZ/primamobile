@@ -52,10 +52,12 @@ class ProductProvider {
   Future<void> createProduct(Product product) async {
     final RequestParam param = RequestParam(parameters: product.toJson());
     final RequestObject request = RequestObjectFunction(requestParam: param);
+    final jsonPayload = await request.toJson();
+    print("JSON Payload Sent to API: $jsonPayload");
 
     try {
       await dioClient.post(
-        '/products',
+        '/products/',
         data: await request.toJson(),
       );
     } catch (e) {

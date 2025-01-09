@@ -9,11 +9,12 @@ class StockPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final productRepository = context.read<ProductRepository>();
     return BlocProvider(
       create: (_) => StockBloc(
-        productRepository: context.read<ProductRepository>(),
+        productRepository: productRepository,
       )..add(LoadProducts()),
-      child: const StockScreen(),
+      child: StockScreen(productRepository: productRepository),
     );
   }
 }
