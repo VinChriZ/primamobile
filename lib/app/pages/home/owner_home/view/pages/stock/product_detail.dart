@@ -20,6 +20,10 @@ class ProductDetailPage extends StatelessWidget {
                 style: const TextStyle(fontSize: 16)),
             Text('Price: \$${product.displayPrice}',
                 style: const TextStyle(fontSize: 16)),
+            Text('Category: \$${product.category}',
+                style: const TextStyle(fontSize: 16)),
+            Text('Brand: \$${product.brand}',
+                style: const TextStyle(fontSize: 16)),
             // Add more product details as needed
           ],
         ),

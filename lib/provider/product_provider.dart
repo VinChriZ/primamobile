@@ -11,7 +11,7 @@ class ProductProvider {
 
     try {
       final response = await dioClient.get(
-        '/products',
+        '/products/',
         queryParameters: await request.toJson(),
       );
       if (response.statusCode == 200) {

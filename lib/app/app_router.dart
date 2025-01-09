@@ -7,14 +7,19 @@ import 'package:primamobile/utils/globals.dart';
 
 class AppRouter {
   final AuthenticationBloc authenticationBloc;
+  final UserRepository userRepository;
 
-  AppRouter({required this.authenticationBloc});
+  AppRouter({
+    required this.authenticationBloc,
+    required this.userRepository,
+  });
 
   Route<dynamic> onGenerateRoutes(RouteSettings settings) {
     switch (settings.name) {
       case '/':
       case '/splash':
         return MaterialPageRoute(builder: (_) => const SplashScreen());
+
       case '/login':
         return MaterialPageRoute(
           builder: (_) => BlocProvider.value(
@@ -30,7 +35,7 @@ class AppRouter {
 
             if (authState is AuthenticationAuthenticated) {
               return FutureBuilder(
-                future: UserRepository().fetchAndUpdateUserDetails(),
+                future: userRepository.fetchAndUpdateUserDetails(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Scaffold(
@@ -42,25 +47,35 @@ class AppRouter {
                     );
                   } else {
                     final int roleId = Globals.userSession.user.roleId;
+
                     switch (roleId) {
-                      case 1:
+                      case 1: // Admin
                         return const Placeholder(
-                            child: Text('Admin')); // Admin Page
-                      case 2:
-                        return BlocProvider.value(
-                          value: authenticationBloc, // Pass AuthenticationBloc
+                          child: Text('Admin Page'),
+                        );
+                      case 2: // Owner
+                        return MultiBlocProvider(
+                          providers: [
+                            BlocProvider.value(
+                              value: authenticationBloc,
+                            ),
+                          ],
                           child: const OwnerHomePage(),
-                        ); // Navigate to Owner Page
-                      case 3:
-                        return const Placeholder(); // Worker Page
+                        );
+                      case 3: // Worker
+                        return const Placeholder(
+                          child: Text('Worker Page'),
+                        );
                       default:
-                        return const Placeholder(); // Fallback for unknown role
+                        return const Scaffold(
+                          body: Center(child: Text('Unknown role.')),
+                        );
                     }
                   }
                 },
               );
             } else {
-              return const LoginPage(); // Redirect to Login if unauthenticated
+              return const LoginPage();
             }
           },
         );

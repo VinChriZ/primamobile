@@ -3,12 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/add_product.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/bloc/stock_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/product_detail.dart';
-import 'package:primamobile/repository/product_repository.dart';
 
 class StockScreen extends StatelessWidget {
-  final ProductRepository productRepository;
-
-  const StockScreen({super.key, required this.productRepository});
+  const StockScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -68,25 +65,22 @@ class StockScreen extends StatelessWidget {
           return const Center(child: Text('No products found.'));
         },
       ),
-      floatingActionButton: Builder(
-        builder: (innerContext) {
-          return FloatingActionButton(
-            onPressed: () {
-              Navigator.push(
-                innerContext,
-                MaterialPageRoute(
-                  builder: (context) => BlocProvider.value(
-                    value: innerContext.read<StockBloc>(),
-                    child: AddProductPage(
-                      productRepository: productRepository,
-                    ),
-                  ),
-                ),
-              );
-            },
-            child: const Icon(Icons.add),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Capture the parent context's StockBloc first:
+          final stockBloc = context.read<StockBloc>();
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => BlocProvider.value(
+                value: stockBloc,
+                child: const AddProductPage(),
+              ),
+            ),
           );
         },
+        child: const Icon(Icons.add),
       ),
     );
   }

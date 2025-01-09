@@ -4,16 +4,10 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:primamobile/app/models/product/product.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/barcode_scanner.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/bloc/stock_bloc.dart';
-import 'package:primamobile/repository/product_repository.dart';
 import 'package:primamobile/utils/helpers/permission_helper.dart';
 
 class AddProductPage extends StatefulWidget {
-  final ProductRepository productRepository; // Add this parameter
-
-  const AddProductPage({
-    super.key,
-    required this.productRepository, // Required parameter
-  });
+  const AddProductPage({super.key});
 
   @override
   State<AddProductPage> createState() => _AddProductPageState();
@@ -37,15 +31,13 @@ class _AddProductPageState extends State<AddProductPage> {
     if (isScanning) return; // Prevent multiple calls
     isScanning = true;
 
-    print("Triggered _scanBarcode");
-
     if (await CameraPermissionHelper.isGranted) {
       final scannedCode = await Navigator.push<String>(
         context,
         MaterialPageRoute(
           builder: (context) => BarcodeScannerScreen(
             onBarcodeScanned: (code) {
-              // Navigator.pop(context, code); // Return the scanned code
+              // No need to pop the scanner, as it's handled internally
             },
           ),
         ),
@@ -79,7 +71,7 @@ class _AddProductPageState extends State<AddProductPage> {
     isScanning = false; // Reset the flag
   }
 
-  void _addProduct() async {
+  void _addProduct() {
     if (_formKey.currentState?.validate() ?? false) {
       final product = Product(
         upc: _upcController.text,
@@ -89,23 +81,17 @@ class _AddProductPageState extends State<AddProductPage> {
         stock: int.parse(_stockController.text),
         category: _categoryController.text,
         brand: _brandController.text,
-        // lastUpdated: DateTime.now(),
-        imageUrl: "https://example.com/image.jpg",
+        imageUrl: "https://example.com/image.jpg", // Placeholder
       );
 
-      try {
-        context.read<StockBloc>().add(AddProduct(product));
-        // await widget.productRepository.addProduct(product);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Product added successfully!')),
-        );
+      // Use StockBloc to handle adding the product
+      context.read<StockBloc>().add(AddProduct(product));
 
-        Navigator.pop(context); // Go back to the previous screen
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add product: $e')),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Product added successfully!')),
+      );
+
+      Navigator.pop(context); // Go back to the previous screen
     }
   }
 
