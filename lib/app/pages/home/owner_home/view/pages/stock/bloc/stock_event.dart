@@ -17,3 +17,12 @@ class DeleteProduct extends StockEvent {
   @override
   List<Object> get props => [upc];
 }
+
+class AddProduct extends StockEvent {
+  final Product product;
+
+  const AddProduct(this.product);
+
+  @override
+  List<Object> get props => [product];
+}

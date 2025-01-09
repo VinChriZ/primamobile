@@ -12,6 +12,7 @@ class StockBloc extends Bloc<StockEvent, StockState> {
   StockBloc({required this.productRepository}) : super(StockInitial()) {
     on<LoadProducts>(_onLoadProducts);
     on<DeleteProduct>(_onDeleteProduct);
+    on<AddProduct>(_onAddProduct);
   }
 
   Future<void> _onLoadProducts(
@@ -22,6 +23,17 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       emit(StockLoaded(products: products));
     } catch (e) {
       emit(const StockError('Failed to load products.'));
+    }
+  }
+
+  Future<void> _onAddProduct(AddProduct event, Emitter<StockState> emit) async {
+    if (state is StockLoaded) {
+      try {
+        await productRepository.addProduct(event.product);
+        add(LoadProducts()); // Refresh product list
+      } catch (e) {
+        emit(const StockError('Failed to add product.'));
+      }
     }
   }
 

@@ -68,18 +68,25 @@ class StockScreen extends StatelessWidget {
           return const Center(child: Text('No products found.'));
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AddProductPage(
-                productRepository: productRepository,
-              ),
-            ),
+      floatingActionButton: Builder(
+        builder: (innerContext) {
+          return FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                innerContext,
+                MaterialPageRoute(
+                  builder: (context) => BlocProvider.value(
+                    value: innerContext.read<StockBloc>(),
+                    child: AddProductPage(
+                      productRepository: productRepository,
+                    ),
+                  ),
+                ),
+              );
+            },
+            child: const Icon(Icons.add),
           );
         },
-        child: const Icon(Icons.add),
       ),
     );
   }

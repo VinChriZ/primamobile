@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:primamobile/app/models/product/product.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/barcode_scanner.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/bloc/stock_bloc.dart';
 import 'package:primamobile/repository/product_repository.dart';
 import 'package:primamobile/utils/helpers/permission_helper.dart';
 
@@ -92,11 +94,12 @@ class _AddProductPageState extends State<AddProductPage> {
       );
 
       try {
-        // Use the passed ProductRepository to add the product
-        await widget.productRepository.addProduct(product);
+        context.read<StockBloc>().add(AddProduct(product));
+        // await widget.productRepository.addProduct(product);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Product added successfully!')),
         );
+
         Navigator.pop(context); // Go back to the previous screen
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
