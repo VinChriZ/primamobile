@@ -1,13 +1,19 @@
 import 'package:primamobile/app/models/models.dart';
 import 'package:primamobile/provider/dio/dio_client.dart';
+import 'package:primamobile/provider/models/request_api/request_api.dart';
 
 class TransactionDetailProvider {
   // Fetch all transaction details for a given transaction ID
   Future<List<TransactionDetail>> getTransactionDetails(
       int transactionId) async {
+    final RequestParam param = RequestParam(parameters: {});
+    final RequestObject request = RequestObjectFunction(requestParam: param);
+
     try {
-      final response =
-          await dioClient.get('/transactions/$transactionId/details');
+      final response = await dioClient.get(
+        '/transactions/$transactionId/details',
+        queryParameters: await request.toJson(),
+      );
       print('Transaction Details Response: ${response.data}');
 
       if (response.statusCode == 200) {
@@ -26,10 +32,13 @@ class TransactionDetailProvider {
   // Add a new transaction detail
   Future<void> addTransactionDetail(
       int transactionId, TransactionDetail detail) async {
+    final RequestParam param = RequestParam(parameters: detail.toJson());
+    final RequestObject request = RequestObjectFunction(requestParam: param);
+
     try {
       final response = await dioClient.post(
         '/transactions/$transactionId/details',
-        data: detail.toJson(),
+        data: await request.toJson(),
       );
       print('Add Transaction Detail Response: ${response.data}');
     } catch (e) {
@@ -41,10 +50,13 @@ class TransactionDetailProvider {
   // Update an existing transaction detail
   Future<void> updateTransactionDetail(
       int transactionId, int detailId, TransactionDetail detail) async {
+    final RequestParam param = RequestParam(parameters: detail.toJson());
+    final RequestObject request = RequestObjectFunction(requestParam: param);
+
     try {
       final response = await dioClient.put(
         '/transactions/$transactionId/details/$detailId',
-        data: detail.toJson(),
+        data: await request.toJson(),
       );
       print('Update Transaction Detail Response: ${response.data}');
     } catch (e) {
@@ -55,9 +67,13 @@ class TransactionDetailProvider {
 
   // Delete a transaction detail
   Future<void> deleteTransactionDetail(int transactionId, int detailId) async {
+    final RequestParam param = RequestParam(parameters: {});
+    final RequestObject request = RequestObjectFunction(requestParam: param);
+
     try {
       final response = await dioClient.delete(
         '/transactions/$transactionId/details/$detailId',
+        data: await request.toJson(),
       );
       print('Delete Transaction Detail Response: ${response.data}');
     } catch (e) {

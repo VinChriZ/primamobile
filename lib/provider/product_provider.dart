@@ -1,12 +1,19 @@
 import 'package:dio/dio.dart';
 import 'package:primamobile/app/models/models.dart';
 import 'package:primamobile/provider/dio/dio_client.dart';
+import 'package:primamobile/provider/models/request_api/request_api.dart';
 
 class ProductProvider {
   // Fetch all products
   Future<List<Product>> getProducts() async {
+    final RequestParam param = RequestParam(parameters: {});
+    final RequestObject request = RequestObjectFunction(requestParam: param);
+
     try {
-      final response = await dioClient.get('/products');
+      final response = await dioClient.get(
+        '/products',
+        queryParameters: await request.toJson(),
+      );
       if (response.statusCode == 200) {
         final data = response.data as List<dynamic>;
         return data.map((item) => Product.fromJson(item)).toList();
@@ -21,8 +28,14 @@ class ProductProvider {
 
   // Fetch product by UPC
   Future<Product> getProduct(String upc) async {
+    final RequestParam param = RequestParam(parameters: {});
+    final RequestObject request = RequestObjectFunction(requestParam: param);
+
     try {
-      final response = await dioClient.get('/products/$upc');
+      final response = await dioClient.get(
+        '/products/$upc',
+        queryParameters: await request.toJson(),
+      );
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
         return Product.fromJson(data);
@@ -37,8 +50,14 @@ class ProductProvider {
 
   // Create a new product
   Future<void> createProduct(Product product) async {
+    final RequestParam param = RequestParam(parameters: product.toJson());
+    final RequestObject request = RequestObjectFunction(requestParam: param);
+
     try {
-      await dioClient.post('/products', data: product.toJson());
+      await dioClient.post(
+        '/products',
+        data: await request.toJson(),
+      );
     } catch (e) {
       throw Exception('Error creating product: $e');
     }
@@ -46,8 +65,14 @@ class ProductProvider {
 
   // Update an existing product
   Future<void> updateProduct(String upc, Product product) async {
+    final RequestParam param = RequestParam(parameters: product.toJson());
+    final RequestObject request = RequestObjectFunction(requestParam: param);
+
     try {
-      await dioClient.put('/products/$upc', data: product.toJson());
+      await dioClient.put(
+        '/products/$upc',
+        data: await request.toJson(),
+      );
     } catch (e) {
       throw Exception('Error updating product: $e');
     }
@@ -55,8 +80,14 @@ class ProductProvider {
 
   // Delete a product
   Future<void> deleteProduct(String upc) async {
+    final RequestParam param = RequestParam(parameters: {});
+    final RequestObject request = RequestObjectFunction(requestParam: param);
+
     try {
-      await dioClient.delete('/products/$upc');
+      await dioClient.delete(
+        '/products/$upc',
+        data: await request.toJson(),
+      );
     } catch (e) {
       throw Exception('Error deleting product: $e');
     }
@@ -64,9 +95,14 @@ class ProductProvider {
 
   // Fetch products by category
   Future<List<Product>> getProductsByCategory(String category) async {
+    final RequestParam param = RequestParam(parameters: {'category': category});
+    final RequestObject request = RequestObjectFunction(requestParam: param);
+
     try {
-      final response = await dioClient
-          .get('/products', queryParameters: {'category': category});
+      final response = await dioClient.get(
+        '/products',
+        queryParameters: await request.toJson(),
+      );
       if (response.statusCode == 200) {
         final data = response.data as List<dynamic>;
         return data.map((item) => Product.fromJson(item)).toList();
@@ -81,8 +117,14 @@ class ProductProvider {
 
   // Update product stock
   Future<void> updateProductStock(String upc, int stock) async {
+    final RequestParam param = RequestParam(parameters: {'stock': stock});
+    final RequestObject request = RequestObjectFunction(requestParam: param);
+
     try {
-      await dioClient.put('/products/$upc/stock', data: {'stock': stock});
+      await dioClient.put(
+        '/products/$upc/stock',
+        data: await request.toJson(),
+      );
     } catch (e) {
       throw Exception('Error updating product stock: $e');
     }
