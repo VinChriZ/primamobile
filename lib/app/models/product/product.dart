@@ -21,29 +21,31 @@ class Product {
     required this.lastUpdated,
   });
 
+  // Factory constructor for deserializing from JSON
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-      upc: json['UPC'],
-      name: json['Name'],
-      netPrice: json['NetPrice'],
-      displayPrice: json['DisplayPrice'],
-      stock: json['Stock'],
-      category: json['Category'],
-      brand: json['Brand'],
-      imageUrl: json['image_url'], // Can be null
-      lastUpdated: DateTime.parse(json['last_updated']),
+      upc: json['upc'] as String,
+      name: json['name'] as String,
+      netPrice: (json['net_price'] as num).toDouble(),
+      displayPrice: (json['display_price'] as num).toDouble(),
+      stock: json['stock'] as int,
+      category: json['category'] as String,
+      brand: json['brand'] as String,
+      imageUrl: json['image_url'] as String?,
+      lastUpdated: DateTime.parse(json['last_updated'] as String),
     );
   }
 
+  // Method for serializing to JSON
   Map<String, dynamic> toJson() {
     return {
-      'UPC': upc,
-      'Name': name,
-      'NetPrice': netPrice,
-      'DisplayPrice': displayPrice,
-      'Stock': stock,
-      'Category': category,
-      'Brand': brand,
+      'upc': upc,
+      'name': name,
+      'net_price': netPrice,
+      'display_price': displayPrice,
+      'stock': stock,
+      'category': category,
+      'brand': brand,
       if (imageUrl != null) 'image_url': imageUrl,
       'last_updated': lastUpdated.toIso8601String(),
     };
