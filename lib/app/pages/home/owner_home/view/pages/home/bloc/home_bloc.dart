@@ -24,7 +24,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
       emit(HomeLoaded(user: user));
     } catch (e) {
-      emit(HomeError("Failed to load user session."));
+      emit(const HomeError("Failed to load user session."));
     }
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/bloc/owner_home_bloc.dart';
-import 'package:primamobile/app/pages.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/home/home_page.dart';
 
 class OwnerHomeScreen extends StatelessWidget {
   const OwnerHomeScreen({super.key});
