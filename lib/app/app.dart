@@ -31,7 +31,7 @@ class App extends StatelessWidget {
         theme: ThemeData(
           brightness: Brightness.light,
           fontFamily: 'Montserrat',
-          colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue),
+          // colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue),
         ),
         initialRoute: '/',
         onGenerateRoute: appRouter.onGenerateRoutes, // Use the instance
