@@ -10,23 +10,12 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => ProfileBloc(
-            userRepository: RepositoryProvider.of<UserRepository>(context),
-            authenticationBloc: BlocProvider.of<AuthenticationBloc>(context),
-          )..add(LoadProfile()),
-        ),
-      ],
-      child: BlocListener<AuthenticationBloc, AuthenticationState>(
-        listener: (context, state) {
-          if (state is AuthenticationUnauthenticated) {
-            Navigator.pushReplacementNamed(context, '/login');
-          }
-        },
-        child: const ProfileScreen(),
-      ),
+    return BlocProvider(
+      create: (context) => ProfileBloc(
+        userRepository: RepositoryProvider.of<UserRepository>(context),
+        authenticationBloc: BlocProvider.of<AuthenticationBloc>(context),
+      )..add(LoadProfile()),
+      child: const ProfileScreen(),
     );
   }
 }
