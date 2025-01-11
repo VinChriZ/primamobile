@@ -14,14 +14,20 @@ class ProductProvider {
         '/products/',
         queryParameters: await request.toJson(),
       );
+      print('Response received: ${response.data}'); // Debug log
+
       if (response.statusCode == 200) {
-        final data = response.data as List<dynamic>;
-        return data.map((item) => Product.fromJson(item)).toList();
+        final data =
+            response.data['products'] as List<dynamic>; // Extract 'products'
+        return data
+            .map((item) => Product.fromJson(item))
+            .toList(); // Map to Product list
       } else {
         throw Exception(
             'Failed to fetch products. Status code: ${response.statusCode}');
       }
     } catch (e) {
+      print('Error fetching products: $e'); // Debug log
       throw Exception('Error fetching products: $e');
     }
   }
@@ -36,14 +42,17 @@ class ProductProvider {
         '/products/$upc',
         queryParameters: await request.toJson(),
       );
+      print('Response received: ${response.data}'); // Debug log
+
       if (response.statusCode == 200) {
-        final data = response.data as Map<String, dynamic>;
+        final data = response.data; // Directly fetch product details
         return Product.fromJson(data);
       } else {
         throw Exception(
             'Failed to fetch product. Status code: ${response.statusCode}');
       }
     } catch (e) {
+      print('Error fetching product: $e'); // Debug log
       throw Exception('Error fetching product: $e');
     }
   }
@@ -56,11 +65,13 @@ class ProductProvider {
     print("JSON Payload Sent to API: $jsonPayload");
 
     try {
-      await dioClient.post(
+      final response = await dioClient.post(
         '/products/',
-        data: await request.toJson(),
+        data: jsonPayload,
       );
+      print('Response received: ${response.data}'); // Debug log
     } catch (e) {
+      print('Error creating product: $e'); // Debug log
       throw Exception('Error creating product: $e');
     }
   }
@@ -71,11 +82,13 @@ class ProductProvider {
     final RequestObject request = RequestObjectFunction(requestParam: param);
 
     try {
-      await dioClient.put(
+      final response = await dioClient.put(
         '/products/$upc',
         data: await request.toJson(),
       );
+      print('Response received: ${response.data}'); // Debug log
     } catch (e) {
+      print('Error updating product: $e'); // Debug log
       throw Exception('Error updating product: $e');
     }
   }
@@ -86,11 +99,13 @@ class ProductProvider {
     final RequestObject request = RequestObjectFunction(requestParam: param);
 
     try {
-      await dioClient.delete(
+      final response = await dioClient.delete(
         '/products/$upc',
         data: await request.toJson(),
       );
+      print('Response received: ${response.data}'); // Debug log
     } catch (e) {
+      print('Error deleting product: $e'); // Debug log
       throw Exception('Error deleting product: $e');
     }
   }
@@ -105,14 +120,20 @@ class ProductProvider {
         '/products',
         queryParameters: await request.toJson(),
       );
+      print('Response received: ${response.data}'); // Debug log
+
       if (response.statusCode == 200) {
-        final data = response.data as List<dynamic>;
-        return data.map((item) => Product.fromJson(item)).toList();
+        final data =
+            response.data['products'] as List<dynamic>; // Extract 'products'
+        return data
+            .map((item) => Product.fromJson(item))
+            .toList(); // Map to Product list
       } else {
         throw Exception(
             'Failed to fetch products by category. Status code: ${response.statusCode}');
       }
     } catch (e) {
+      print('Error fetching products by category: $e'); // Debug log
       throw Exception('Error fetching products by category: $e');
     }
   }
@@ -123,11 +144,13 @@ class ProductProvider {
     final RequestObject request = RequestObjectFunction(requestParam: param);
 
     try {
-      await dioClient.put(
+      final response = await dioClient.put(
         '/products/$upc/stock',
         data: await request.toJson(),
       );
+      print('Response received: ${response.data}'); // Debug log
     } catch (e) {
+      print('Error updating product stock: $e'); // Debug log
       throw Exception('Error updating product stock: $e');
     }
   }
@@ -141,6 +164,8 @@ class ProductProvider {
       final response =
           await dioClient.post('/products/$upc/upload-image', data: formData);
 
+      print('Response received: ${response.data}'); // Debug log
+
       if (response.statusCode == 200) {
         return response.data['image_url'];
       } else {
@@ -148,6 +173,7 @@ class ProductProvider {
             'Failed to upload product image. Status code: ${response.statusCode}');
       }
     } catch (e) {
+      print('Error uploading product image: $e'); // Debug log
       throw Exception('Error uploading product image: $e');
     }
   }

@@ -24,6 +24,7 @@ class _AddProductPageState extends State<AddProductPage> {
   final TextEditingController _stockController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _brandController = TextEditingController();
+  final TextEditingController _imageUrlController = TextEditingController();
 
   bool isScanning = false; // Add this flag
 
@@ -81,7 +82,10 @@ class _AddProductPageState extends State<AddProductPage> {
         stock: int.parse(_stockController.text),
         category: _categoryController.text,
         brand: _brandController.text,
-        imageUrl: "https://example.com/image.jpg", // Placeholder
+        imageUrl: _imageUrlController.text.isNotEmpty
+            ? _imageUrlController.text
+            : null, // Handle optional image URL
+        lastUpdated: DateTime.now(), // Add current timestamp for lastUpdated
       );
 
       // Use StockBloc to handle adding the product
