@@ -35,4 +35,35 @@ class UserRepository {
       rethrow;
     }
   }
+
+  // Asynchronous method to get the role as a string based on roleId
+  Future<String> getRole() async {
+    try {
+      // Fetch the current UserSession
+      final userSession = await _userSessionRepository.getUserSession();
+
+      // Get roleId from the user session
+      final int roleId = userSession.user.roleId;
+
+      // Map roleId to the corresponding role name
+      switch (roleId) {
+        case 1:
+          return 'Admin';
+        case 2:
+          return 'Owner';
+        case 3:
+          return 'Worker';
+        default:
+          return 'Unknown Role';
+      }
+    } catch (e) {
+      print('Error fetching role: $e');
+      return 'Error';
+    }
+  }
+
+  Future<String> getName() async {
+    final userSession = await _userSessionRepository.getUserSession();
+    return userSession.user.username; // Replace with your actual field
+  }
 }

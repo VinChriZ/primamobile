@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:primamobile/app/authentication/bloc/authentication_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/bloc/owner_home_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/home/home_page.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/profile/bloc/profile_bloc.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/profile/view/profile_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/bloc/stock_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/stock_page.dart';
+import 'package:primamobile/repository/user_repository.dart';
 
 class OwnerHomeScreen extends StatelessWidget {
   const OwnerHomeScreen({super.key});
@@ -27,7 +31,20 @@ class OwnerHomeScreen extends StatelessWidget {
           ),
           const Placeholder(),
           const Placeholder(),
-          const Placeholder(),
+          BlocProvider(
+            create: (context) => ProfileBloc(
+              userRepository: RepositoryProvider.of<UserRepository>(context),
+              authenticationBloc: BlocProvider.of<AuthenticationBloc>(context),
+            )..add(LoadProfile()),
+            child: BlocListener<AuthenticationBloc, AuthenticationState>(
+              listener: (context, state) {
+                if (state is AuthenticationUnauthenticated) {
+                  Navigator.pushReplacementNamed(context, '/login');
+                }
+              },
+              child: const ProfilePage(),
+            ),
+          )
         ];
 
         return Scaffold(

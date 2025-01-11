@@ -17,9 +17,10 @@ class AuthenticationBloc
   }) : super(AuthenticationInitial()) {
     on<AppStarted>(_onAppStarted);
     on<LoginButtonPressed>(_onLoginButtonPressed);
+    on<LogoutRequested>(_onLogoutRequested);
   }
 
-  void _onAppStarted(
+  Future<void> _onAppStarted(
       AppStarted event, Emitter<AuthenticationState> emit) async {
     try {
       final userSession = await userSessionRepository.getUserSession();
@@ -28,7 +29,7 @@ class AuthenticationBloc
       } else {
         emit(AuthenticationUnauthenticated());
       }
-    } catch (e) {
+    } catch (_) {
       emit(AuthenticationUnauthenticated());
     }
   }
@@ -38,12 +39,17 @@ class AuthenticationBloc
     emit(AuthenticationLoading());
 
     try {
-      await Future.delayed(const Duration(seconds: 2));
-      await loginRepository.login(event.username, event.password);
-      // Emit authenticated state
+      await loginRepository.login(
+          event.username, event.password); // Assume successful login
       emit(AuthenticationAuthenticated());
-    } catch (e) {
+    } catch (_) {
       emit(AuthenticationFailure(error: "Invalid username or password"));
     }
+  }
+
+  Future<void> _onLogoutRequested(
+      LogoutRequested event, Emitter<AuthenticationState> emit) async {
+    await userSessionRepository.clearUserSession(); // Clear the user session
+    emit(AuthenticationUnauthenticated()); // Emit unauthenticated state
   }
 }
