@@ -16,10 +16,10 @@ class TransactionDetail {
   // Create TransactionDetail from JSON
   factory TransactionDetail.fromJson(Map<String, dynamic> json) {
     return TransactionDetail(
-      detailId: json['detail_id'], // Matches database field
-      transactionId: json['transaction_id'], // Matches database field
-      upc: json['upc'], // Matches database field
-      quantity: json['quantity'], // Matches database field
+      detailId: json['detail_id'] as int, // Matches database field
+      transactionId: json['transaction_id'] as int, // Matches database field
+      upc: json['upc'] as String, // Matches database field
+      quantity: json['quantity'] as int, // Matches database field
       agreedPrice:
           (json['agreed_price'] as num).toDouble(), // Matches database field
     );

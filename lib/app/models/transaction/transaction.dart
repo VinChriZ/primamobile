@@ -1,9 +1,9 @@
 class Transaction {
   final int transactionId;
   final double totalDisplayPrice;
-  final double totalAgreedPrice; // Added this field based on your table
+  final double totalAgreedPrice; // Calculated field (managed by trigger)
   final DateTime dateCreated;
-  final String? note; // Note is optional
+  final String? note; // Optional field
   final DateTime lastUpdated;
 
   Transaction({
@@ -15,10 +15,10 @@ class Transaction {
     required this.lastUpdated,
   });
 
-  // Create Transaction from JSON
+  // Create a Transaction object from JSON
   factory Transaction.fromJson(Map<String, dynamic> json) {
     return Transaction(
-      transactionId: json['transaction_id'], // Matches your database field
+      transactionId: json['transaction_id'], // Matches database field
       totalDisplayPrice: (json['total_display_price'] as num).toDouble(),
       totalAgreedPrice: (json['total_agreed_price'] as num).toDouble(),
       dateCreated: DateTime.parse(json['date_created']),
@@ -27,14 +27,14 @@ class Transaction {
     );
   }
 
-  // Convert Transaction to JSON
+  // Convert a Transaction object to JSON
   Map<String, dynamic> toJson() {
     return {
       'transaction_id': transactionId,
       'total_display_price': totalDisplayPrice,
-      'total_agreed_price': totalAgreedPrice, // Include in serialization
+      'total_agreed_price': totalAgreedPrice, // Include calculated field
       'date_created': dateCreated.toIso8601String(),
-      if (note != null) 'note': note, // Only include if not null
+      if (note != null) 'note': note, // Include only if not null
       'last_updated': lastUpdated.toIso8601String(),
     };
   }

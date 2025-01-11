@@ -1,4 +1,4 @@
-import 'package:primamobile/app/models/models.dart';
+import 'package:primamobile/app/models/transaction/transaction.dart';
 import 'package:primamobile/provider/dio/dio_client.dart';
 import 'package:primamobile/provider/models/request_api/request_api.dart';
 
@@ -20,7 +20,8 @@ class TransactionProvider {
         return data.map((item) => Transaction.fromJson(item)).toList();
       } else {
         throw Exception(
-            'Failed to fetch transactions with status code: ${response.statusCode}');
+          'Failed to fetch transactions with status code: ${response.statusCode}',
+        );
       }
     } catch (e) {
       print('Error fetching transactions: $e');
@@ -45,7 +46,8 @@ class TransactionProvider {
         return Transaction.fromJson(data);
       } else {
         throw Exception(
-            'Failed to fetch transaction with status code: ${response.statusCode}');
+          'Failed to fetch transaction with status code: ${response.statusCode}',
+        );
       }
     } catch (e) {
       print('Error fetching transaction: $e');
@@ -54,7 +56,7 @@ class TransactionProvider {
   }
 
   // Create a new transaction
-  Future<void> createTransaction(Transaction transaction) async {
+  Future<Transaction> createTransaction(Transaction transaction) async {
     final RequestParam param = RequestParam(parameters: transaction.toJson());
     final RequestObject request = RequestObjectFunction(requestParam: param);
 
@@ -64,6 +66,15 @@ class TransactionProvider {
         data: await request.toJson(),
       );
       print('Create Transaction Response: ${response.data}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data as Map<String, dynamic>;
+        return Transaction.fromJson(data);
+      } else {
+        throw Exception(
+          'Failed to create transaction with status code: ${response.statusCode}',
+        );
+      }
     } catch (e) {
       print('Error creating transaction: $e');
       rethrow;
@@ -71,7 +82,7 @@ class TransactionProvider {
   }
 
   // Update an existing transaction
-  Future<void> updateTransaction(
+  Future<Transaction> updateTransaction(
       int transactionId, Transaction transaction) async {
     final RequestParam param = RequestParam(parameters: transaction.toJson());
     final RequestObject request = RequestObjectFunction(requestParam: param);
@@ -82,6 +93,15 @@ class TransactionProvider {
         data: await request.toJson(),
       );
       print('Update Transaction Response: ${response.data}');
+
+      if (response.statusCode == 200) {
+        final data = response.data as Map<String, dynamic>;
+        return Transaction.fromJson(data);
+      } else {
+        throw Exception(
+          'Failed to update transaction with status code: ${response.statusCode}',
+        );
+      }
     } catch (e) {
       print('Error updating transaction: $e');
       rethrow;
@@ -99,6 +119,12 @@ class TransactionProvider {
         data: await request.toJson(),
       );
       print('Delete Transaction Response: ${response.data}');
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          'Failed to delete transaction with status code: ${response.statusCode}',
+        );
+      }
     } catch (e) {
       print('Error deleting transaction: $e');
       rethrow;

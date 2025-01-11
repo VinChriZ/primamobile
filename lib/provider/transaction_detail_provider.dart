@@ -1,4 +1,4 @@
-import 'package:primamobile/app/models/models.dart';
+import 'package:primamobile/app/models/transaction/transaction_detail.dart';
 import 'package:primamobile/provider/dio/dio_client.dart';
 import 'package:primamobile/provider/models/request_api/request_api.dart';
 
@@ -21,7 +21,8 @@ class TransactionDetailProvider {
         return data.map((item) => TransactionDetail.fromJson(item)).toList();
       } else {
         throw Exception(
-            'Failed to fetch transaction details with status code: ${response.statusCode}');
+          'Failed to fetch transaction details with status code: ${response.statusCode}',
+        );
       }
     } catch (e) {
       print('Error fetching transaction details: $e');
@@ -41,6 +42,12 @@ class TransactionDetailProvider {
         data: await request.toJson(),
       );
       print('Add Transaction Detail Response: ${response.data}');
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw Exception(
+          'Failed to add transaction detail with status code: ${response.statusCode}',
+        );
+      }
     } catch (e) {
       print('Error adding transaction detail: $e');
       rethrow;
@@ -59,6 +66,12 @@ class TransactionDetailProvider {
         data: await request.toJson(),
       );
       print('Update Transaction Detail Response: ${response.data}');
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          'Failed to update transaction detail with status code: ${response.statusCode}',
+        );
+      }
     } catch (e) {
       print('Error updating transaction detail: $e');
       rethrow;
@@ -76,6 +89,12 @@ class TransactionDetailProvider {
         data: await request.toJson(),
       );
       print('Delete Transaction Detail Response: ${response.data}');
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          'Failed to delete transaction detail with status code: ${response.statusCode}',
+        );
+      }
     } catch (e) {
       print('Error deleting transaction detail: $e');
       rethrow;
