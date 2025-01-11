@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/bloc/stock_bloc.dart';
-import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/stock_screen.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/stock_screen.dart';
 import 'package:primamobile/repository/product_repository.dart';
 
 class StockPage extends StatelessWidget {
@@ -9,11 +9,10 @@ class StockPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final productRepository = context.read<ProductRepository>();
-
     return BlocProvider(
-      create: (context) =>
-          StockBloc(productRepository: productRepository)..add(LoadProducts()),
+      create: (context) => StockBloc(
+        productRepository: RepositoryProvider.of<ProductRepository>(context),
+      )..add(LoadProducts()),
       child: const StockScreen(),
     );
   }

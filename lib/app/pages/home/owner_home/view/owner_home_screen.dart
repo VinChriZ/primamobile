@@ -3,8 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/bloc/owner_home_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/home/view/home_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/profile/view/profile_page.dart';
-import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/bloc/stock_bloc.dart';
-import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/stock_page.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/stock_page.dart';
 
 class OwnerHomeScreen extends StatelessWidget {
   const OwnerHomeScreen({super.key});
@@ -16,16 +15,9 @@ class OwnerHomeScreen extends StatelessWidget {
         final selectedIndex =
             state is OwnerHomeNavigationState ? state.selectedIndex : 0;
 
-        final productRepository =
-            context.read<OwnerHomeBloc>().productRepository; // Access from bloc
-
         final List<Widget> pages = [
           const HomePage(),
-          BlocProvider(
-            create: (_) => StockBloc(productRepository: productRepository)
-              ..add(LoadProducts()),
-            child: const StockPage(),
-          ),
+          const StockPage(),
           const Placeholder(),
           const Placeholder(),
           const ProfilePage()

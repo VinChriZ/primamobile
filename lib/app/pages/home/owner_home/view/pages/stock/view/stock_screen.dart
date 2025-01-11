@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/add_product.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/add_product.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/bloc/stock_bloc.dart';
-import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/product_detail.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/product_detail.dart';
 
 class StockScreen extends StatelessWidget {
   const StockScreen({super.key});
