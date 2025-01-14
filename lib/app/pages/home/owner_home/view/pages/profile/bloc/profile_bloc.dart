@@ -27,7 +27,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final role = await userRepository.getRole();
       emit(ProfileLoaded(name: name, role: role));
     } catch (_) {
-      emit(ProfileError(message: "Failed to load profile."));
+      emit(const ProfileError(message: "Failed to load profile."));
     }
   }
 

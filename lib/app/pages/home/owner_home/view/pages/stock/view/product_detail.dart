@@ -18,11 +18,11 @@ class ProductDetailPage extends StatelessWidget {
             Text('UPC: ${product.upc}', style: const TextStyle(fontSize: 16)),
             Text('Stock: ${product.stock}',
                 style: const TextStyle(fontSize: 16)),
-            Text('Price: \$${product.displayPrice}',
+            Text('Price: \$Rp.{product.displayPrice}',
                 style: const TextStyle(fontSize: 16)),
             Text('Category: \$${product.category}',
                 style: const TextStyle(fontSize: 16)),
-            Text('Brand: \$${product.brand}',
+            Text('Brand: \${product.brand}',
                 style: const TextStyle(fontSize: 16)),
             // Add more product details as needed
           ],
