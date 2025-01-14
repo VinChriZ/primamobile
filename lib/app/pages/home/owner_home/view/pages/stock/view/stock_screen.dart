@@ -4,20 +4,8 @@ import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/bloc/stoc
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/add_product.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/product_detail.dart';
 
-class StockScreen extends StatefulWidget {
+class StockScreen extends StatelessWidget {
   const StockScreen({super.key});
-
-  @override
-  _StockScreenState createState() => _StockScreenState();
-}
-
-class _StockScreenState extends State<StockScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Dispatch LoadProducts event when the screen initializes
-    context.read<StockBloc>().add(LoadProducts());
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -147,6 +135,8 @@ class _StockScreenState extends State<StockScreen> {
                     return const SizedBox.shrink();
                   },
                 ),
+                const SizedBox(width: 16.0),
+                // Optional: Add more filters or buttons here
               ],
             ),
           ),
