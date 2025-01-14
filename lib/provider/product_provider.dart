@@ -177,4 +177,36 @@ class ProductProvider {
       throw Exception('Error uploading product image: $e');
     }
   }
+
+  // Fetch unique categories
+  Future<List<String>> getUniqueCategories() async {
+    try {
+      final response = await dioClient.get('/products/unique/categories');
+      if (response.statusCode == 200) {
+        final data = response.data['categories'] as List<dynamic>;
+        return List<String>.from(data);
+      } else {
+        throw Exception(
+            'Failed to fetch categories. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching categories: $e');
+    }
+  }
+
+  // Fetch unique brands
+  Future<List<String>> getUniqueBrands() async {
+    try {
+      final response = await dioClient.get('/products/unique/brands');
+      if (response.statusCode == 200) {
+        final data = response.data['brands'] as List<dynamic>;
+        return List<String>.from(data);
+      } else {
+        throw Exception(
+            'Failed to fetch brands. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching brands: $e');
+    }
+  }
 }

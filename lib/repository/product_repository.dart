@@ -43,4 +43,14 @@ class ProductRepository {
   Future<String> uploadProductImage(String upc, String imagePath) async {
     return await _provider.uploadProductImage(upc, imagePath);
   }
+
+  // Fetch unique categories
+  Future<List<String>> fetchUniqueCategories() async {
+    return await _provider.getUniqueCategories();
+  }
+
+  // Fetch unique brands
+  Future<List<String>> fetchUniqueBrands() async {
+    return await _provider.getUniqueBrands();
+  }
 }
