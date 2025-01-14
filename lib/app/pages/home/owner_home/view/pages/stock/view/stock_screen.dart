@@ -46,108 +46,106 @@ class _StockScreenState extends State<StockScreen> {
               ),
             ),
           ),
-          // Filters and Sort Options
-          Padding(
+          // Horizontally Scrollable Filters and Sort Options
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Row(
               children: [
                 // Category Dropdown
-                Expanded(
-                  child: BlocBuilder<StockBloc, StockState>(
-                    builder: (context, state) {
-                      if (state is StockLoading) {
-                        return const CircularProgressIndicator();
-                      } else if (state is StockLoaded) {
-                        return DropdownButton<String>(
-                          isExpanded: true,
-                          hint: const Text('Select Category'),
-                          value: state.selectedCategory,
-                          onChanged: (value) {
-                            context.read<StockBloc>().add(
-                                  FilterProducts(category: value),
-                                );
-                          },
-                          items: [
-                            const DropdownMenuItem(
-                              value: null,
-                              child: Text('All Categories'),
-                            ),
-                            ...state.categories.map((category) {
-                              return DropdownMenuItem(
-                                value: category,
-                                child: Text(category),
+                BlocBuilder<StockBloc, StockState>(
+                  builder: (context, state) {
+                    if (state is StockLoading) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                        child: CircularProgressIndicator(),
+                      );
+                    } else if (state is StockLoaded) {
+                      return DropdownButton<String>(
+                        isExpanded: false,
+                        hint: const Text('Select Category'),
+                        value: state.selectedCategory,
+                        onChanged: (value) {
+                          context.read<StockBloc>().add(
+                                FilterProducts(category: value),
                               );
-                            }).toList(),
-                          ],
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
+                        },
+                        items: [
+                          const DropdownMenuItem(
+                            value: null,
+                            child: Text('All Categories'),
+                          ),
+                          ...state.categories.map((category) {
+                            return DropdownMenuItem(
+                              value: category,
+                              child: Text(category),
+                            );
+                          }).toList(),
+                        ],
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
                 ),
-                const SizedBox(width: 8.0),
+                const SizedBox(width: 16.0),
                 // Brand Dropdown
-                Expanded(
-                  child: BlocBuilder<StockBloc, StockState>(
-                    builder: (context, state) {
-                      if (state is StockLoading) {
-                        return const CircularProgressIndicator();
-                      } else if (state is StockLoaded) {
-                        return DropdownButton<String>(
-                          isExpanded: true,
-                          hint: const Text('Select Brand'),
-                          value: state.selectedBrand,
-                          onChanged: (value) {
-                            context.read<StockBloc>().add(
-                                  FilterProducts(brand: value),
-                                );
-                          },
-                          items: [
-                            const DropdownMenuItem(
-                              value: null,
-                              child: Text('All Brands'),
-                            ),
-                            ...state.brands.map((brand) {
-                              return DropdownMenuItem(
-                                value: brand,
-                                child: Text(brand),
+                BlocBuilder<StockBloc, StockState>(
+                  builder: (context, state) {
+                    if (state is StockLoading) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                        child: CircularProgressIndicator(),
+                      );
+                    } else if (state is StockLoaded) {
+                      return DropdownButton<String>(
+                        isExpanded: false,
+                        hint: const Text('Select Brand'),
+                        value: state.selectedBrand,
+                        onChanged: (value) {
+                          context.read<StockBloc>().add(
+                                FilterProducts(brand: value),
                               );
-                            }).toList(),
-                          ],
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
+                        },
+                        items: [
+                          const DropdownMenuItem(
+                            value: null,
+                            child: Text('All Brands'),
+                          ),
+                          ...state.brands.map((brand) {
+                            return DropdownMenuItem(
+                              value: brand,
+                              child: Text(brand),
+                            );
+                          }).toList(),
+                        ],
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
                 ),
-                const SizedBox(width: 8.0),
+                const SizedBox(width: 16.0),
                 // Sort Dropdown
-                Expanded(
-                  child: BlocBuilder<StockBloc, StockState>(
-                    builder: (context, state) {
-                      if (state is StockLoaded) {
-                        return DropdownButton<String>(
-                          isExpanded: true,
-                          value: state.sortOption ?? 'Lowest Stock',
-                          onChanged: (value) {
-                            if (value != null) {
-                              context
-                                  .read<StockBloc>()
-                                  .add(SortProducts(value));
-                            }
-                          },
-                          items:
-                              ['Lowest Stock', 'Highest Stock', 'Last Updated']
-                                  .map((option) => DropdownMenuItem(
-                                        value: option,
-                                        child: Text(option),
-                                      ))
-                                  .toList(),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
+                BlocBuilder<StockBloc, StockState>(
+                  builder: (context, state) {
+                    if (state is StockLoaded) {
+                      return DropdownButton<String>(
+                        isExpanded: false,
+                        value: state.sortOption ?? 'Last Updated',
+                        onChanged: (value) {
+                          if (value != null) {
+                            context.read<StockBloc>().add(SortProducts(value));
+                          }
+                        },
+                        items: ['Lowest Stock', 'Highest Stock', 'Last Updated']
+                            .map((option) => DropdownMenuItem(
+                                  value: option,
+                                  child: Text(option),
+                                ))
+                            .toList(),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
                 ),
               ],
             ),

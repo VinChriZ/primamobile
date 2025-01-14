@@ -47,11 +47,11 @@ class StockBloc extends Bloc<StockEvent, StockState> {
         selectedCategory: null,
         selectedBrand: null,
         searchQuery: '',
-        sortOption: 'Lowest Stock', // Default sort option
+        sortOption: 'Last Updated', // Set "Last Updated" as default
       ));
 
       // Apply default sorting
-      add(SortProducts('Lowest Stock'));
+      add(SortProducts('Last Updated'));
     } catch (e) {
       emit(StockError('Failed to load products, categories, or brands.'));
     }
