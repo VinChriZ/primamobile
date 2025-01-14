@@ -20,8 +20,10 @@ class ProductRepository {
   }
 
   // Update an existing product
-  Future<void> editProduct(String upc, Product product) async {
-    await _provider.updateProduct(upc, product);
+  Future<void> editProduct(
+      String upc, Map<String, dynamic> updateFields) async {
+    // Convert updateFields if needed, then call provider
+    await _provider.updateProduct(upc, updateFields);
   }
 
   // Delete a product

@@ -1,4 +1,3 @@
-// stock_bloc.dart
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:primamobile/app/models/product/product.dart';
@@ -17,6 +16,7 @@ class StockBloc extends Bloc<StockEvent, StockState> {
     on<SearchProducts>(_onSearchProducts);
     on<FilterProducts>(_onFilterProducts);
     on<SortProducts>(_onSortProducts);
+    on<UpdateProduct>(_onUpdateProduct);
   }
 
   /// Handles loading of all products, categories, and brands.
@@ -67,6 +67,21 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       } catch (e) {
         emit(StockError('Failed to add product.'));
       }
+    }
+  }
+
+  Future<void> _onUpdateProduct(
+    UpdateProduct event,
+    Emitter<StockState> emit,
+  ) async {
+    try {
+      // Call the repository method with upc + partial fields
+      await productRepository.editProduct(event.upc, event.updateFields);
+
+      // Reload after updating
+      add(LoadProducts());
+    } catch (e) {
+      emit(StockError('Failed to update product: $e'));
     }
   }
 

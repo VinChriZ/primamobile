@@ -1,4 +1,3 @@
-// stock_state.dart
 part of 'stock_bloc.dart';
 
 abstract class StockState extends Equatable {
@@ -74,6 +73,18 @@ class StockError extends StockState {
   final String message;
 
   const StockError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class ProductUpdating extends StockState {}
+
+class ProductUpdateSuccess extends StockState {}
+
+class ProductUpdateFailure extends StockState {
+  final String message;
+  const ProductUpdateFailure(this.message);
 
   @override
   List<Object?> get props => [message];

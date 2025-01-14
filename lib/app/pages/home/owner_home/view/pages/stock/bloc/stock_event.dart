@@ -1,4 +1,3 @@
-// stock_event.dart
 part of 'stock_bloc.dart';
 
 abstract class StockEvent extends Equatable {
@@ -60,4 +59,14 @@ class SortProducts extends StockEvent {
 
   @override
   List<Object?> get props => [sortOption];
+}
+
+class UpdateProduct extends StockEvent {
+  final String upc;
+  final Map<String, dynamic> updateFields;
+
+  const UpdateProduct(this.upc, this.updateFields);
+
+  @override
+  List<Object?> get props => [upc, updateFields];
 }

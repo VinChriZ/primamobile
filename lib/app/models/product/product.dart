@@ -6,8 +6,8 @@ class Product {
   final int stock;
   final String category;
   final String brand;
-  final String? imageUrl; // Optional
-  final DateTime? lastUpdated; // New attribute
+  final String? imageUrl;
+  final DateTime? lastUpdated;
 
   Product({
     required this.upc,
@@ -17,8 +17,8 @@ class Product {
     required this.stock,
     required this.category,
     required this.brand,
-    this.imageUrl, // Optional
-    this.lastUpdated, // Optional
+    this.imageUrl,
+    this.lastUpdated,
   });
 
   // Factory constructor for deserializing from JSON
@@ -51,5 +51,19 @@ class Product {
       if (imageUrl != null) 'image_url': imageUrl,
       if (lastUpdated != null) 'last_updated': lastUpdated!.toIso8601String(),
     };
+  }
+
+  // Method for partial update JSON (exclude upc and last_updated)
+  Map<String, dynamic> toPartialJson() {
+    final map = <String, dynamic>{};
+    // Only include fields that can be updated
+    map['name'] = name;
+    map['net_price'] = netPrice;
+    map['display_price'] = displayPrice;
+    map['stock'] = stock;
+    map['category'] = category;
+    map['brand'] = brand;
+    // Exclude 'upc' and 'last_updated'
+    return map;
   }
 }

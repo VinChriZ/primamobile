@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/bloc/stock_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/add_product.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/edit_product.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/product_detail.dart';
 
 class StockScreen extends StatelessWidget {
@@ -179,8 +180,16 @@ class StockScreen extends StatelessWidget {
                                 icon:
                                     const Icon(Icons.edit, color: Colors.blue),
                                 onPressed: () {
-                                  // Implement edit product logic here
-                                  // For example, navigate to an edit product page
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => BlocProvider.value(
+                                        value: context.read<StockBloc>(),
+                                        child:
+                                            EditProductPage(product: product),
+                                      ),
+                                    ),
+                                  );
                                 },
                               ),
                               IconButton(
@@ -188,23 +197,25 @@ class StockScreen extends StatelessWidget {
                                     const Icon(Icons.delete, color: Colors.red),
                                 onPressed: () {
                                   // Confirm deletion with the user before deleting
+                                  final stockBloc = context.read<StockBloc>();
+
                                   showDialog(
                                     context: context,
-                                    builder: (context) => AlertDialog(
+                                    builder: (dialogContext) => AlertDialog(
                                       title: const Text('Delete Product'),
                                       content: const Text(
                                           'Are you sure you want to delete this product?'),
                                       actions: [
                                         TextButton(
                                           onPressed: () =>
-                                              Navigator.of(context).pop(),
+                                              Navigator.of(dialogContext).pop(),
                                           child: const Text('Cancel'),
                                         ),
                                         TextButton(
                                           onPressed: () {
-                                            context.read<StockBloc>().add(
+                                            stockBloc.add(
                                                 DeleteProduct(product.upc));
-                                            Navigator.of(context).pop();
+                                            Navigator.of(dialogContext).pop();
                                           },
                                           child: const Text('Delete'),
                                         ),

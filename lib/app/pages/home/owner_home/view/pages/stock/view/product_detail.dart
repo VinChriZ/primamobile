@@ -10,7 +10,7 @@ class ProductDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Format prices and dates
-    final currencyFormatter = NumberFormat.simpleCurrency(locale: 'en_US');
+    final currencyFormatter = NumberFormat.simpleCurrency(locale: 'id_ID');
     final dateFormatter = DateFormat.yMMMMd().add_jm();
 
     return Scaffold(

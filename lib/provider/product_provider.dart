@@ -77,14 +77,13 @@ class ProductProvider {
   }
 
   // Update an existing product
-  Future<void> updateProduct(String upc, Product product) async {
-    final RequestParam param = RequestParam(parameters: product.toJson());
-    final RequestObject request = RequestObjectFunction(requestParam: param);
-
+  Future<void> updateProduct(
+      String upc, Map<String, dynamic> updateFields) async {
     try {
+      print('Sending PUT /products/$upc with data: $updateFields'); // Debug log
       final response = await dioClient.put(
         '/products/$upc',
-        data: await request.toJson(),
+        data: updateFields,
       );
       print('Response received: ${response.data}'); // Debug log
     } catch (e) {
