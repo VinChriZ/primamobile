@@ -39,19 +39,19 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       final categories = results[1] as List<String>;
       final brands = results[2] as List<String>;
 
+      // Apply sorting before emitting
+      final sortedProducts = _applySorting(allProducts, 'Last Updated');
+
       emit(StockLoaded(
         allProducts: allProducts,
-        displayedProducts: allProducts,
+        displayedProducts: sortedProducts,
         categories: categories,
         brands: brands,
         selectedCategory: null,
         selectedBrand: null,
         searchQuery: '',
-        sortOption: 'Last Updated', // Set "Last Updated" as default
+        sortOption: 'Last Updated',
       ));
-
-      // Apply default sorting
-      add(SortProducts('Last Updated'));
     } catch (e) {
       emit(StockError('Failed to load products, categories, or brands.'));
     }
