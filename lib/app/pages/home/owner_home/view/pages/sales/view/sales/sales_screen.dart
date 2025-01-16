@@ -5,7 +5,7 @@ import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/bloc/sale
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/transaction_detail/transaction_detail_page.dart';
 
 class SalesScreen extends StatelessWidget {
-  const SalesScreen({Key? key}) : super(key: key);
+  const SalesScreen({super.key});
 
   void _navigateToDetail(BuildContext context, Transaction transaction) {
     Navigator.push(
@@ -68,7 +68,7 @@ class SalesScreen extends StatelessWidget {
                     decoration:
                         const InputDecoration(labelText: 'Total Display Price'),
                     keyboardType:
-                        TextInputType.numberWithOptions(decimal: true),
+                        const TextInputType.numberWithOptions(decimal: true),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter total display price';

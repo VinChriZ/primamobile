@@ -59,7 +59,7 @@ class TransactionDetailScreen extends StatelessWidget {
                     decoration:
                         const InputDecoration(labelText: 'Agreed Price'),
                     keyboardType:
-                        TextInputType.numberWithOptions(decimal: true),
+                        const TextInputType.numberWithOptions(decimal: true),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter agreed price';
@@ -166,7 +166,7 @@ class TransactionDetailScreen extends StatelessWidget {
                     decoration:
                         const InputDecoration(labelText: 'Agreed Price'),
                     keyboardType:
-                        TextInputType.numberWithOptions(decimal: true),
+                        const TextInputType.numberWithOptions(decimal: true),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter agreed price';
@@ -259,11 +259,23 @@ class TransactionDetailScreen extends StatelessWidget {
   Widget _buildTransactionDetailCard(
       BuildContext context, TransactionDetail detail) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      elevation: 3.0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
       child: ListTile(
-        title: Text('UPC: ${detail.upc}'),
-        subtitle: Text(
-            'Quantity: ${detail.quantity}\nAgreed Price: \$${detail.agreedPrice.toStringAsFixed(2)}'),
+        title: Text(
+          'UPC: ${detail.upc}',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4.0),
+            Text('Quantity: ${detail.quantity}'),
+            const SizedBox(height: 2.0),
+            Text('Agreed Price: Rp${detail.agreedPrice.toStringAsFixed(2)}'),
+          ],
+        ),
         isThreeLine: true,
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -297,6 +309,31 @@ class TransactionDetailScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildTransactionInfoRow(
+      {required String label, required String value}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 150.0,
+            child: Text(
+              label,
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 16.0),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -308,30 +345,26 @@ class TransactionDetailScreen extends StatelessWidget {
         child: Column(
           children: <Widget>[
             // Display basic transaction info
-            Text(
-              'Total Display Price: \$${transaction.totalDisplayPrice.toStringAsFixed(2)}',
-              style: const TextStyle(fontSize: 18.0),
+            _buildTransactionInfoRow(
+              label: 'Total Display Price:',
+              value: 'Rp${transaction.totalDisplayPrice.toStringAsFixed(2)}',
             ),
-            const SizedBox(height: 8.0),
-            Text(
-              'Total Agreed Price: \$${transaction.totalAgreedPrice.toStringAsFixed(2)}',
-              style: const TextStyle(fontSize: 18.0),
+            _buildTransactionInfoRow(
+              label: 'Total Agreed Price:',
+              value: 'Rp${transaction.totalAgreedPrice.toStringAsFixed(2)}',
             ),
-            const SizedBox(height: 8.0),
-            Text(
-              'Date Created: ${transaction.dateCreated.toLocal()}',
-              style: const TextStyle(fontSize: 16.0),
+            _buildTransactionInfoRow(
+              label: 'Date Created:',
+              value:
+                  '${transaction.dateCreated.toLocal().toString().split(' ')[0]}',
             ),
-            const SizedBox(height: 8.0),
-            if (transaction.note != null)
-              Text(
-                'Note: ${transaction.note}',
-                style: const TextStyle(
-                    fontSize: 16.0, fontStyle: FontStyle.italic),
+            if (transaction.note != null && transaction.note!.isNotEmpty)
+              _buildTransactionInfoRow(
+                label: 'Note:',
+                value: transaction.note!,
               ),
-            const SizedBox(height: 16.0),
+            // const SizedBox(height: 16.0),
             const Divider(),
-            const SizedBox(height: 16.0),
             // Display transaction details
             Expanded(
               child: BlocBuilder<TransactionDetailBloc, TransactionDetailState>(
