@@ -7,6 +7,8 @@ import 'package:primamobile/repository/login_repository.dart';
 import 'package:primamobile/repository/user_session_repository.dart';
 import 'package:primamobile/repository/user_repository.dart';
 import 'package:primamobile/repository/product_repository.dart';
+import 'package:primamobile/repository/transaction_repository.dart'; // Added
+import 'package:primamobile/repository/transaction_detail_repository.dart'; // Added
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -16,8 +18,10 @@ class App extends StatelessWidget {
     // Create instances of repositories
     final loginRepository = LoginRepository();
     final userSessionRepository = UserSessionRepository();
-    final userRepository = UserRepository(); // Added UserRepository
-    final productRepository = ProductRepository(); // Added ProductRepository
+    final userRepository = UserRepository();
+    final productRepository = ProductRepository();
+    final transactionRepository = TransactionRepository();
+    final transactionDetailRepository = TransactionDetailRepository();
 
     // Create an instance of AuthenticationBloc with dependencies
     final authenticationBloc = AuthenticationBloc(
@@ -29,6 +33,8 @@ class App extends StatelessWidget {
     final appRouter = AppRouter(
       authenticationBloc: authenticationBloc,
       userRepository: userRepository,
+      transactionRepository: transactionRepository,
+      transactionDetailRepository: transactionDetailRepository,
     );
 
     return MultiRepositoryProvider(
@@ -37,6 +43,8 @@ class App extends StatelessWidget {
         RepositoryProvider.value(value: userSessionRepository),
         RepositoryProvider.value(value: userRepository),
         RepositoryProvider.value(value: productRepository),
+        RepositoryProvider.value(value: transactionRepository),
+        RepositoryProvider.value(value: transactionDetailRepository),
       ],
       child: BlocProvider.value(
         value: authenticationBloc,

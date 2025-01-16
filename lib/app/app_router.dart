@@ -1,17 +1,25 @@
+// lib/app/app_router.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/authentication/bloc/authentication_bloc.dart';
 import 'package:primamobile/app/pages.dart';
 import 'package:primamobile/repository/user_repository.dart';
+import 'package:primamobile/repository/transaction_repository.dart';
+import 'package:primamobile/repository/transaction_detail_repository.dart';
 import 'package:primamobile/utils/globals.dart';
 
 class AppRouter {
   final AuthenticationBloc authenticationBloc;
   final UserRepository userRepository;
+  final TransactionRepository transactionRepository;
+  final TransactionDetailRepository transactionDetailRepository;
 
   AppRouter({
     required this.authenticationBloc,
     required this.userRepository,
+    required this.transactionRepository,
+    required this.transactionDetailRepository,
   });
 
   Route<dynamic> onGenerateRoutes(RouteSettings settings) {
@@ -32,7 +40,6 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) {
             final authState = authenticationBloc.state;
-
             if (authState is AuthenticationAuthenticated) {
               return FutureBuilder(
                 future: userRepository.fetchAndUpdateUserDetails(),
@@ -59,6 +66,7 @@ class AppRouter {
                             BlocProvider.value(
                               value: authenticationBloc,
                             ),
+                            // Add other BLoCs related to Owner here if needed
                           ],
                           child: const OwnerHomePage(),
                         );

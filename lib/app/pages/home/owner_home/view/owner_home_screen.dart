@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/bloc/owner_home_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/home/view/home_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/profile/view/profile_page.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/sales/sales_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/stock_page.dart';
 
 class OwnerHomeScreen extends StatelessWidget {
@@ -18,7 +19,7 @@ class OwnerHomeScreen extends StatelessWidget {
         final List<Widget> pages = [
           const HomePage(),
           const StockPage(),
-          const Placeholder(),
+          const SalesPage(),
           const Placeholder(),
           const ProfilePage()
         ];
