@@ -12,14 +12,14 @@ class TransactionDetailRepository {
 
   // Add a new transaction detail
   Future<void> addTransactionDetail(
-      int transactionId, TransactionDetail detail) async {
-    await _provider.addTransactionDetail(transactionId, detail);
+      int transactionId, Map<String, dynamic> fields) async {
+    await _provider.addTransactionDetail(transactionId, fields);
   }
 
   // Update an existing transaction detail
   Future<void> updateTransactionDetail(
-      int transactionId, int detailId, TransactionDetail detail) async {
-    await _provider.updateTransactionDetail(transactionId, detailId, detail);
+      int transactionId, int detailId, Map<String, dynamic> fields) async {
+    await _provider.updateTransactionDetail(transactionId, detailId, fields);
   }
 
   // Delete a transaction detail

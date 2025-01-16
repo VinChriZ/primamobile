@@ -32,8 +32,8 @@ class TransactionDetailProvider {
 
   // Add a new transaction detail
   Future<void> addTransactionDetail(
-      int transactionId, TransactionDetail detail) async {
-    final RequestParam param = RequestParam(parameters: detail.toJson());
+      int transactionId, Map<String, dynamic> fields) async {
+    final RequestParam param = RequestParam(parameters: fields);
     final RequestObject request = RequestObjectFunction(requestParam: param);
 
     try {
@@ -56,8 +56,8 @@ class TransactionDetailProvider {
 
   // Update an existing transaction detail
   Future<void> updateTransactionDetail(
-      int transactionId, int detailId, TransactionDetail detail) async {
-    final RequestParam param = RequestParam(parameters: detail.toJson());
+      int transactionId, int detailId, Map<String, dynamic> fields) async {
+    final RequestParam param = RequestParam(parameters: fields);
     final RequestObject request = RequestObjectFunction(requestParam: param);
 
     try {

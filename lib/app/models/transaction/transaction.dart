@@ -32,10 +32,8 @@ class Transaction {
     return {
       'transaction_id': transactionId,
       'total_display_price': totalDisplayPrice,
-      'total_agreed_price': totalAgreedPrice, // Include calculated field
       'date_created': dateCreated.toIso8601String(),
       if (note != null) 'note': note, // Include only if not null
-      'last_updated': lastUpdated.toIso8601String(),
     };
   }
 }

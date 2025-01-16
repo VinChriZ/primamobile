@@ -15,14 +15,14 @@ class TransactionRepository {
   }
 
   // Create a new transaction
-  Future<void> addTransaction(Transaction transaction) async {
-    await _provider.createTransaction(transaction);
+  Future<Transaction> addTransaction(Map<String, dynamic> fields) async {
+    return await _provider.createTransaction(fields);
   }
 
   // Update an existing transaction
-  Future<void> editTransaction(
-      int transactionId, Transaction transaction) async {
-    await _provider.updateTransaction(transactionId, transaction);
+  Future<Transaction> editTransaction(
+      int transactionId, Map<String, dynamic> fields) async {
+    return await _provider.updateTransaction(transactionId, fields);
   }
 
   // Delete a transaction

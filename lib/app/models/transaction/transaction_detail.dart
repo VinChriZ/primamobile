@@ -28,7 +28,6 @@ class TransactionDetail {
   // Convert TransactionDetail to JSON
   Map<String, dynamic> toJson() {
     return {
-      'detail_id': detailId, // Matches database field
       'transaction_id': transactionId, // Matches database field
       'upc': upc, // Matches database field
       'quantity': quantity, // Matches database field

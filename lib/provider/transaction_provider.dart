@@ -56,8 +56,8 @@ class TransactionProvider {
   }
 
   // Create a new transaction
-  Future<Transaction> createTransaction(Transaction transaction) async {
-    final RequestParam param = RequestParam(parameters: transaction.toJson());
+  Future<Transaction> createTransaction(Map<String, dynamic> fields) async {
+    final RequestParam param = RequestParam(parameters: fields);
     final RequestObject request = RequestObjectFunction(requestParam: param);
 
     try {
@@ -83,8 +83,8 @@ class TransactionProvider {
 
   // Update an existing transaction
   Future<Transaction> updateTransaction(
-      int transactionId, Transaction transaction) async {
-    final RequestParam param = RequestParam(parameters: transaction.toJson());
+      int transactionId, Map<String, dynamic> fields) async {
+    final RequestParam param = RequestParam(parameters: fields);
     final RequestObject request = RequestObjectFunction(requestParam: param);
 
     try {
