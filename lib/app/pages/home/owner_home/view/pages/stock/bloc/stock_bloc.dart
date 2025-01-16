@@ -146,19 +146,22 @@ class StockBloc extends Bloc<StockEvent, StockState> {
     if (state is StockLoaded) {
       final currentState = state as StockLoaded;
 
-      String? category = event.category ?? currentState.selectedCategory;
-      String? brand = event.brand ?? currentState.selectedBrand;
+      // The UI will pass both category and brand every time a dropdown changes,
+      // so we can use them directly.
+      final String? category = event.category;
+      final String? brand = event.brand;
 
+      // Start with all products
       List<Product> filteredProducts = currentState.allProducts;
 
-      // Apply category filter if selected
+      // Filter by category if not null
       if (category != null) {
         filteredProducts = filteredProducts.where((product) {
           return product.category == category;
         }).toList();
       }
 
-      // Apply brand filter if selected
+      // Filter by brand if not null
       if (brand != null) {
         filteredProducts = filteredProducts.where((product) {
           return product.brand == brand;
@@ -174,17 +177,20 @@ class StockBloc extends Bloc<StockEvent, StockState> {
         }).toList();
       }
 
-      // Apply sorting
+      // Apply sorting if any
       if (currentState.sortOption != null) {
         filteredProducts =
             _applySorting(filteredProducts, currentState.sortOption!);
       }
 
-      emit(currentState.copyWith(
-        displayedProducts: filteredProducts,
-        selectedCategory: category,
-        selectedBrand: brand,
-      ));
+      // Emit new state with updated filters
+      emit(
+        currentState.copyWith(
+          displayedProducts: filteredProducts,
+          selectedCategory: category,
+          selectedBrand: brand,
+        ),
+      );
     }
   }
 

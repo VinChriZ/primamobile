@@ -14,7 +14,7 @@ class StockScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Stock')),
       body: Column(
         children: [
-          // Search Field
+          // SEARCH FIELD
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
@@ -35,13 +35,14 @@ class StockScreen extends StatelessWidget {
               ),
             ),
           ),
-          // Horizontally Scrollable Filters and Sort Options
+
+          // FILTERS + SORT IN A ROW
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Row(
               children: [
-                // Category Dropdown
+                // CATEGORY DROPDOWN
                 BlocBuilder<StockBloc, StockState>(
                   builder: (context, state) {
                     if (state is StockLoading) {
@@ -51,15 +52,21 @@ class StockScreen extends StatelessWidget {
                       );
                     } else if (state is StockLoaded) {
                       return DropdownButton<String>(
-                        isExpanded: false,
-                        hint: const Text('Select Category'),
+                        // If selectedCategory is null, the dropdown shows "All Categories"
                         value: state.selectedCategory,
+                        hint: const Text('Select Category'),
                         onChanged: (value) {
+                          // Preserve existing brand when changing category
+                          final currentBrand = state.selectedBrand;
                           context.read<StockBloc>().add(
-                                FilterProducts(category: value),
+                                FilterProducts(
+                                  category: value, // new category or null
+                                  brand: currentBrand, // keep current brand
+                                ),
                               );
                         },
                         items: [
+                          // "All Categories" -> value = null
                           const DropdownMenuItem(
                             value: null,
                             child: Text('All Categories'),
@@ -77,7 +84,8 @@ class StockScreen extends StatelessWidget {
                   },
                 ),
                 const SizedBox(width: 16.0),
-                // Brand Dropdown
+
+                // BRAND DROPDOWN
                 BlocBuilder<StockBloc, StockState>(
                   builder: (context, state) {
                     if (state is StockLoading) {
@@ -87,15 +95,22 @@ class StockScreen extends StatelessWidget {
                       );
                     } else if (state is StockLoaded) {
                       return DropdownButton<String>(
-                        isExpanded: false,
-                        hint: const Text('Select Brand'),
+                        // If selectedBrand is null, the dropdown shows "All Brands"
                         value: state.selectedBrand,
+                        hint: const Text('Select Brand'),
                         onChanged: (value) {
+                          // Preserve existing category when changing brand
+                          final currentCategory = state.selectedCategory;
                           context.read<StockBloc>().add(
-                                FilterProducts(brand: value),
+                                FilterProducts(
+                                  category:
+                                      currentCategory, // keep current category
+                                  brand: value, // new brand or null
+                                ),
                               );
                         },
                         items: [
+                          // "All Brands" -> value = null
                           const DropdownMenuItem(
                             value: null,
                             child: Text('All Brands'),
@@ -113,35 +128,38 @@ class StockScreen extends StatelessWidget {
                   },
                 ),
                 const SizedBox(width: 16.0),
-                // Sort Dropdown
+
+                // SORT DROPDOWN
                 BlocBuilder<StockBloc, StockState>(
                   builder: (context, state) {
                     if (state is StockLoaded) {
                       return DropdownButton<String>(
-                        isExpanded: false,
                         value: state.sortOption ?? 'Last Updated',
                         onChanged: (value) {
                           if (value != null) {
                             context.read<StockBloc>().add(SortProducts(value));
                           }
                         },
-                        items: ['Lowest Stock', 'Highest Stock', 'Last Updated']
-                            .map((option) => DropdownMenuItem(
-                                  value: option,
-                                  child: Text(option),
-                                ))
-                            .toList(),
+                        items: [
+                          'Lowest Stock',
+                          'Highest Stock',
+                          'Last Updated',
+                        ].map((option) {
+                          return DropdownMenuItem(
+                            value: option,
+                            child: Text(option),
+                          );
+                        }).toList(),
                       );
                     }
                     return const SizedBox.shrink();
                   },
                 ),
-                const SizedBox(width: 16.0),
-                // Optional: Add more filters or buttons here
               ],
             ),
           ),
-          // Product List
+
+          // PRODUCT LIST
           Expanded(
             child: BlocBuilder<StockBloc, StockState>(
               builder: (context, stockState) {
@@ -163,7 +181,8 @@ class StockScreen extends StatelessWidget {
                         child: ListTile(
                           title: Text(product.name),
                           subtitle: Text(
-                              'UPC: ${product.upc}\nStock: ${product.stock}'),
+                            'UPC: ${product.upc}\nStock: ${product.stock}',
+                          ),
                           onTap: () {
                             Navigator.push(
                               context,
@@ -176,6 +195,7 @@ class StockScreen extends StatelessWidget {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              // EDIT BUTTON
                               IconButton(
                                 icon:
                                     const Icon(Icons.edit, color: Colors.blue),
@@ -192,19 +212,19 @@ class StockScreen extends StatelessWidget {
                                   );
                                 },
                               ),
+                              // DELETE BUTTON
                               IconButton(
                                 icon:
                                     const Icon(Icons.delete, color: Colors.red),
                                 onPressed: () {
-                                  // Confirm deletion with the user before deleting
                                   final stockBloc = context.read<StockBloc>();
-
                                   showDialog(
                                     context: context,
                                     builder: (dialogContext) => AlertDialog(
                                       title: const Text('Delete Product'),
                                       content: const Text(
-                                          'Are you sure you want to delete this product?'),
+                                        'Are you sure you want to delete this product?',
+                                      ),
                                       actions: [
                                         TextButton(
                                           onPressed: () =>
@@ -231,6 +251,7 @@ class StockScreen extends StatelessWidget {
                     },
                   );
                 }
+                // If not StockLoaded, show fallback
                 return const Center(child: Text('No products found.'));
               },
             ),
