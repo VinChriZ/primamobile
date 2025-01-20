@@ -84,8 +84,7 @@ class _AddProductPageState extends State<AddProductPage> {
         brand: _brandController.text,
         imageUrl: _imageUrlController.text.isNotEmpty
             ? _imageUrlController.text
-            : null, // Handle optional image URL
-        lastUpdated: DateTime.now(), // Add current timestamp for lastUpdated
+            : null,
       );
 
       // Use StockBloc to handle adding the product
