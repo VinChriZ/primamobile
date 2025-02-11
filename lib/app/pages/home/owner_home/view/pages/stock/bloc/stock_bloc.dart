@@ -145,52 +145,48 @@ class StockBloc extends Bloc<StockEvent, StockState> {
   void _onFilterProducts(FilterProducts event, Emitter<StockState> emit) {
     if (state is StockLoaded) {
       final currentState = state as StockLoaded;
+      // Use the provided values (they will be non-null)
+      final String selectedCategory = event.category;
+      final String selectedBrand = event.brand;
 
-      // The UI will pass both category and brand every time a dropdown changes,
-      // so we can use them directly.
-      final String? category = event.category;
-      final String? brand = event.brand;
-
-      // Start with all products
+      // Start filtering from the master list
       List<Product> filteredProducts = currentState.allProducts;
 
-      // Filter by category if not null
-      if (category != null) {
-        filteredProducts = filteredProducts.where((product) {
-          return product.category == category;
-        }).toList();
+      // Apply category filter only if a specific category is selected.
+      if (selectedCategory != "All Categories") {
+        filteredProducts = filteredProducts
+            .where((product) => product.category == selectedCategory)
+            .toList();
       }
 
-      // Filter by brand if not null
-      if (brand != null) {
-        filteredProducts = filteredProducts.where((product) {
-          return product.brand == brand;
-        }).toList();
+      // Apply brand filter only if a specific brand is selected.
+      if (selectedBrand != "All Brands") {
+        filteredProducts = filteredProducts
+            .where((product) => product.brand == selectedBrand)
+            .toList();
       }
 
-      // Apply search filter if any
+      // Apply search filter if available
       if (currentState.searchQuery != null &&
           currentState.searchQuery!.trim().isNotEmpty) {
         final query = currentState.searchQuery!.trim().toLowerCase();
-        filteredProducts = filteredProducts.where((product) {
-          return product.name.toLowerCase().contains(query);
-        }).toList();
+        filteredProducts = filteredProducts
+            .where((product) => product.name.toLowerCase().contains(query))
+            .toList();
       }
 
-      // Apply sorting if any
+      // Apply sorting if available
       if (currentState.sortOption != null) {
         filteredProducts =
             _applySorting(filteredProducts, currentState.sortOption!);
       }
 
-      // Emit new state with updated filters
-      emit(
-        currentState.copyWith(
-          displayedProducts: filteredProducts,
-          selectedCategory: category,
-          selectedBrand: brand,
-        ),
-      );
+      // Emit new state with the sentinel values
+      emit(currentState.copyWith(
+        displayedProducts: filteredProducts,
+        selectedCategory: selectedCategory,
+        selectedBrand: selectedBrand,
+      ));
     }
   }
 

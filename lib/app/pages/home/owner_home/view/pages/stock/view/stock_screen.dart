@@ -52,37 +52,40 @@ class StockScreen extends StatelessWidget {
                       );
                     } else if (state is StockLoaded) {
                       return DropdownButton<String>(
-                        // If selectedCategory is null, the dropdown shows "All Categories"
-                        value: state.selectedCategory,
+                        // If no category is selected, default to "All Categories"
+                        value: state.selectedCategory ?? "All Categories",
                         hint: const Text('Select Category'),
                         onChanged: (value) {
                           // Preserve existing brand when changing category
-                          final currentBrand = state.selectedBrand;
+                          final currentBrand =
+                              state.selectedBrand ?? "All Brands";
+                          // Send the new filter event with the chosen category
                           context.read<StockBloc>().add(
                                 FilterProducts(
-                                  category: value, // new category or null
-                                  brand: currentBrand, // keep current brand
+                                  category: value!, // value is non-null here
+                                  brand: currentBrand,
                                 ),
                               );
                         },
                         items: [
-                          // "All Categories" -> value = null
+                          // Sentinel item for all categories
                           const DropdownMenuItem(
-                            value: null,
-                            child: Text('All Categories'),
+                            value: "All Categories",
+                            child: Text("All Categories"),
                           ),
                           ...state.categories.map((category) {
                             return DropdownMenuItem(
                               value: category,
                               child: Text(category),
                             );
-                          }).toList(),
+                          }),
                         ],
                       );
                     }
                     return const SizedBox.shrink();
                   },
                 ),
+
                 const SizedBox(width: 16.0),
 
                 // BRAND DROPDOWN
@@ -95,38 +98,39 @@ class StockScreen extends StatelessWidget {
                       );
                     } else if (state is StockLoaded) {
                       return DropdownButton<String>(
-                        // If selectedBrand is null, the dropdown shows "All Brands"
-                        value: state.selectedBrand,
+                        // If no brand is selected, default to "All Brands"
+                        value: state.selectedBrand ?? "All Brands",
                         hint: const Text('Select Brand'),
                         onChanged: (value) {
                           // Preserve existing category when changing brand
-                          final currentCategory = state.selectedCategory;
+                          final currentCategory =
+                              state.selectedCategory ?? "All Categories";
                           context.read<StockBloc>().add(
                                 FilterProducts(
-                                  category:
-                                      currentCategory, // keep current category
-                                  brand: value, // new brand or null
+                                  category: currentCategory,
+                                  brand: value!, // value is non-null here
                                 ),
                               );
                         },
                         items: [
-                          // "All Brands" -> value = null
+                          // Sentinel item for all brands
                           const DropdownMenuItem(
-                            value: null,
-                            child: Text('All Brands'),
+                            value: "All Brands",
+                            child: Text("All Brands"),
                           ),
                           ...state.brands.map((brand) {
                             return DropdownMenuItem(
                               value: brand,
                               child: Text(brand),
                             );
-                          }).toList(),
+                          }),
                         ],
                       );
                     }
                     return const SizedBox.shrink();
                   },
                 ),
+
                 const SizedBox(width: 16.0),
 
                 // SORT DROPDOWN
@@ -234,7 +238,8 @@ class StockScreen extends StatelessWidget {
                                         TextButton(
                                           onPressed: () {
                                             stockBloc.add(
-                                                DeleteProduct(product.upc));
+                                              DeleteProduct(product.upc),
+                                            );
                                             Navigator.of(dialogContext).pop();
                                           },
                                           child: const Text('Delete'),

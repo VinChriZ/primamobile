@@ -42,10 +42,10 @@ class SearchProducts extends StockEvent {
 
 // Filter products by category and/or brand
 class FilterProducts extends StockEvent {
-  final String? category;
-  final String? brand;
+  final String category; // now required and non-null
+  final String brand; // now required and non-null
 
-  const FilterProducts({this.category, this.brand});
+  const FilterProducts({required this.category, required this.brand});
 
   @override
   List<Object?> get props => [category, brand];
