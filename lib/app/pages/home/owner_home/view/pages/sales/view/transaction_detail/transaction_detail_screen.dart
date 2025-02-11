@@ -15,100 +15,107 @@ class TransactionDetailScreen extends StatelessWidget {
     int quantity = 1;
     double agreedPrice = 0.0;
 
+    // Capture the current TransactionDetailBloc instance.
+    final transactionDetailBloc = context.read<TransactionDetailBloc>();
+
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Add Transaction Detail'),
-          content: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  TextFormField(
-                    decoration: const InputDecoration(labelText: 'UPC'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter UPC';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      upc = value!;
-                    },
-                  ),
-                  TextFormField(
-                    decoration: const InputDecoration(labelText: 'Quantity'),
-                    keyboardType: TextInputType.number,
-                    initialValue: '1',
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter quantity';
-                      }
-                      if (int.tryParse(value) == null ||
-                          int.parse(value) <= 0) {
-                        return 'Enter a valid quantity';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      quantity = int.parse(value!);
-                    },
-                  ),
-                  TextFormField(
-                    decoration:
-                        const InputDecoration(labelText: 'Agreed Price'),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter agreed price';
-                      }
-                      if (double.tryParse(value) == null ||
-                          double.parse(value) <= 0) {
-                        return 'Enter a valid price';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      agreedPrice = double.parse(value!);
-                    },
-                  ),
-                ],
+      builder: (BuildContext dialogContext) {
+        // Wrap the dialog with BlocProvider.value to pass the bloc instance.
+        return BlocProvider.value(
+          value: transactionDetailBloc,
+          child: AlertDialog(
+            title: const Text('Add Transaction Detail'),
+            content: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    TextFormField(
+                      decoration: const InputDecoration(labelText: 'UPC'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter UPC';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        upc = value!;
+                      },
+                    ),
+                    TextFormField(
+                      decoration: const InputDecoration(labelText: 'Quantity'),
+                      keyboardType: TextInputType.number,
+                      initialValue: '1',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter quantity';
+                        }
+                        if (int.tryParse(value) == null ||
+                            int.parse(value) <= 0) {
+                          return 'Enter a valid quantity';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        quantity = int.parse(value!);
+                      },
+                    ),
+                    TextFormField(
+                      decoration:
+                          const InputDecoration(labelText: 'Agreed Price'),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter agreed price';
+                        }
+                        if (double.tryParse(value) == null ||
+                            double.parse(value) <= 0) {
+                          return 'Enter a valid price';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        agreedPrice = double.parse(value!);
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
+                    // Dispatch AddTransactionDetail event using the captured bloc.
+                    transactionDetailBloc.add(
+                      AddTransactionDetail(
+                        transactionId,
+                        {
+                          'upc': upc,
+                          'quantity': quantity,
+                          'agreed_price': agreedPrice,
+                        },
+                      ),
+                    );
+                    Navigator.of(dialogContext).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content:
+                              Text('Transaction detail added successfully.')),
+                    );
+                  }
+                },
+                child: const Text('Add'),
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  _formKey.currentState!.save();
-                  // Dispatch AddTransactionDetail event
-                  context.read<TransactionDetailBloc>().add(
-                        AddTransactionDetail(
-                          transactionId,
-                          {
-                            'upc': upc,
-                            'quantity': quantity,
-                            'agreed_price': agreedPrice,
-                          },
-                        ),
-                      );
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content:
-                            Text('Transaction detail added successfully.')),
-                  );
-                }
-              },
-              child: const Text('Add'),
-            ),
-          ],
         );
       },
     );
@@ -120,103 +127,108 @@ class TransactionDetailScreen extends StatelessWidget {
     int quantity = detail.quantity;
     double agreedPrice = detail.agreedPrice;
 
+    final transactionDetailBloc = context.read<TransactionDetailBloc>();
+
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Edit Transaction Detail'),
-          content: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  TextFormField(
-                    initialValue: detail.upc,
-                    decoration: const InputDecoration(labelText: 'UPC'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter UPC';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      upc = value!;
-                    },
-                  ),
-                  TextFormField(
-                    initialValue: detail.quantity.toString(),
-                    decoration: const InputDecoration(labelText: 'Quantity'),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter quantity';
-                      }
-                      if (int.tryParse(value) == null ||
-                          int.parse(value) <= 0) {
-                        return 'Enter a valid quantity';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      quantity = int.parse(value!);
-                    },
-                  ),
-                  TextFormField(
-                    initialValue: detail.agreedPrice.toStringAsFixed(2),
-                    decoration:
-                        const InputDecoration(labelText: 'Agreed Price'),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter agreed price';
-                      }
-                      if (double.tryParse(value) == null ||
-                          double.parse(value) <= 0) {
-                        return 'Enter a valid price';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      agreedPrice = double.parse(value!);
-                    },
-                  ),
-                ],
+      builder: (BuildContext dialogContext) {
+        return BlocProvider.value(
+          value: transactionDetailBloc,
+          child: AlertDialog(
+            title: const Text('Edit Transaction Detail'),
+            content: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    TextFormField(
+                      initialValue: detail.upc,
+                      decoration: const InputDecoration(labelText: 'UPC'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter UPC';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        upc = value!;
+                      },
+                    ),
+                    TextFormField(
+                      initialValue: detail.quantity.toString(),
+                      decoration: const InputDecoration(labelText: 'Quantity'),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter quantity';
+                        }
+                        if (int.tryParse(value) == null ||
+                            int.parse(value) <= 0) {
+                          return 'Enter a valid quantity';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        quantity = int.parse(value!);
+                      },
+                    ),
+                    TextFormField(
+                      initialValue: detail.agreedPrice.toStringAsFixed(2),
+                      decoration:
+                          const InputDecoration(labelText: 'Agreed Price'),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter agreed price';
+                        }
+                        if (double.tryParse(value) == null ||
+                            double.parse(value) <= 0) {
+                          return 'Enter a valid price';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        agreedPrice = double.parse(value!);
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
+                    // Dispatch UpdateTransactionDetail event using the captured bloc.
+                    transactionDetailBloc.add(
+                      UpdateTransactionDetail(
+                        transaction.transactionId,
+                        detail.detailId,
+                        {
+                          'upc': upc,
+                          'quantity': quantity,
+                          'agreed_price': agreedPrice,
+                        },
+                      ),
+                    );
+                    Navigator.of(dialogContext).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content:
+                              Text('Transaction detail updated successfully.')),
+                    );
+                  }
+                },
+                child: const Text('Update'),
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  _formKey.currentState!.save();
-                  // Dispatch UpdateTransactionDetail event
-                  context.read<TransactionDetailBloc>().add(
-                        UpdateTransactionDetail(
-                          transaction.transactionId,
-                          detail.detailId,
-                          {
-                            'upc': upc,
-                            'quantity': quantity,
-                            'agreed_price': agreedPrice,
-                          },
-                        ),
-                      );
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content:
-                            Text('Transaction detail updated successfully.')),
-                  );
-                }
-              },
-              child: const Text('Update'),
-            ),
-          ],
         );
       },
     );
@@ -224,33 +236,37 @@ class TransactionDetailScreen extends StatelessWidget {
 
   void _showDeleteDetailConfirmation(
       BuildContext context, int transactionId, int detailId) {
+    final transactionDetailBloc = context.read<TransactionDetailBloc>();
+
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Delete Transaction Detail'),
-          content: const Text(
-              'Are you sure you want to delete this transaction detail?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                context
-                    .read<TransactionDetailBloc>()
-                    .add(DeleteTransactionDetail(transactionId, detailId));
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content:
-                          Text('Transaction detail deleted successfully.')),
-                );
-              },
-              child: const Text('Delete'),
-            ),
-          ],
+      builder: (BuildContext dialogContext) {
+        return BlocProvider.value(
+          value: transactionDetailBloc,
+          child: AlertDialog(
+            title: const Text('Delete Transaction Detail'),
+            content: const Text(
+                'Are you sure you want to delete this transaction detail?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  transactionDetailBloc
+                      .add(DeleteTransactionDetail(transactionId, detailId));
+                  Navigator.of(dialogContext).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content:
+                            Text('Transaction detail deleted successfully.')),
+                  );
+                },
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -363,7 +379,6 @@ class TransactionDetailScreen extends StatelessWidget {
                 label: 'Note:',
                 value: transaction.note!,
               ),
-            // const SizedBox(height: 16.0),
             const Divider(),
             // Display transaction details
             Expanded(
