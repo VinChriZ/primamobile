@@ -105,35 +105,39 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       final currentState = state as StockLoaded;
       final query = event.query.trim().toLowerCase();
 
+      // Start with the master list of products.
       List<Product> filteredProducts = currentState.allProducts;
 
-      // Apply search filter
+      // Apply the search filter if the query is not empty.
       if (query.isNotEmpty) {
         filteredProducts = filteredProducts.where((product) {
           return product.name.toLowerCase().contains(query);
         }).toList();
       }
 
-      // Apply category filter if any
-      if (currentState.selectedCategory != null) {
+      // Only filter by category if a specific category is selected.
+      // Here, "All Categories" is our sentinel value meaning no filtering.
+      if (currentState.selectedCategory != "All Categories") {
         filteredProducts = filteredProducts.where((product) {
           return product.category == currentState.selectedCategory;
         }).toList();
       }
 
-      // Apply brand filter if any
-      if (currentState.selectedBrand != null) {
+      // Only filter by brand if a specific brand is selected.
+      // "All Brands" means no filtering.
+      if (currentState.selectedBrand != "All Brands") {
         filteredProducts = filteredProducts.where((product) {
           return product.brand == currentState.selectedBrand;
         }).toList();
       }
 
-      // Apply sorting
+      // Apply sorting if available.
       if (currentState.sortOption != null) {
         filteredProducts =
             _applySorting(filteredProducts, currentState.sortOption!);
       }
 
+      // Emit the updated state.
       emit(currentState.copyWith(
         displayedProducts: filteredProducts,
         searchQuery: event.query,
