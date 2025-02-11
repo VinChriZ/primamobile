@@ -9,19 +9,17 @@ class TransactionDetailScreen extends StatelessWidget {
 
   const TransactionDetailScreen({super.key, required this.transaction});
 
+  /// Dialog for adding a new detail
   void _showAddDetailDialog(BuildContext context, int transactionId) {
     final _formKey = GlobalKey<FormState>();
     String upc = '';
     int quantity = 1;
     double agreedPrice = 0.0;
-
-    // Capture the current TransactionDetailBloc instance.
     final transactionDetailBloc = context.read<TransactionDetailBloc>();
 
     showDialog(
       context: context,
-      builder: (BuildContext dialogContext) {
-        // Wrap the dialog with BlocProvider.value to pass the bloc instance.
+      builder: (dialogContext) {
         return BlocProvider.value(
           value: transactionDetailBloc,
           child: AlertDialog(
@@ -39,9 +37,7 @@ class TransactionDetailScreen extends StatelessWidget {
                         }
                         return null;
                       },
-                      onSaved: (value) {
-                        upc = value!;
-                      },
+                      onSaved: (value) => upc = value!,
                     ),
                     TextFormField(
                       decoration: const InputDecoration(labelText: 'Quantity'),
@@ -57,9 +53,7 @@ class TransactionDetailScreen extends StatelessWidget {
                         }
                         return null;
                       },
-                      onSaved: (value) {
-                        quantity = int.parse(value!);
-                      },
+                      onSaved: (value) => quantity = int.parse(value!),
                     ),
                     TextFormField(
                       decoration:
@@ -76,9 +70,7 @@ class TransactionDetailScreen extends StatelessWidget {
                         }
                         return null;
                       },
-                      onSaved: (value) {
-                        agreedPrice = double.parse(value!);
-                      },
+                      onSaved: (value) => agreedPrice = double.parse(value!),
                     ),
                   ],
                 ),
@@ -93,7 +85,6 @@ class TransactionDetailScreen extends StatelessWidget {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
-                    // Dispatch AddTransactionDetail event using the captured bloc.
                     transactionDetailBloc.add(
                       AddTransactionDetail(
                         transactionId,
@@ -107,8 +98,8 @@ class TransactionDetailScreen extends StatelessWidget {
                     Navigator.of(dialogContext).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content:
-                              Text('Transaction detail added successfully.')),
+                        content: Text('Transaction detail added successfully.'),
+                      ),
                     );
                   }
                 },
@@ -121,17 +112,17 @@ class TransactionDetailScreen extends StatelessWidget {
     );
   }
 
+  /// Dialog for editing an existing detail
   void _showEditDetailDialog(BuildContext context, TransactionDetail detail) {
     final _formKey = GlobalKey<FormState>();
     String upc = detail.upc;
     int quantity = detail.quantity;
     double agreedPrice = detail.agreedPrice;
-
     final transactionDetailBloc = context.read<TransactionDetailBloc>();
 
     showDialog(
       context: context,
-      builder: (BuildContext dialogContext) {
+      builder: (dialogContext) {
         return BlocProvider.value(
           value: transactionDetailBloc,
           child: AlertDialog(
@@ -150,9 +141,7 @@ class TransactionDetailScreen extends StatelessWidget {
                         }
                         return null;
                       },
-                      onSaved: (value) {
-                        upc = value!;
-                      },
+                      onSaved: (value) => upc = value!,
                     ),
                     TextFormField(
                       initialValue: detail.quantity.toString(),
@@ -168,9 +157,7 @@ class TransactionDetailScreen extends StatelessWidget {
                         }
                         return null;
                       },
-                      onSaved: (value) {
-                        quantity = int.parse(value!);
-                      },
+                      onSaved: (value) => quantity = int.parse(value!),
                     ),
                     TextFormField(
                       initialValue: detail.agreedPrice.toStringAsFixed(2),
@@ -188,9 +175,7 @@ class TransactionDetailScreen extends StatelessWidget {
                         }
                         return null;
                       },
-                      onSaved: (value) {
-                        agreedPrice = double.parse(value!);
-                      },
+                      onSaved: (value) => agreedPrice = double.parse(value!),
                     ),
                   ],
                 ),
@@ -205,7 +190,7 @@ class TransactionDetailScreen extends StatelessWidget {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
-                    // Dispatch UpdateTransactionDetail event using the captured bloc.
+                    // Use the original transaction's ID for updating.
                     transactionDetailBloc.add(
                       UpdateTransactionDetail(
                         transaction.transactionId,
@@ -234,13 +219,14 @@ class TransactionDetailScreen extends StatelessWidget {
     );
   }
 
+  /// Confirmation dialog for deleting a detail
   void _showDeleteDetailConfirmation(
       BuildContext context, int transactionId, int detailId) {
     final transactionDetailBloc = context.read<TransactionDetailBloc>();
 
     showDialog(
       context: context,
-      builder: (BuildContext dialogContext) {
+      builder: (dialogContext) {
         return BlocProvider.value(
           value: transactionDetailBloc,
           child: AlertDialog(
@@ -272,8 +258,9 @@ class TransactionDetailScreen extends StatelessWidget {
     );
   }
 
+  /// Builds a single detail card
   Widget _buildTransactionDetailCard(
-      BuildContext context, TransactionDetail detail) {
+      BuildContext context, TransactionDetail detail, int transactionId) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       elevation: 3.0,
@@ -303,7 +290,7 @@ class TransactionDetailScreen extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.delete, color: Colors.red),
               onPressed: () => _showDeleteDetailConfirmation(
-                  context, transaction.transactionId, detail.detailId),
+                  context, transactionId, detail.detailId),
             ),
           ],
         ),
@@ -311,8 +298,9 @@ class TransactionDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTransactionDetailsList(
-      BuildContext context, List<TransactionDetail> details) {
+  /// Builds the list of transaction details
+  Widget _buildTransactionDetailsList(BuildContext context,
+      List<TransactionDetail> details, int transactionId) {
     if (details.isEmpty) {
       return const Center(child: Text('No transaction details available.'));
     }
@@ -320,11 +308,12 @@ class TransactionDetailScreen extends StatelessWidget {
       itemCount: details.length,
       itemBuilder: (context, index) {
         final detail = details[index];
-        return _buildTransactionDetailCard(context, detail);
+        return _buildTransactionDetailCard(context, detail, transactionId);
       },
     );
   }
 
+  /// Utility to build a row for transaction header information
   Widget _buildTransactionInfoRow(
       {required String label, required String value}) {
     return Padding(
@@ -356,48 +345,53 @@ class TransactionDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Transaction #${transaction.transactionId} Details'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: <Widget>[
-            // Display basic transaction info
-            _buildTransactionInfoRow(
-              label: 'Total Display Price:',
-              value: 'Rp${transaction.totalDisplayPrice.toStringAsFixed(2)}',
-            ),
-            _buildTransactionInfoRow(
-              label: 'Total Agreed Price:',
-              value: 'Rp${transaction.totalAgreedPrice.toStringAsFixed(2)}',
-            ),
-            _buildTransactionInfoRow(
-              label: 'Date Created:',
-              value:
-                  '${transaction.dateCreated.toLocal().toString().split(' ')[0]}',
-            ),
-            if (transaction.note != null && transaction.note!.isNotEmpty)
-              _buildTransactionInfoRow(
-                label: 'Note:',
-                value: transaction.note!,
+      body: BlocBuilder<TransactionDetailBloc, TransactionDetailState>(
+        builder: (context, state) {
+          if (state is TransactionDetailLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is TransactionDetailLoaded) {
+            // Use the updated header info from the bloc state.
+            final updatedTransaction = state.transaction;
+            final details = state.details;
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: <Widget>[
+                  _buildTransactionInfoRow(
+                    label: 'Total Display Price:',
+                    value:
+                        'Rp${updatedTransaction.totalDisplayPrice.toStringAsFixed(2)}',
+                  ),
+                  _buildTransactionInfoRow(
+                    label: 'Total Agreed Price:',
+                    value:
+                        'Rp${updatedTransaction.totalAgreedPrice.toStringAsFixed(2)}',
+                  ),
+                  _buildTransactionInfoRow(
+                    label: 'Date Created:',
+                    value:
+                        '${updatedTransaction.dateCreated.toLocal().toString().split(' ')[0]}',
+                  ),
+                  if (updatedTransaction.note != null &&
+                      updatedTransaction.note!.isNotEmpty)
+                    _buildTransactionInfoRow(
+                      label: 'Note:',
+                      value: updatedTransaction.note!,
+                    ),
+                  const Divider(),
+                  Expanded(
+                    child: _buildTransactionDetailsList(
+                        context, details, updatedTransaction.transactionId),
+                  ),
+                ],
               ),
-            const Divider(),
-            // Display transaction details
-            Expanded(
-              child: BlocBuilder<TransactionDetailBloc, TransactionDetailState>(
-                builder: (context, state) {
-                  if (state is TransactionDetailLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (state is TransactionDetailLoaded) {
-                    return _buildTransactionDetailsList(context, state.details);
-                  } else if (state is TransactionDetailError) {
-                    return Center(child: Text(state.message));
-                  } else {
-                    return const Center(child: Text('Unknown state.'));
-                  }
-                },
-              ),
-            ),
-          ],
-        ),
+            );
+          } else if (state is TransactionDetailError) {
+            return Center(child: Text(state.message));
+          } else {
+            return const Center(child: Text('Unknown state.'));
+          }
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () =>

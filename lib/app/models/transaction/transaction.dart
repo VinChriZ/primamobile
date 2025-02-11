@@ -31,7 +31,6 @@ class Transaction {
   Map<String, dynamic> toJson() {
     return {
       'transaction_id': transactionId,
-      'total_display_price': totalDisplayPrice,
       'date_created': dateCreated.toIso8601String(),
       if (note != null) 'note': note, // Include only if not null
     };

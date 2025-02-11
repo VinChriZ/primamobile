@@ -11,13 +11,18 @@ class TransactionDetailInitial extends TransactionDetailState {}
 
 class TransactionDetailLoading extends TransactionDetailState {}
 
+// Updated state: includes both the transaction header and its details
 class TransactionDetailLoaded extends TransactionDetailState {
+  final Transaction transaction; // Updated header info
   final List<TransactionDetail> details;
 
-  const TransactionDetailLoaded(this.details);
+  const TransactionDetailLoaded({
+    required this.transaction,
+    required this.details,
+  });
 
   @override
-  List<Object> get props => [details];
+  List<Object> get props => [transaction, details];
 }
 
 class TransactionDetailError extends TransactionDetailState {
