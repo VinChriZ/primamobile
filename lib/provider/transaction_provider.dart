@@ -10,7 +10,7 @@ class TransactionProvider {
 
     try {
       final response = await dioClient.get(
-        '/transactions',
+        '/transactions/',
         queryParameters: await request.toJson(),
       );
       print('Get Transactions Response: ${response.data}');
