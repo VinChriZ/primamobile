@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/models/transaction/transaction.dart';
 import 'package:primamobile/app/models/transaction/transaction_detail.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/bloc/transaction_detail/transaction_detail_bloc.dart';
+import 'package:primamobile/repository/product_repository.dart';
 
 class TransactionDetailScreen extends StatelessWidget {
   final Transaction transaction;
@@ -50,9 +51,10 @@ class TransactionDetailScreen extends StatelessWidget {
     );
   }
 
-  /// Builds a single detail card with edit and delete buttons at the bottom.
   Widget _buildTransactionDetailCard(
       BuildContext context, TransactionDetail detail, int transactionId) {
+    final productRepository = RepositoryProvider.of<ProductRepository>(context);
+
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       elevation: 3.0,
@@ -62,23 +64,51 @@ class TransactionDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product info.
-            Text(
-              'UPC: ${detail.upc}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            FutureBuilder(
+              future: productRepository.fetchProduct(detail.upc),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Text(
+                    'Loading...',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  );
+                } else if (snapshot.hasError) {
+                  // Optionally, display an error message or fallback to UPC
+                  return Text(
+                    'Error: ${snapshot.error}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  );
+                } else if (snapshot.hasData) {
+                  // Assuming the Product model has a 'name' field
+                  final product = snapshot.data!;
+                  return Text(
+                    product.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  );
+                } else {
+                  // Fallback in case no data is returned
+                  return Text(
+                    detail.upc,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  );
+                }
+              },
             ),
             const SizedBox(height: 4.0),
             Text('Quantity: ${detail.quantity}'),
             const SizedBox(height: 2.0),
             Text('Agreed Price: Rp${detail.agreedPrice.toStringAsFixed(0)}'),
             const SizedBox(height: 12.0),
-            // Row with Edit and Delete buttons side by side.
+            // Row with Edit and Delete buttons
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => _showEditDetailDialog(context, detail),
-                    child: const Text('Edit'),
+                    child: const Text(
+                      'Edit',
+                      style: TextStyle(color: Colors.black),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8.0),
@@ -89,7 +119,10 @@ class TransactionDetailScreen extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                     ),
-                    child: const Text('Delete'),
+                    child: const Text(
+                      'Delete',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
               ],
