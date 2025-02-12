@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/models/transaction/transaction.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/bloc/sales/sales_bloc.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/sales/sales_edit.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/transaction_detail/transaction_detail_page.dart';
 
 class SalesScreen extends StatelessWidget {
@@ -14,6 +15,19 @@ class SalesScreen extends StatelessWidget {
         builder: (context) => TransactionDetailPage(transaction: transaction),
       ),
     );
+  }
+
+  void _navigateToEdit(BuildContext context, Transaction transaction) async {
+    final updatedTransaction = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SalesEdit(transaction: transaction),
+      ),
+    );
+
+    if (updatedTransaction != null) {
+      context.read<SalesBloc>().add(FetchSales());
+    }
   }
 
   void _showDeleteConfirmation(BuildContext context, int transactionId) {
@@ -47,7 +61,6 @@ class SalesScreen extends StatelessWidget {
   }
 
   /// Helper method to build a row for an attribute.
-  /// The label is given a fixed width so the ":" is aligned.
   Widget _buildAttributeRow(String label, String value) {
     const double labelWidth = 120; // Adjust the width as needed
     return Row(
@@ -97,31 +110,50 @@ class SalesScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12.0),
-              // Display attributes using the helper method.
               _buildAttributeRow("Profit:", "Rp${profit.toStringAsFixed(0)}"),
               const SizedBox(height: 6.0),
               _buildAttributeRow("Quantity:", transaction.quantity.toString()),
               const SizedBox(height: 6.0),
               _buildAttributeRow("Last Updated:", lastUpdatedStr),
               const SizedBox(height: 12.0),
-              // Long Delete Button
-              SizedBox(
-                width: double.infinity,
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    padding: const EdgeInsets.symmetric(vertical: 12.0),
-                  ),
-                  onPressed: () => _showDeleteConfirmation(
-                      context, transaction.transactionId),
-                  child: const Text(
-                    'Delete',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+              // Row with Edit and Delete buttons side by side.
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      ),
+                      onPressed: () => _navigateToEdit(context, transaction),
+                      child: const Text(
+                        'Edit',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  const SizedBox(width: 8.0),
+                  Expanded(
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      ),
+                      onPressed: () => _showDeleteConfirmation(
+                          context, transaction.transactionId),
+                      child: const Text(
+                        'Delete',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

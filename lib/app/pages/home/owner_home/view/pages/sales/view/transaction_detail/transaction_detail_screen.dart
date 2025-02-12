@@ -105,9 +105,12 @@ class TransactionDetailScreen extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => _showEditDetailDialog(context, detail),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                    ),
                     child: const Text(
                       'Edit',
-                      style: TextStyle(color: Colors.black),
+                      style: TextStyle(color: Colors.white),
                     ),
                   ),
                 ),
