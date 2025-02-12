@@ -360,17 +360,35 @@ class TransactionDetailScreen extends StatelessWidget {
                   _buildTransactionInfoRow(
                     label: 'Total Display Price:',
                     value:
-                        'Rp${updatedTransaction.totalDisplayPrice.toStringAsFixed(2)}',
+                        'Rp${updatedTransaction.totalDisplayPrice.toStringAsFixed(0)}',
                   ),
                   _buildTransactionInfoRow(
                     label: 'Total Agreed Price:',
                     value:
-                        'Rp${updatedTransaction.totalAgreedPrice.toStringAsFixed(2)}',
+                        'Rp${updatedTransaction.totalAgreedPrice.toStringAsFixed(0)}',
+                  ),
+                  _buildTransactionInfoRow(
+                    label: 'Total Net \nPrice:',
+                    value:
+                        'Rp${updatedTransaction.totalNetPrice.toStringAsFixed(0)}',
+                  ),
+                  _buildTransactionInfoRow(
+                    label: 'Quantity:',
+                    value: updatedTransaction.quantity.toString(),
                   ),
                   _buildTransactionInfoRow(
                     label: 'Date Created:',
-                    value:
-                        '${updatedTransaction.dateCreated.toLocal().toString().split(' ')[0]}',
+                    value: updatedTransaction.dateCreated
+                        .toLocal()
+                        .toString()
+                        .split(' ')[0],
+                  ),
+                  _buildTransactionInfoRow(
+                    label: 'Last Updated:',
+                    value: updatedTransaction.lastUpdated
+                        .toLocal()
+                        .toString()
+                        .split(' ')[0],
                   ),
                   if (updatedTransaction.note != null &&
                       updatedTransaction.note!.isNotEmpty)

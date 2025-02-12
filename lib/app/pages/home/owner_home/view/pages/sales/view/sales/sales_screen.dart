@@ -85,8 +85,8 @@ class SalesScreen extends StatelessWidget {
                   ),
                   TextFormField(
                     initialValue: transaction.dateCreated.toIso8601String(),
-                    decoration: const InputDecoration(
-                        labelText: 'Date Created (ISO 8601)'),
+                    decoration:
+                        const InputDecoration(labelText: 'Date Created'),
                     readOnly: true,
                     onTap: () async {
                       DateTime? pickedDate = await showDatePicker(
