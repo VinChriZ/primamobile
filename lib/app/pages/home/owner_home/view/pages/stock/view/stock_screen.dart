@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/bloc/stock_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/add_product.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/edit_product.dart';
@@ -176,78 +177,144 @@ class StockScreen extends StatelessWidget {
                     return const Center(child: Text('No products found.'));
                   }
                   return ListView.builder(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(16.0),
                     itemCount: stockState.displayedProducts.length,
                     itemBuilder: (context, index) {
                       final product = stockState.displayedProducts[index];
                       return Card(
+                        color: Colors.lightBlue[100],
                         margin: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: ListTile(
-                          title: Text(product.name),
-                          subtitle: Text(
-                            'UPC: ${product.upc}\nStock: ${product.stock}',
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    ProductDetailPage(product: product),
-                              ),
-                            );
-                          },
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
+                        // Increased card padding
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              // EDIT BUTTON
-                              IconButton(
-                                icon:
-                                    const Icon(Icons.edit, color: Colors.blue),
-                                onPressed: () {
+                              // Custom header using InkWell for tap functionality
+                              InkWell(
+                                onTap: () {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) => BlocProvider.value(
-                                        value: context.read<StockBloc>(),
-                                        child:
-                                            EditProductPage(product: product),
-                                      ),
+                                      builder: (context) =>
+                                          ProductDetailPage(product: product),
                                     ),
                                   );
                                 },
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      product.name,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18.0,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                        height: 8.0), // space after title
+                                    Text('Stock: ${product.stock}'),
+                                    Text(
+                                      'Last Updated: ${product.lastUpdated != null ? DateFormat('yyyy-MM-dd').format(product.lastUpdated!) : 'N/A'}',
+                                    ),
+                                  ],
+                                ),
                               ),
-                              // DELETE BUTTON
-                              IconButton(
-                                icon:
-                                    const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () {
-                                  final stockBloc = context.read<StockBloc>();
-                                  showDialog(
-                                    context: context,
-                                    builder: (dialogContext) => AlertDialog(
-                                      title: const Text('Delete Product'),
-                                      content: const Text(
-                                        'Are you sure you want to delete this product?',
+                              const SizedBox(height: 8.0),
+                              // Row with two Expanded buttons for Edit and Delete
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blue,
+                                          foregroundColor: Colors.white,
+                                          // Increased button height
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 12.0),
+                                        ),
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  BlocProvider.value(
+                                                value:
+                                                    context.read<StockBloc>(),
+                                                child: EditProductPage(
+                                                    product: product),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        child: const Text(
+                                          'Edit',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
                                       ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.of(dialogContext).pop(),
-                                          child: const Text('Cancel'),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {
-                                            stockBloc.add(
-                                              DeleteProduct(product.upc),
-                                            );
-                                            Navigator.of(dialogContext).pop();
-                                          },
-                                          child: const Text('Delete'),
-                                        ),
-                                      ],
                                     ),
-                                  );
-                                },
+                                  ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.red,
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 12.0),
+                                        ),
+                                        onPressed: () {
+                                          final stockBloc =
+                                              context.read<StockBloc>();
+                                          showDialog(
+                                            context: context,
+                                            builder: (dialogContext) =>
+                                                AlertDialog(
+                                              title:
+                                                  const Text('Delete Product'),
+                                              content: const Text(
+                                                'Are you sure you want to delete this product?',
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () => Navigator.of(
+                                                          dialogContext)
+                                                      .pop(),
+                                                  child: const Text('Cancel'),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () {
+                                                    stockBloc.add(
+                                                      DeleteProduct(
+                                                          product.upc),
+                                                    );
+                                                    Navigator.of(dialogContext)
+                                                        .pop();
+                                                  },
+                                                  child: const Text(
+                                                    'Delete',
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                        child: const Text(
+                                          'Delete',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -256,7 +323,7 @@ class StockScreen extends StatelessWidget {
                     },
                   );
                 }
-                // If not StockLoaded, show fallback
+                // Fallback if state is not StockLoaded
                 return const Center(child: Text('No products found.'));
               },
             ),

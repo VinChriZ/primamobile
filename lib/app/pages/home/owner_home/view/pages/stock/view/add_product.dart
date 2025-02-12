@@ -26,7 +26,16 @@ class _AddProductPageState extends State<AddProductPage> {
   final TextEditingController _brandController = TextEditingController();
   final TextEditingController _imageUrlController = TextEditingController();
 
-  bool isScanning = false; // Add this flag
+  bool isScanning = false;
+
+  /// Returns a consistent [InputDecoration] for text fields.
+  InputDecoration _buildInputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+    );
+  }
 
   void _scanBarcode() async {
     if (isScanning) return; // Prevent multiple calls
@@ -87,15 +96,28 @@ class _AddProductPageState extends State<AddProductPage> {
             : null,
       );
 
-      // Use StockBloc to handle adding the product
+      // Dispatch the AddProduct event using StockBloc.
       context.read<StockBloc>().add(AddProduct(product));
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Product added successfully!')),
       );
 
-      Navigator.pop(context); // Go back to the previous screen
+      Navigator.pop(context); // Return to the previous screen.
     }
+  }
+
+  @override
+  void dispose() {
+    _upcController.dispose();
+    _nameController.dispose();
+    _netPriceController.dispose();
+    _displayPriceController.dispose();
+    _stockController.dispose();
+    _categoryController.dispose();
+    _brandController.dispose();
+    _imageUrlController.dispose();
+    super.dispose();
   }
 
   @override
@@ -128,11 +150,7 @@ class _AddProductPageState extends State<AddProductPage> {
                         Expanded(
                           child: TextFormField(
                             controller: _upcController,
-                            decoration: const InputDecoration(
-                              labelText: 'UPC',
-                              border: OutlineInputBorder(),
-                              prefixIcon: Icon(Icons.confirmation_number),
-                            ),
+                            decoration: _buildInputDecoration('UPC'),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'UPC is required.';
@@ -142,27 +160,26 @@ class _AddProductPageState extends State<AddProductPage> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        ElevatedButton.icon(
+                        // Scan button (without icon)
+                        ElevatedButton(
                           onPressed: _scanBarcode,
-                          icon: const Icon(Icons.qr_code_scanner),
-                          label: const Text('Scan'),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16.0, vertical: 20.0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
                           ),
+                          child: const Text('Scan'),
                         ),
                       ],
                     ),
                     const SizedBox(height: 20),
 
-                    // Name Field
+                    // Product Name Field
                     TextFormField(
                       controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Product Name',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.shopping_bag),
-                      ),
+                      decoration: _buildInputDecoration('Product Name'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Product name is required.';
@@ -175,11 +192,7 @@ class _AddProductPageState extends State<AddProductPage> {
                     // Net Price Field
                     TextFormField(
                       controller: _netPriceController,
-                      decoration: const InputDecoration(
-                        labelText: 'Net Price',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.attach_money),
-                      ),
+                      decoration: _buildInputDecoration('Net Price'),
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
@@ -197,11 +210,7 @@ class _AddProductPageState extends State<AddProductPage> {
                     // Display Price Field
                     TextFormField(
                       controller: _displayPriceController,
-                      decoration: const InputDecoration(
-                        labelText: 'Display Price',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.money),
-                      ),
+                      decoration: _buildInputDecoration('Display Price'),
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
@@ -219,11 +228,7 @@ class _AddProductPageState extends State<AddProductPage> {
                     // Stock Field
                     TextFormField(
                       controller: _stockController,
-                      decoration: const InputDecoration(
-                        labelText: 'Stock',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.storage),
-                      ),
+                      decoration: _buildInputDecoration('Stock'),
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -240,11 +245,7 @@ class _AddProductPageState extends State<AddProductPage> {
                     // Category Field
                     TextFormField(
                       controller: _categoryController,
-                      decoration: const InputDecoration(
-                        labelText: 'Category',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.category),
-                      ),
+                      decoration: _buildInputDecoration('Category'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Category is required.';
@@ -257,11 +258,7 @@ class _AddProductPageState extends State<AddProductPage> {
                     // Brand Field
                     TextFormField(
                       controller: _brandController,
-                      decoration: const InputDecoration(
-                        labelText: 'Brand',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.branding_watermark),
-                      ),
+                      decoration: _buildInputDecoration('Brand'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Brand is required.';
@@ -271,14 +268,10 @@ class _AddProductPageState extends State<AddProductPage> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Image URL Field (Optional)
+                    // Optional: Image URL Field (commented out)
                     // TextFormField(
                     //   controller: _imageUrlController,
-                    //   decoration: const InputDecoration(
-                    //     labelText: 'Image URL (Optional)',
-                    //     border: OutlineInputBorder(),
-                    //     prefixIcon: Icon(Icons.image),
-                    //   ),
+                    //   decoration: _buildInputDecoration('Image URL (Optional)'),
                     //   keyboardType: TextInputType.url,
                     //   validator: (value) {
                     //     if (value != null && value.isNotEmpty) {
