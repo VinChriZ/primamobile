@@ -46,133 +46,86 @@ class SalesScreen extends StatelessWidget {
     );
   }
 
-  void _showEditTransactionDialog(
-      BuildContext context, Transaction transaction) {
-    final _formKey = GlobalKey<FormState>();
-    double totalDisplayPrice = transaction.totalDisplayPrice;
-    DateTime dateCreated = transaction.dateCreated;
-    String? note = transaction.note;
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Edit Transaction'),
-          content: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  TextFormField(
-                    initialValue: transaction.totalDisplayPrice.toString(),
-                    decoration:
-                        const InputDecoration(labelText: 'Total Display Price'),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter total display price';
-                      }
-                      if (double.tryParse(value) == null ||
-                          double.parse(value) <= 0) {
-                        return 'Enter a valid price';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      totalDisplayPrice = double.parse(value!);
-                    },
-                  ),
-                  TextFormField(
-                    initialValue: transaction.dateCreated.toIso8601String(),
-                    decoration:
-                        const InputDecoration(labelText: 'Date Created'),
-                    readOnly: true,
-                    onTap: () async {
-                      DateTime? pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: transaction.dateCreated,
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime.now(),
-                      );
-                      if (pickedDate != null) {
-                        dateCreated = pickedDate;
-                        // Force rebuild the dialog
-                        (context as Element).markNeedsBuild();
-                      }
-                    },
-                  ),
-                  TextFormField(
-                    initialValue: transaction.note,
-                    decoration: const InputDecoration(labelText: 'Note'),
-                    onSaved: (value) {
-                      note = value;
-                    },
-                  ),
-                ],
-              ),
-            ),
+  /// Helper method to build a row for an attribute.
+  /// The label is given a fixed width so the ":" is aligned.
+  Widget _buildAttributeRow(String label, String value) {
+    const double labelWidth = 120; // Adjust the width as needed
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: labelWidth,
+          child: Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  _formKey.currentState!.save();
-                  // Prepare fields map
-                  Map<String, dynamic> fields = {
-                    'total_display_price': totalDisplayPrice,
-                    'date_created': dateCreated.toIso8601String(),
-                  };
-                  if (note != null && note!.isNotEmpty) {
-                    fields['note'] = note!;
-                  }
-                  // Implement update functionality
-                  // For example, navigate to an edit screen or directly call repository
-                  // Here, you might need to implement an EditTransaction event in SalesBloc
-                  // Currently, the SalesBloc does not handle an EditTransaction event
-                  // You may need to extend the SalesBloc accordingly
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content:
-                            Text('Edit functionality not implemented yet.')),
-                  );
-                }
-              },
-              child: const Text('Update'),
-            ),
-          ],
-        );
-      },
+        ),
+        Expanded(
+          child: Text(value),
+        ),
+      ],
     );
   }
 
   Widget _buildTransactionCard(BuildContext context, Transaction transaction) {
+    // Calculate profit as total agreed price minus total net price.
+    double profit = transaction.totalAgreedPrice - transaction.totalNetPrice;
+    // Format the date created (only the date part).
+    String dateCreatedStr =
+        transaction.dateCreated.toLocal().toString().split(' ')[0];
+    // Format the last updated (without microseconds).
+    String lastUpdatedStr =
+        transaction.lastUpdated.toLocal().toString().split('.')[0];
+
     return Card(
+      color: Colors.lightBlue[100],
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      child: ListTile(
-        title: Text('Transaction #${transaction.transactionId}'),
-        subtitle: Text(
-            'Total Price: \$${transaction.totalDisplayPrice.toStringAsFixed(2)}'),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.blue),
-              onPressed: () => _showEditTransactionDialog(context, transaction),
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () =>
-                  _showDeleteConfirmation(context, transaction.transactionId),
-            ),
-          ],
-        ),
+      elevation: 2,
+      child: InkWell(
         onTap: () => _navigateToDetail(context, transaction),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Title: Date Created (bold and larger)
+              Text(
+                dateCreatedStr,
+                style: const TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12.0),
+              // Display attributes using the helper method.
+              _buildAttributeRow("Profit:", "Rp${profit.toStringAsFixed(0)}"),
+              const SizedBox(height: 6.0),
+              _buildAttributeRow("Quantity:", transaction.quantity.toString()),
+              const SizedBox(height: 6.0),
+              _buildAttributeRow("Last Updated:", lastUpdatedStr),
+              const SizedBox(height: 12.0),
+              // Long Delete Button
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  ),
+                  onPressed: () => _showDeleteConfirmation(
+                      context, transaction.transactionId),
+                  child: const Text(
+                    'Delete',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -212,8 +165,7 @@ class SalesScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Implement add transaction functionality
-          // For example, navigate to a new transaction creation page
+          // Implement add transaction functionality if needed.
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
                 content:

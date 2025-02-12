@@ -52,6 +52,17 @@ class App extends StatelessWidget {
           title: 'PrimaMobile',
           theme: ThemeData(
             brightness: Brightness.light,
+            // colorScheme: ColorScheme.fromSwatch().copyWith(
+            //   secondary:
+            //       Colors.lightBlue, // Change the secondary color to green
+            // ),
+            floatingActionButtonTheme: const FloatingActionButtonThemeData(
+              backgroundColor: Colors.lightBlue,
+              foregroundColor: Colors.white,
+            ),
+            progressIndicatorTheme: const ProgressIndicatorThemeData(
+              color: Colors.lightBlue,
+            ),
             fontFamily: 'Montserrat',
           ),
           initialRoute: '/',

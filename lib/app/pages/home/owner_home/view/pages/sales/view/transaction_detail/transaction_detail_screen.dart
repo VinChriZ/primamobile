@@ -9,7 +9,98 @@ class TransactionDetailScreen extends StatelessWidget {
 
   const TransactionDetailScreen({super.key, required this.transaction});
 
-  /// Dialog for adding a new detail
+  /// Helper to build header attribute row with a fixed-width label and right-aligned value.
+  Widget _buildTransactionInfoRow(
+      {required String label, required String value}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 200.0,
+            child: Text(
+              label,
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 16.0),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Builds the list of transaction details.
+  Widget _buildTransactionDetailsList(BuildContext context,
+      List<TransactionDetail> details, int transactionId) {
+    if (details.isEmpty) {
+      return const Center(child: Text('No transaction details available.'));
+    }
+    return ListView.builder(
+      itemCount: details.length,
+      itemBuilder: (context, index) {
+        final detail = details[index];
+        return _buildTransactionDetailCard(context, detail, transactionId);
+      },
+    );
+  }
+
+  /// Builds a single detail card with edit and delete buttons at the bottom.
+  Widget _buildTransactionDetailCard(
+      BuildContext context, TransactionDetail detail, int transactionId) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      elevation: 3.0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Product info.
+            Text(
+              'UPC: ${detail.upc}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4.0),
+            Text('Quantity: ${detail.quantity}'),
+            const SizedBox(height: 2.0),
+            Text('Agreed Price: Rp${detail.agreedPrice.toStringAsFixed(0)}'),
+            const SizedBox(height: 12.0),
+            // Row with Edit and Delete buttons side by side.
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _showEditDetailDialog(context, detail),
+                    child: const Text('Edit'),
+                  ),
+                ),
+                const SizedBox(width: 8.0),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _showDeleteDetailConfirmation(
+                        context, transactionId, detail.detailId),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
+                    child: const Text('Delete'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Dialog for adding a new detail.
   void _showAddDetailDialog(BuildContext context, int transactionId) {
     final _formKey = GlobalKey<FormState>();
     String upc = '';
@@ -112,7 +203,7 @@ class TransactionDetailScreen extends StatelessWidget {
     );
   }
 
-  /// Dialog for editing an existing detail
+  /// Dialog for editing an existing detail.
   void _showEditDetailDialog(BuildContext context, TransactionDetail detail) {
     final _formKey = GlobalKey<FormState>();
     String upc = detail.upc;
@@ -190,7 +281,6 @@ class TransactionDetailScreen extends StatelessWidget {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
-                    // Use the original transaction's ID for updating.
                     transactionDetailBloc.add(
                       UpdateTransactionDetail(
                         transaction.transactionId,
@@ -205,8 +295,9 @@ class TransactionDetailScreen extends StatelessWidget {
                     Navigator.of(dialogContext).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content:
-                              Text('Transaction detail updated successfully.')),
+                        content:
+                            Text('Transaction detail updated successfully.'),
+                      ),
                     );
                   }
                 },
@@ -219,7 +310,7 @@ class TransactionDetailScreen extends StatelessWidget {
     );
   }
 
-  /// Confirmation dialog for deleting a detail
+  /// Confirmation dialog for deleting a detail.
   void _showDeleteDetailConfirmation(
       BuildContext context, int transactionId, int detailId) {
     final transactionDetailBloc = context.read<TransactionDetailBloc>();
@@ -258,92 +349,15 @@ class TransactionDetailScreen extends StatelessWidget {
     );
   }
 
-  /// Builds a single detail card
-  Widget _buildTransactionDetailCard(
-      BuildContext context, TransactionDetail detail, int transactionId) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      elevation: 3.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-      child: ListTile(
-        title: Text(
-          'UPC: ${detail.upc}',
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4.0),
-            Text('Quantity: ${detail.quantity}'),
-            const SizedBox(height: 2.0),
-            Text('Agreed Price: Rp${detail.agreedPrice.toStringAsFixed(2)}'),
-          ],
-        ),
-        isThreeLine: true,
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.blue),
-              onPressed: () => _showEditDetailDialog(context, detail),
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () => _showDeleteDetailConfirmation(
-                  context, transactionId, detail.detailId),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Builds the list of transaction details
-  Widget _buildTransactionDetailsList(BuildContext context,
-      List<TransactionDetail> details, int transactionId) {
-    if (details.isEmpty) {
-      return const Center(child: Text('No transaction details available.'));
-    }
-    return ListView.builder(
-      itemCount: details.length,
-      itemBuilder: (context, index) {
-        final detail = details[index];
-        return _buildTransactionDetailCard(context, detail, transactionId);
-      },
-    );
-  }
-
-  /// Utility to build a row for transaction header information
-  Widget _buildTransactionInfoRow(
-      {required String label, required String value}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 150.0,
-            child: Text(
-              label,
-              style:
-                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 16.0),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final dateStr = transaction.dateCreated.toLocal().toString().split(' ')[0];
+
     return Scaffold(
+      // App bar title is only the date, centered.
       appBar: AppBar(
-        title: Text('Transaction #${transaction.transactionId} Details'),
+        title: Text(dateStr),
+        centerTitle: true,
       ),
       body: BlocBuilder<TransactionDetailBloc, TransactionDetailState>(
         builder: (context, state) {
@@ -368,7 +382,7 @@ class TransactionDetailScreen extends StatelessWidget {
                         'Rp${updatedTransaction.totalAgreedPrice.toStringAsFixed(0)}',
                   ),
                   _buildTransactionInfoRow(
-                    label: 'Total Net \nPrice:',
+                    label: 'Total Net Price:',
                     value:
                         'Rp${updatedTransaction.totalNetPrice.toStringAsFixed(0)}',
                   ),
@@ -390,13 +404,35 @@ class TransactionDetailScreen extends StatelessWidget {
                         .toString()
                         .split(' ')[0],
                   ),
+                  // Display the note as a textbox with a black border (if it exists).
                   if (updatedTransaction.note != null &&
                       updatedTransaction.note!.isNotEmpty)
-                    _buildTransactionInfoRow(
-                      label: 'Note:',
-                      value: updatedTransaction.note!,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black),
+                          borderRadius: BorderRadius.circular(4.0),
+                        ),
+                        child: Text(
+                          updatedTransaction.note!,
+                          style: const TextStyle(fontSize: 16.0),
+                        ),
+                      ),
                     ),
                   const Divider(),
+                  // Product List label before the details list.
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Product List:',
+                      style: TextStyle(
+                          fontSize: 18.0, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(height: 8.0),
                   Expanded(
                     child: _buildTransactionDetailsList(
                         context, details, updatedTransaction.transactionId),
