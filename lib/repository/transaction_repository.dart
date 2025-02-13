@@ -5,8 +5,18 @@ class TransactionRepository {
   final TransactionProvider _provider = TransactionProvider();
 
   // Fetch all transactions
-  Future<List<Transaction>> fetchTransactions() async {
-    return await _provider.getTransactions();
+  Future<List<Transaction>> fetchTransactions({
+    DateTime? startDate,
+    DateTime? endDate,
+    String? sortBy,
+    String? sortOrder,
+  }) async {
+    return await _provider.getTransactions(
+      startDate: startDate,
+      endDate: endDate,
+      sortBy: sortBy,
+      sortOrder: sortOrder,
+    );
   }
 
   // Fetch a specific transaction by ID

@@ -18,7 +18,12 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
   Future<void> _onFetchSales(FetchSales event, Emitter<SalesState> emit) async {
     emit(SalesLoading());
     try {
-      final transactions = await transactionRepository.fetchTransactions();
+      final transactions = await transactionRepository.fetchTransactions(
+        startDate: event.startDate,
+        endDate: event.endDate,
+        sortBy: event.sortBy,
+        sortOrder: event.sortOrder,
+      );
       emit(SalesLoaded(transactions));
     } catch (e) {
       emit(SalesError('Failed to fetch transactions: ${e.toString()}'));

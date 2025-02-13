@@ -4,8 +4,28 @@ import 'package:primamobile/provider/models/request_api/request_api.dart';
 
 class TransactionProvider {
   // Fetch all transactions
-  Future<List<Transaction>> getTransactions() async {
-    final RequestParam param = RequestParam(parameters: {});
+  Future<List<Transaction>> getTransactions({
+    DateTime? startDate,
+    DateTime? endDate,
+    String? sortBy,
+    String? sortOrder,
+  }) async {
+    final Map<String, dynamic> queryParameters = {};
+
+    if (startDate != null) {
+      queryParameters['start_date'] = startDate.toIso8601String();
+    }
+    if (endDate != null) {
+      queryParameters['end_date'] = endDate.toIso8601String();
+    }
+    if (sortBy != null) {
+      queryParameters['sort_by'] = sortBy;
+    }
+    if (sortOrder != null) {
+      queryParameters['sort_order'] = sortOrder;
+    }
+
+    final RequestParam param = RequestParam(parameters: queryParameters);
     final RequestObject request = RequestObjectFunction(requestParam: param);
 
     try {
@@ -20,8 +40,7 @@ class TransactionProvider {
         return data.map((item) => Transaction.fromJson(item)).toList();
       } else {
         throw Exception(
-          'Failed to fetch transactions with status code: ${response.statusCode}',
-        );
+            'Failed to fetch transactions with status code: ${response.statusCode}');
       }
     } catch (e) {
       print('Error fetching transactions: $e');
