@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:primamobile/app/models/product/product.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/barcode_scanner.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/bloc/stock_bloc.dart';
+import 'package:primamobile/repository/product_repository.dart';
 import 'package:primamobile/utils/helpers/permission_helper.dart';
 
 class AddProductPage extends StatefulWidget {
@@ -16,7 +18,7 @@ class AddProductPage extends StatefulWidget {
 class _AddProductPageState extends State<AddProductPage> {
   final _formKey = GlobalKey<FormState>();
 
-  // Controllers for the form fields
+  // Controllers for the form fields.
   final TextEditingController _upcController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _netPriceController = TextEditingController();
@@ -24,21 +26,85 @@ class _AddProductPageState extends State<AddProductPage> {
   final TextEditingController _stockController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _brandController = TextEditingController();
-  final TextEditingController _imageUrlController = TextEditingController();
+  // Uncomment if you need an image URL field.
+  // final TextEditingController _imageUrlController = TextEditingController();
 
+  // Flags and debouncer for UPC checking.
   bool isScanning = false;
+  bool _upcExists = false;
+  Timer? _debounce;
 
-  /// Returns a consistent [InputDecoration] for text fields.
-  InputDecoration _buildInputDecoration(String label) {
+  @override
+  void initState() {
+    super.initState();
+    _upcController.addListener(_onUpcChanged);
+  }
+
+  void _onUpcChanged() {
+    // Debounce the API call to avoid making too many requests.
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      _checkUpcExists(_upcController.text.trim());
+    });
+  }
+
+  Future<void> _checkUpcExists(String upc) async {
+    if (upc.isEmpty) {
+      setState(() {
+        _upcExists = false;
+      });
+      return;
+    }
+
+    try {
+      // Try fetching the product by UPC.
+      final productRepository =
+          RepositoryProvider.of<ProductRepository>(context);
+      await productRepository.fetchProduct(upc);
+      // If the product is found, mark UPC as existing.
+      setState(() {
+        _upcExists = true;
+      });
+    } catch (e) {
+      // If not found (e.g., a 404 error), mark UPC as not existing.
+      setState(() {
+        _upcExists = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _upcController.removeListener(_onUpcChanged);
+    _debounce?.cancel();
+    _upcController.dispose();
+    _nameController.dispose();
+    _netPriceController.dispose();
+    _displayPriceController.dispose();
+    _stockController.dispose();
+    _categoryController.dispose();
+    _brandController.dispose();
+    // _imageUrlController.dispose();
+    super.dispose();
+  }
+
+  /// Returns an InputDecoration with optional error text.
+  InputDecoration _buildInputDecoration(String label, {String? errorText}) {
     return InputDecoration(
       labelText: label,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.0),
+        borderSide:
+            BorderSide(color: errorText != null ? Colors.red : Colors.grey),
+      ),
+      errorText: errorText,
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
     );
   }
 
-  void _scanBarcode() async {
-    if (isScanning) return; // Prevent multiple calls
+  /// Scans a barcode and updates the UPC field.
+  Future<void> _scanBarcode() async {
+    if (isScanning) return;
     isScanning = true;
 
     if (await CameraPermissionHelper.isGranted) {
@@ -47,7 +113,7 @@ class _AddProductPageState extends State<AddProductPage> {
         MaterialPageRoute(
           builder: (context) => BarcodeScannerScreen(
             onBarcodeScanned: (code) {
-              // No need to pop the scanner, as it's handled internally
+              // Barcode scanned callback if needed.
             },
           ),
         ),
@@ -78,11 +144,11 @@ class _AddProductPageState extends State<AddProductPage> {
       await openAppSettings();
     }
 
-    isScanning = false; // Reset the flag
+    isScanning = false;
   }
 
+  /// Validates the form and dispatches the add product event.
   void _addProduct() {
-    // Trim all input fields before validation.
     final upc = _upcController.text.trim();
     final name = _nameController.text.trim();
     final netPriceText = _netPriceController.text.trim();
@@ -90,9 +156,9 @@ class _AddProductPageState extends State<AddProductPage> {
     final stockText = _stockController.text.trim();
     final category = _categoryController.text.trim();
     final brand = _brandController.text.trim();
-    final imageUrlText = _imageUrlController.text.trim();
+    // final imageUrlText = _imageUrlController.text.trim();
 
-    // Manually update controllers (optional) so the UI reflects trimmed text.
+    // Optionally update controllers to reflect trimmed text.
     _upcController.text = upc;
     _nameController.text = name;
     _netPriceController.text = netPriceText;
@@ -100,7 +166,7 @@ class _AddProductPageState extends State<AddProductPage> {
     _stockController.text = stockText;
     _categoryController.text = category;
     _brandController.text = brand;
-    _imageUrlController.text = imageUrlText;
+    // _imageUrlController.text = imageUrlText;
 
     if (_formKey.currentState?.validate() ?? false) {
       final product = Product(
@@ -111,31 +177,16 @@ class _AddProductPageState extends State<AddProductPage> {
         stock: int.parse(stockText),
         category: category,
         brand: brand,
-        imageUrl: imageUrlText.isNotEmpty ? imageUrlText : null,
+        // imageUrl: imageUrlText.isNotEmpty ? imageUrlText : null,
       );
 
-      // Dispatch the AddProduct event using StockBloc.
       context.read<StockBloc>().add(AddProduct(product));
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Product added successfully!')),
       );
 
-      Navigator.pop(context); // Return to the previous screen.
+      Navigator.pop(context);
     }
-  }
-
-  @override
-  void dispose() {
-    _upcController.dispose();
-    _nameController.dispose();
-    _netPriceController.dispose();
-    _displayPriceController.dispose();
-    _stockController.dispose();
-    _categoryController.dispose();
-    _brandController.dispose();
-    _imageUrlController.dispose();
-    super.dispose();
   }
 
   @override
@@ -147,7 +198,7 @@ class _AddProductPageState extends State<AddProductPage> {
       ),
       body: GestureDetector(
         onTap: () =>
-            FocusScope.of(context).unfocus(), // Dismiss keyboard on tap outside
+            FocusScope.of(context).unfocus(), // Dismiss keyboard on tap
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Card(
@@ -169,10 +220,18 @@ class _AddProductPageState extends State<AddProductPage> {
                         Expanded(
                           child: TextFormField(
                             controller: _upcController,
-                            decoration: _buildInputDecoration('UPC'),
+                            decoration: _buildInputDecoration(
+                              'UPC',
+                              errorText:
+                                  _upcExists ? 'UPC already exists.' : null,
+                            ),
                             validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
+                              final trimmed = value?.trim() ?? '';
+                              if (trimmed.isEmpty) {
                                 return 'UPC is required.';
+                              }
+                              if (_upcExists) {
+                                return 'UPC already exists.';
                               }
                               return null;
                             },
@@ -193,7 +252,6 @@ class _AddProductPageState extends State<AddProductPage> {
                       ],
                     ),
                     const SizedBox(height: 20),
-
                     // Product Name Field
                     TextFormField(
                       controller: _nameController,
@@ -206,7 +264,6 @@ class _AddProductPageState extends State<AddProductPage> {
                       },
                     ),
                     const SizedBox(height: 20),
-
                     // Net Price Field
                     TextFormField(
                       controller: _netPriceController,
@@ -225,7 +282,6 @@ class _AddProductPageState extends State<AddProductPage> {
                       },
                     ),
                     const SizedBox(height: 20),
-
                     // Display Price Field
                     TextFormField(
                       controller: _displayPriceController,
@@ -244,7 +300,6 @@ class _AddProductPageState extends State<AddProductPage> {
                       },
                     ),
                     const SizedBox(height: 20),
-
                     // Stock Field
                     TextFormField(
                       controller: _stockController,
@@ -262,7 +317,6 @@ class _AddProductPageState extends State<AddProductPage> {
                       },
                     ),
                     const SizedBox(height: 20),
-
                     // Category Field
                     TextFormField(
                       controller: _categoryController,
@@ -275,7 +329,6 @@ class _AddProductPageState extends State<AddProductPage> {
                       },
                     ),
                     const SizedBox(height: 20),
-
                     // Brand Field
                     TextFormField(
                       controller: _brandController,
@@ -288,8 +341,7 @@ class _AddProductPageState extends State<AddProductPage> {
                       },
                     ),
                     const SizedBox(height: 20),
-
-                    // Optional: Image URL Field (if needed)
+                    // Uncomment below if using an Image URL field.
                     // TextFormField(
                     //   controller: _imageUrlController,
                     //   decoration: _buildInputDecoration('Image URL (Optional)'),
@@ -306,7 +358,6 @@ class _AddProductPageState extends State<AddProductPage> {
                     //   },
                     // ),
                     // const SizedBox(height: 30),
-
                     // Add Product Button
                     SizedBox(
                       width: double.infinity,
