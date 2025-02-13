@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/models/transaction/transaction.dart';
 import 'package:primamobile/app/models/transaction/transaction_detail.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/bloc/transaction_detail/transaction_detail_bloc.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/transaction_detail/invoice_page.dart';
 import 'package:primamobile/repository/product_repository.dart';
 
 class TransactionDetailScreen extends StatelessWidget {
@@ -73,20 +74,17 @@ class TransactionDetailScreen extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   );
                 } else if (snapshot.hasError) {
-                  // Optionally, display an error message or fallback to UPC
                   return Text(
                     'Error: ${snapshot.error}',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   );
                 } else if (snapshot.hasData) {
-                  // Assuming the Product model has a 'name' field
                   final product = snapshot.data!;
                   return Text(
                     product.name,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   );
                 } else {
-                  // Fallback in case no data is returned
                   return Text(
                     detail.upc,
                     style: const TextStyle(fontWeight: FontWeight.bold),
@@ -99,7 +97,6 @@ class TransactionDetailScreen extends StatelessWidget {
             const SizedBox(height: 2.0),
             Text('Agreed Price: Rp${detail.agreedPrice.toStringAsFixed(0)}'),
             const SizedBox(height: 12.0),
-            // Row with Edit and Delete buttons
             Row(
               children: [
                 Expanded(
@@ -390,17 +387,39 @@ class TransactionDetailScreen extends StatelessWidget {
     final dateStr = transaction.dateCreated.toLocal().toString().split(' ')[0];
 
     return Scaffold(
-      // App bar title is only the date, centered.
       appBar: AppBar(
         title: Text(dateStr),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.print),
+            tooltip: 'Print Invoice',
+            onPressed: () {
+              // Get the current bloc state
+              final state = context.read<TransactionDetailBloc>().state;
+              if (state is TransactionDetailLoaded) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => InvoicePrintPreviewPage(
+                      transaction: state.transaction,
+                      details: state.details,
+                    ),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Invoice not available yet.')),
+                );
+              }
+            },
+          ),
+        ],
       ),
       body: BlocBuilder<TransactionDetailBloc, TransactionDetailState>(
         builder: (context, state) {
           if (state is TransactionDetailLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is TransactionDetailLoaded) {
-            // Use the updated header info from the bloc state.
             final updatedTransaction = state.transaction;
             final details = state.details;
             return Padding(
@@ -440,7 +459,6 @@ class TransactionDetailScreen extends StatelessWidget {
                         .toString()
                         .split(' ')[0],
                   ),
-                  // Display the note as a textbox with a black border (if it exists).
                   if (updatedTransaction.note != null &&
                       updatedTransaction.note!.isNotEmpty)
                     Padding(
@@ -459,7 +477,6 @@ class TransactionDetailScreen extends StatelessWidget {
                       ),
                     ),
                   const Divider(),
-                  // Product List label before the details list.
                   const Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
