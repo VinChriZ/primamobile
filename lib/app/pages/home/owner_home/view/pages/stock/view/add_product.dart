@@ -55,7 +55,7 @@ class _AddProductPageState extends State<AddProductPage> {
 
       if (scannedCode != null && scannedCode.isNotEmpty) {
         setState(() {
-          _upcController.text = scannedCode;
+          _upcController.text = scannedCode.trim();
         });
       }
     } else if (await CameraPermissionHelper.isDenied) {
@@ -82,18 +82,36 @@ class _AddProductPageState extends State<AddProductPage> {
   }
 
   void _addProduct() {
+    // Trim all input fields before validation.
+    final upc = _upcController.text.trim();
+    final name = _nameController.text.trim();
+    final netPriceText = _netPriceController.text.trim();
+    final displayPriceText = _displayPriceController.text.trim();
+    final stockText = _stockController.text.trim();
+    final category = _categoryController.text.trim();
+    final brand = _brandController.text.trim();
+    final imageUrlText = _imageUrlController.text.trim();
+
+    // Manually update controllers (optional) so the UI reflects trimmed text.
+    _upcController.text = upc;
+    _nameController.text = name;
+    _netPriceController.text = netPriceText;
+    _displayPriceController.text = displayPriceText;
+    _stockController.text = stockText;
+    _categoryController.text = category;
+    _brandController.text = brand;
+    _imageUrlController.text = imageUrlText;
+
     if (_formKey.currentState?.validate() ?? false) {
       final product = Product(
-        upc: _upcController.text,
-        name: _nameController.text,
-        netPrice: double.parse(_netPriceController.text),
-        displayPrice: double.parse(_displayPriceController.text),
-        stock: int.parse(_stockController.text),
-        category: _categoryController.text,
-        brand: _brandController.text,
-        imageUrl: _imageUrlController.text.isNotEmpty
-            ? _imageUrlController.text
-            : null,
+        upc: upc,
+        name: name,
+        netPrice: double.parse(netPriceText),
+        displayPrice: double.parse(displayPriceText),
+        stock: int.parse(stockText),
+        category: category,
+        brand: brand,
+        imageUrl: imageUrlText.isNotEmpty ? imageUrlText : null,
       );
 
       // Dispatch the AddProduct event using StockBloc.
@@ -135,7 +153,8 @@ class _AddProductPageState extends State<AddProductPage> {
           child: Card(
             elevation: 4.0,
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.0)),
+              borderRadius: BorderRadius.circular(16.0),
+            ),
             child: Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
@@ -152,7 +171,7 @@ class _AddProductPageState extends State<AddProductPage> {
                             controller: _upcController,
                             decoration: _buildInputDecoration('UPC'),
                             validator: (value) {
-                              if (value == null || value.isEmpty) {
+                              if (value == null || value.trim().isEmpty) {
                                 return 'UPC is required.';
                               }
                               return null;
@@ -160,7 +179,6 @@ class _AddProductPageState extends State<AddProductPage> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        // Scan button (without icon)
                         ElevatedButton(
                           onPressed: _scanBarcode,
                           style: ElevatedButton.styleFrom(
@@ -181,7 +199,7 @@ class _AddProductPageState extends State<AddProductPage> {
                       controller: _nameController,
                       decoration: _buildInputDecoration('Product Name'),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null || value.trim().isEmpty) {
                           return 'Product name is required.';
                         }
                         return null;
@@ -196,10 +214,11 @@ class _AddProductPageState extends State<AddProductPage> {
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        final trimmed = value?.trim() ?? '';
+                        if (trimmed.isEmpty) {
                           return 'Net price is required.';
                         }
-                        if (double.tryParse(value) == null) {
+                        if (double.tryParse(trimmed) == null) {
                           return 'Please enter a valid number.';
                         }
                         return null;
@@ -214,10 +233,11 @@ class _AddProductPageState extends State<AddProductPage> {
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        final trimmed = value?.trim() ?? '';
+                        if (trimmed.isEmpty) {
                           return 'Display price is required.';
                         }
-                        if (double.tryParse(value) == null) {
+                        if (double.tryParse(trimmed) == null) {
                           return 'Please enter a valid number.';
                         }
                         return null;
@@ -231,10 +251,11 @@ class _AddProductPageState extends State<AddProductPage> {
                       decoration: _buildInputDecoration('Stock'),
                       keyboardType: TextInputType.number,
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        final trimmed = value?.trim() ?? '';
+                        if (trimmed.isEmpty) {
                           return 'Stock is required.';
                         }
-                        if (int.tryParse(value) == null) {
+                        if (int.tryParse(trimmed) == null) {
                           return 'Please enter a valid integer.';
                         }
                         return null;
@@ -247,7 +268,7 @@ class _AddProductPageState extends State<AddProductPage> {
                       controller: _categoryController,
                       decoration: _buildInputDecoration('Category'),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null || value.trim().isEmpty) {
                           return 'Category is required.';
                         }
                         return null;
@@ -260,7 +281,7 @@ class _AddProductPageState extends State<AddProductPage> {
                       controller: _brandController,
                       decoration: _buildInputDecoration('Brand'),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null || value.trim().isEmpty) {
                           return 'Brand is required.';
                         }
                         return null;
@@ -268,14 +289,15 @@ class _AddProductPageState extends State<AddProductPage> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Optional: Image URL Field (commented out)
+                    // Optional: Image URL Field (if needed)
                     // TextFormField(
                     //   controller: _imageUrlController,
                     //   decoration: _buildInputDecoration('Image URL (Optional)'),
                     //   keyboardType: TextInputType.url,
                     //   validator: (value) {
-                    //     if (value != null && value.isNotEmpty) {
-                    //       final uri = Uri.tryParse(value);
+                    //     final trimmed = value?.trim() ?? '';
+                    //     if (trimmed.isNotEmpty) {
+                    //       final uri = Uri.tryParse(trimmed);
                     //       if (uri == null || !uri.isAbsolute) {
                     //         return 'Please enter a valid URL.';
                     //       }

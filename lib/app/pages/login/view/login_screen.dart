@@ -83,7 +83,7 @@ class LoginScreen extends StatelessWidget {
                               ? null
                               : (username) => loginContext
                                   .read<LoginBloc>()
-                                  .add(LoginUsernameFilled(username)),
+                                  .add(LoginUsernameFilled(username.trim())),
                           decoration: InputDecoration(
                             labelText: 'Username',
                             hintText: 'Enter your username...',
@@ -120,7 +120,7 @@ class LoginScreen extends StatelessWidget {
                               ? null
                               : (password) => loginContext
                                   .read<LoginBloc>()
-                                  .add(LoginPasswordFilled(password)),
+                                  .add(LoginPasswordFilled(password.trim())),
                           obscureText: !loginState.isPasswordVisible,
                           decoration: InputDecoration(
                             labelText: 'Password',
@@ -215,8 +215,10 @@ class LoginScreen extends StatelessWidget {
                                         .add(LoginPressed());
                                     loginContext.read<AuthenticationBloc>().add(
                                           LoginButtonPressed(
-                                            username: loginState.username,
-                                            password: loginState.password,
+                                            username:
+                                                loginState.username.trim(),
+                                            password:
+                                                loginState.password.trim(),
                                           ),
                                         );
                                   } else {

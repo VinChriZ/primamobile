@@ -49,7 +49,7 @@ class _EditProductPageState extends State<EditProductPage> {
 
   void _updateProduct() {
     if (_formKey.currentState?.validate() ?? false) {
-      // Build the partial-update map
+      // Build the partial-update map with trimmed input.
       final updateFields = <String, dynamic>{
         'name': _nameController.text.trim(),
         'net_price': double.tryParse(_netPriceController.text.trim()),
@@ -59,10 +59,10 @@ class _EditProductPageState extends State<EditProductPage> {
         'brand': _brandController.text.trim(),
       };
 
-      // Remove null values to prevent sending them
+      // Remove null values to prevent sending them.
       updateFields.removeWhere((key, value) => value == null);
 
-      // Dispatch the UpdateProduct event to the bloc
+      // Dispatch the UpdateProduct event to the bloc.
       context
           .read<StockBloc>()
           .add(UpdateProduct(widget.product.upc, updateFields));
@@ -102,24 +102,25 @@ class _EditProductPageState extends State<EditProductPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Name
+                  // Name Field
                   TextFormField(
                     controller: _nameController,
                     decoration: _buildInputDecoration('Name'),
-                    validator: (value) => (value == null || value.isEmpty)
-                        ? 'Name is required'
-                        : null,
+                    validator: (value) =>
+                        (value == null || value.trim().isEmpty)
+                            ? 'Name is required'
+                            : null,
                   ),
                   const SizedBox(height: 16),
-                  // Net Price
+                  // Net Price Field
                   TextFormField(
                     controller: _netPriceController,
                     decoration: _buildInputDecoration('Net Price'),
                     keyboardType: TextInputType.number,
                     validator: (value) {
-                      if (value == null || value.isEmpty)
-                        return null; // optional
-                      final parsed = double.tryParse(value);
+                      final trimmed = value?.trim() ?? '';
+                      if (trimmed.isEmpty) return null; // Optional field
+                      final parsed = double.tryParse(trimmed);
                       if (parsed == null || parsed <= 0) {
                         return 'Net Price must be greater than 0';
                       }
@@ -127,15 +128,15 @@ class _EditProductPageState extends State<EditProductPage> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  // Display Price
+                  // Display Price Field
                   TextFormField(
                     controller: _displayPriceController,
                     decoration: _buildInputDecoration('Display Price'),
                     keyboardType: TextInputType.number,
                     validator: (value) {
-                      if (value == null || value.isEmpty)
-                        return null; // optional
-                      final parsed = double.tryParse(value);
+                      final trimmed = value?.trim() ?? '';
+                      if (trimmed.isEmpty) return null; // Optional field
+                      final parsed = double.tryParse(trimmed);
                       if (parsed == null || parsed <= 0) {
                         return 'Display Price must be greater than 0';
                       }
@@ -143,15 +144,15 @@ class _EditProductPageState extends State<EditProductPage> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  // Stock
+                  // Stock Field
                   TextFormField(
                     controller: _stockController,
                     decoration: _buildInputDecoration('Stock'),
                     keyboardType: TextInputType.number,
                     validator: (value) {
-                      if (value == null || value.isEmpty)
-                        return null; // optional
-                      final parsed = int.tryParse(value);
+                      final trimmed = value?.trim() ?? '';
+                      if (trimmed.isEmpty) return null; // Optional field
+                      final parsed = int.tryParse(trimmed);
                       if (parsed == null || parsed < 0) {
                         return 'Stock must be 0 or more';
                       }
@@ -159,16 +160,18 @@ class _EditProductPageState extends State<EditProductPage> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  // Category
+                  // Category Field
                   TextFormField(
                     controller: _categoryController,
                     decoration: _buildInputDecoration('Category'),
+                    // Add validator here if needed.
                   ),
                   const SizedBox(height: 16),
-                  // Brand
+                  // Brand Field
                   TextFormField(
                     controller: _brandController,
                     decoration: _buildInputDecoration('Brand'),
+                    // Add validator here if needed.
                   ),
                   const SizedBox(height: 24),
                   // Update Button
