@@ -21,7 +21,6 @@ class StockScreen extends StatelessWidget {
             child: TextField(
               onChanged: (value) {
                 if (value.isEmpty) {
-                  // If search query is empty, reset search
                   context.read<StockBloc>().add(const SearchProducts(''));
                 } else {
                   context.read<StockBloc>().add(SearchProducts(value));
@@ -36,11 +35,12 @@ class StockScreen extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 4.0),
 
           // FILTERS + SORT IN A ROW
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
             child: Row(
               children: [
                 // CATEGORY DROPDOWN
@@ -52,35 +52,41 @@ class StockScreen extends StatelessWidget {
                         child: CircularProgressIndicator(),
                       );
                     } else if (state is StockLoaded) {
-                      return DropdownButton<String>(
-                        // If no category is selected, default to "All Categories"
-                        value: state.selectedCategory ?? "All Categories",
-                        hint: const Text('Select Category'),
-                        onChanged: (value) {
-                          // Preserve existing brand when changing category
-                          final currentBrand =
-                              state.selectedBrand ?? "All Brands";
-                          // Send the new filter event with the chosen category
-                          context.read<StockBloc>().add(
-                                FilterProducts(
-                                  category: value!, // value is non-null here
-                                  brand: currentBrand,
-                                ),
-                              );
-                        },
-                        items: [
-                          // Sentinel item for all categories
-                          const DropdownMenuItem(
-                            value: "All Categories",
-                            child: Text("All Categories"),
+                      return SizedBox(
+                        width: 300,
+                        // Removed fixed height for natural sizing.
+                        child: DropdownButtonFormField<String>(
+                          decoration: const InputDecoration(
+                            labelText: 'Select Category',
+                            border: OutlineInputBorder(),
+                            // Increased top padding to prevent the label from being cut off.
+                            contentPadding:
+                                EdgeInsets.fromLTRB(12.0, 24.0, 12.0, 12.0),
                           ),
-                          ...state.categories.map((category) {
-                            return DropdownMenuItem(
-                              value: category,
-                              child: Text(category),
-                            );
-                          }),
-                        ],
+                          value: state.selectedCategory ?? "All Categories",
+                          onChanged: (value) {
+                            final currentBrand =
+                                state.selectedBrand ?? "All Brands";
+                            context.read<StockBloc>().add(
+                                  FilterProducts(
+                                    category: value!, // value is non-null here
+                                    brand: currentBrand,
+                                  ),
+                                );
+                          },
+                          items: [
+                            const DropdownMenuItem(
+                              value: "All Categories",
+                              child: Text("All Categories"),
+                            ),
+                            ...state.categories.map((category) {
+                              return DropdownMenuItem(
+                                value: category,
+                                child: Text(category),
+                              );
+                            }),
+                          ],
+                        ),
                       );
                     }
                     return const SizedBox.shrink();
@@ -98,34 +104,39 @@ class StockScreen extends StatelessWidget {
                         child: CircularProgressIndicator(),
                       );
                     } else if (state is StockLoaded) {
-                      return DropdownButton<String>(
-                        // If no brand is selected, default to "All Brands"
-                        value: state.selectedBrand ?? "All Brands",
-                        hint: const Text('Select Brand'),
-                        onChanged: (value) {
-                          // Preserve existing category when changing brand
-                          final currentCategory =
-                              state.selectedCategory ?? "All Categories";
-                          context.read<StockBloc>().add(
-                                FilterProducts(
-                                  category: currentCategory,
-                                  brand: value!, // value is non-null here
-                                ),
-                              );
-                        },
-                        items: [
-                          // Sentinel item for all brands
-                          const DropdownMenuItem(
-                            value: "All Brands",
-                            child: Text("All Brands"),
+                      return SizedBox(
+                        width: 200,
+                        child: DropdownButtonFormField<String>(
+                          decoration: const InputDecoration(
+                            labelText: 'Select Brand',
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.fromLTRB(12.0, 24.0, 12.0, 12.0),
                           ),
-                          ...state.brands.map((brand) {
-                            return DropdownMenuItem(
-                              value: brand,
-                              child: Text(brand),
-                            );
-                          }),
-                        ],
+                          value: state.selectedBrand ?? "All Brands",
+                          onChanged: (value) {
+                            final currentCategory =
+                                state.selectedCategory ?? "All Categories";
+                            context.read<StockBloc>().add(
+                                  FilterProducts(
+                                    category: currentCategory,
+                                    brand: value!, // value is non-null here
+                                  ),
+                                );
+                          },
+                          items: [
+                            const DropdownMenuItem(
+                              value: "All Brands",
+                              child: Text("All Brands"),
+                            ),
+                            ...state.brands.map((brand) {
+                              return DropdownMenuItem(
+                                value: brand,
+                                child: Text(brand),
+                              );
+                            }),
+                          ],
+                        ),
                       );
                     }
                     return const SizedBox.shrink();
@@ -138,23 +149,34 @@ class StockScreen extends StatelessWidget {
                 BlocBuilder<StockBloc, StockState>(
                   builder: (context, state) {
                     if (state is StockLoaded) {
-                      return DropdownButton<String>(
-                        value: state.sortOption ?? 'Last Updated',
-                        onChanged: (value) {
-                          if (value != null) {
-                            context.read<StockBloc>().add(SortProducts(value));
-                          }
-                        },
-                        items: [
-                          'Lowest Stock',
-                          'Highest Stock',
-                          'Last Updated',
-                        ].map((option) {
-                          return DropdownMenuItem(
-                            value: option,
-                            child: Text(option),
-                          );
-                        }).toList(),
+                      return SizedBox(
+                        width: 200,
+                        child: DropdownButtonFormField<String>(
+                          decoration: const InputDecoration(
+                            labelText: 'Sort Option',
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                                EdgeInsets.fromLTRB(12.0, 24.0, 12.0, 12.0),
+                          ),
+                          value: state.sortOption ?? 'Last Updated',
+                          onChanged: (value) {
+                            if (value != null) {
+                              context
+                                  .read<StockBloc>()
+                                  .add(SortProducts(value));
+                            }
+                          },
+                          items: [
+                            'Lowest Stock',
+                            'Highest Stock',
+                            'Last Updated',
+                          ].map((option) {
+                            return DropdownMenuItem(
+                              value: option,
+                              child: Text(option),
+                            );
+                          }).toList(),
+                        ),
                       );
                     }
                     return const SizedBox.shrink();
@@ -184,13 +206,11 @@ class StockScreen extends StatelessWidget {
                       return Card(
                         color: Colors.lightBlue[100],
                         margin: const EdgeInsets.symmetric(vertical: 8.0),
-                        // Increased card padding
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              // Custom header using InkWell for tap functionality
                               InkWell(
                                 onTap: () {
                                   Navigator.push(
@@ -211,8 +231,7 @@ class StockScreen extends StatelessWidget {
                                         fontSize: 18.0,
                                       ),
                                     ),
-                                    const SizedBox(
-                                        height: 8.0), // space after title
+                                    const SizedBox(height: 8.0),
                                     Text('Stock: ${product.stock}'),
                                     Text(
                                       'Last Updated: ${product.lastUpdated != null ? DateFormat('yyyy-MM-dd').format(product.lastUpdated!) : 'N/A'}',
@@ -221,7 +240,6 @@ class StockScreen extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 8.0),
-                              // Row with two Expanded buttons for Edit and Delete
                               Row(
                                 children: [
                                   Expanded(
@@ -231,7 +249,6 @@ class StockScreen extends StatelessWidget {
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.blue,
                                           foregroundColor: Colors.white,
-                                          // Increased button height
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 12.0),
                                         ),
@@ -288,10 +305,8 @@ class StockScreen extends StatelessWidget {
                                                 ),
                                                 TextButton(
                                                   onPressed: () {
-                                                    stockBloc.add(
-                                                      DeleteProduct(
-                                                          product.upc),
-                                                    );
+                                                    stockBloc.add(DeleteProduct(
+                                                        product.upc));
                                                     Navigator.of(dialogContext)
                                                         .pop();
                                                   },
@@ -323,7 +338,6 @@ class StockScreen extends StatelessWidget {
                     },
                   );
                 }
-                // Fallback if state is not StockLoaded
                 return const Center(child: Text('No products found.'));
               },
             ),
