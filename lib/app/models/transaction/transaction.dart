@@ -37,7 +37,7 @@ class Transaction {
   Map<String, dynamic> toJson() {
     return {
       'transaction_id': transactionId,
-      'date_created': dateCreated.toIso8601String(),
+      'date_created': dateCreated.toUtc().toIso8601String(),
       if (note != null) 'note': note,
     };
   }

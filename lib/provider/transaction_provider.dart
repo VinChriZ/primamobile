@@ -78,11 +78,15 @@ class TransactionProvider {
   Future<Transaction> createTransaction(Map<String, dynamic> fields) async {
     final RequestParam param = RequestParam(parameters: fields);
     final RequestObject request = RequestObjectFunction(requestParam: param);
+    final payload = await request.toJson();
+
+    // Print the payload for debugging.
+    print('Create Transaction Payload: $payload');
 
     try {
       final response = await dioClient.post(
-        '/transactions',
-        data: await request.toJson(),
+        '/transactions/',
+        data: payload,
       );
       print('Create Transaction Response: ${response.data}');
 

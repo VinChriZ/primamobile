@@ -13,7 +13,7 @@ class SalesPage extends StatelessWidget {
       create: (context) => SalesBloc(
         transactionRepository:
             RepositoryProvider.of<TransactionRepository>(context),
-      )..add(FetchSales()),
+      )..add(const FetchSales()),
       child: const SalesScreen(),
     );
   }

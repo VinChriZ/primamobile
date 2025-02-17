@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:primamobile/app/models/transaction/transaction.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/bloc/sales/sales_bloc.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/sales/add_sales_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/sales/sales_edit.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/transaction_detail/transaction_detail_page.dart';
 
@@ -31,6 +32,8 @@ class SalesScreen extends StatelessWidget {
   }
 
   void _showDeleteConfirmation(BuildContext context, int transactionId) {
+    // Now you can read the StockBloc because it's provided above in the tree.
+    final salesBloc = context.read<SalesBloc>();
     showDialog(
       context: context,
       builder: (context) {
@@ -45,11 +48,13 @@ class SalesScreen extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                context.read<SalesBloc>().add(DeleteTransaction(transactionId));
+                // Use stockBloc (or SalesBloc if appropriate) to process deletion.
+                salesBloc.add(DeleteTransaction(transactionId));
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                      content: Text('Transaction deleted successfully.')),
+                    content: Text('Transaction deleted successfully.'),
+                  ),
                 );
               },
               child: const Text('Delete'),
@@ -204,14 +209,16 @@ class SalesScreen extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Placeholder for adding new transactions.
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content:
-                  Text('Add Transaction functionality not implemented yet.'),
-            ),
+        onPressed: () async {
+          // Navigate to AddSalesPage and wait for result.
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddSalesPage()),
           );
+          // If result is true, refresh the SalesScreen by dispatching FetchSales.
+          if (result == true) {
+            context.read<SalesBloc>().add(const FetchSales());
+          }
         },
         child: const Icon(Icons.add),
       ),
