@@ -127,6 +127,7 @@ class _AddSalesPageState extends State<AddSalesPage> {
   }
 
   /// Search for a product using a search dialog.
+  /// Search for a product using a search dialog.
   Future<void> _searchAndAddProduct() async {
     try {
       final allProducts = await _productRepository.fetchProducts();
@@ -135,55 +136,60 @@ class _AddSalesPageState extends State<AddSalesPage> {
         builder: (context) {
           final TextEditingController searchController =
               TextEditingController();
+          // Initially, show all products.
           List<Product> filteredProducts = allProducts;
           return StatefulBuilder(
             builder: (context, setState) {
               return AlertDialog(
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 title: const Text('Search Product'),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: searchController,
-                      decoration: const InputDecoration(
-                        labelText: 'Enter product name or UPC',
-                        border: OutlineInputBorder(),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: searchController,
+                        decoration: const InputDecoration(
+                          labelText: 'Enter product name',
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (query) {
+                          setState(() {
+                            filteredProducts = allProducts
+                                .where((p) => p.name
+                                    .toLowerCase()
+                                    .contains(query.toLowerCase()))
+                                .toList();
+                          });
+                        },
                       ),
-                      onChanged: (query) {
-                        setState(() {
-                          filteredProducts = allProducts
-                              .where((p) =>
-                                  p.name
-                                      .toLowerCase()
-                                      .contains(query.toLowerCase()) ||
-                                  p.upc.contains(query))
-                              .toList();
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 8.0),
-                    SizedBox(
-                      height: 200,
-                      width: double.maxFinite,
-                      child: filteredProducts.isEmpty
-                          ? const Center(child: Text('No products found'))
-                          : ListView.builder(
-                              itemCount: filteredProducts.length,
-                              itemBuilder: (context, index) {
-                                final product = filteredProducts[index];
-                                return ListTile(
-                                  title: Text(product.name),
-                                  subtitle: Text('UPC: ${product.upc}'),
-                                  onTap: () {
-                                    Navigator.pop(context, product);
-                                  },
-                                );
-                              },
-                            ),
-                    ),
-                  ],
+                      const SizedBox(height: 16.0),
+                      // Make the dialog bigger by setting a larger height.
+                      SizedBox(
+                        height: 300,
+                        width: double.maxFinite,
+                        child: filteredProducts.isEmpty
+                            ? const Center(child: Text('No products found'))
+                            : ListView.builder(
+                                itemCount: filteredProducts.length,
+                                itemBuilder: (context, index) {
+                                  final product = filteredProducts[index];
+                                  return ListTile(
+                                    title: Text(product.name),
+                                    subtitle: Text(
+                                      'Display Price: Rp${product.displayPrice.toStringAsFixed(0)}\nNet Price: Rp${product.netPrice.toStringAsFixed(0)}',
+                                    ),
+                                    onTap: () {
+                                      Navigator.pop(context, product);
+                                    },
+                                  );
+                                },
+                              ),
+                      ),
+                    ],
+                  ),
                 ),
                 actions: [
                   TextButton(
