@@ -27,7 +27,7 @@ class SalesProductItem {
 
 /// Page to add a new sales transaction.
 class AddSalesPage extends StatefulWidget {
-  const AddSalesPage({Key? key}) : super(key: key);
+  const AddSalesPage({super.key});
 
   @override
   State<AddSalesPage> createState() => _AddSalesPageState();
@@ -314,8 +314,7 @@ class _AddSalesPageState extends State<AddSalesPage> {
     try {
       // Create the transaction using the transaction repository.
       final transactionPayload = {
-        'date_created':
-            '${_transactionDate.toUtc().toIso8601String().split('.').first}Z',
+        'date_created': _transactionDate.toIso8601String(),
         'note': _notesController.text,
       };
       final transaction = await _transactionRepository.addTransaction(
