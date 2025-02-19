@@ -257,17 +257,6 @@ class TransactionDetailScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     TextFormField(
-                      initialValue: detail.upc,
-                      decoration: const InputDecoration(labelText: 'UPC'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter UPC';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) => upc = value!,
-                    ),
-                    TextFormField(
                       initialValue: detail.quantity.toString(),
                       decoration: const InputDecoration(labelText: 'Quantity'),
                       keyboardType: TextInputType.number,

@@ -16,13 +16,13 @@ class SalesScreen extends StatefulWidget {
 
 class _SalesScreenState extends State<SalesScreen> {
   // Filter state variables
-  String _selectedDateRange = 'All Dates'; // Default changed to All Dates
+  String _selectedDateRange = 'All Dates'; // Default
   DateTime? _startDate;
   DateTime? _endDate;
 
   // For sorting
-  String _selectedSortBy = 'Date Created'; // Default remains Last Updated
-  String _selectedSortOrder = 'Descending'; // Default changed to Descending
+  String _selectedSortBy = 'Date Created'; // Default
+  String _selectedSortOrder = 'Descending'; // Default
 
   @override
   void initState() {
@@ -93,13 +93,14 @@ class _SalesScreenState extends State<SalesScreen> {
         );
   }
 
-  void _navigateToDetail(Transaction transaction) {
-    Navigator.push(
+  void _navigateToDetail(Transaction transaction) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => TransactionDetailPage(transaction: transaction),
       ),
     );
+    _applyFilters();
   }
 
   void _navigateToEdit(Transaction transaction) async {
