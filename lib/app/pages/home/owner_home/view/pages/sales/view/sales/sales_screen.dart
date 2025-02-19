@@ -7,10 +7,92 @@ import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/sale
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/sales/sales_edit.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/transaction_detail/transaction_detail_page.dart';
 
-class SalesScreen extends StatelessWidget {
+class SalesScreen extends StatefulWidget {
   const SalesScreen({super.key});
 
-  void _navigateToDetail(BuildContext context, Transaction transaction) {
+  @override
+  State<SalesScreen> createState() => _SalesScreenState();
+}
+
+class _SalesScreenState extends State<SalesScreen> {
+  // Filter state variables
+  String _selectedDateRange = 'All Dates'; // Default changed to All Dates
+  DateTime? _startDate;
+  DateTime? _endDate;
+
+  // For sorting
+  String _selectedSortBy = 'Last Updated'; // Default remains Last Updated
+  String _selectedSortOrder = 'Descending'; // Default changed to Descending
+
+  @override
+  void initState() {
+    super.initState();
+    _applyDatePreset(_selectedDateRange);
+  }
+
+  // Updates date filters based on preset
+  void _applyDatePreset(String preset) {
+    final now = DateTime.now();
+    setState(() {
+      _selectedDateRange = preset;
+      if (preset == 'Last 7 Days') {
+        _startDate = now.subtract(const Duration(days: 7));
+        _endDate = now;
+      } else if (preset == 'Last Month') {
+        _startDate = DateTime(now.year, now.month - 1, now.day);
+        _endDate = now;
+      } else if (preset == 'Last Year') {
+        _startDate = DateTime(now.year - 1, now.month, now.day);
+        _endDate = now;
+      } else if (preset == 'All Dates') {
+        _startDate = null;
+        _endDate = null;
+      }
+    });
+    _applyFilters();
+  }
+
+  // Callback for custom date range selection
+  Future<void> _selectCustomRange() async {
+    final now = DateTime.now();
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2000),
+      lastDate: now,
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedDateRange = 'Custom';
+        _startDate = picked.start;
+        _endDate = picked.end;
+      });
+      _applyFilters();
+    }
+  }
+
+  // Map the display sort field to the backend field name
+  String _mapSortBy(String sortBy) {
+    if (sortBy == 'Last Updated') return 'last_updated';
+    if (sortBy == 'Stock') return 'quantity';
+    if (sortBy == 'Profit') return 'profit';
+    return sortBy;
+  }
+
+  // Dispatch the FetchSales event with all current filters.
+  void _applyFilters() {
+    context.read<SalesBloc>().add(
+          FetchSales(
+            startDate: _startDate,
+            endDate: _endDate,
+            sortBy: _mapSortBy(_selectedSortBy),
+            sortOrder: _selectedSortOrder.toLowerCase() == 'ascending'
+                ? 'asc'
+                : 'desc',
+          ),
+        );
+  }
+
+  void _navigateToDetail(Transaction transaction) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -19,7 +101,7 @@ class SalesScreen extends StatelessWidget {
     );
   }
 
-  void _navigateToEdit(BuildContext context, Transaction transaction) async {
+  void _navigateToEdit(Transaction transaction) async {
     final updatedTransaction = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -27,13 +109,11 @@ class SalesScreen extends StatelessWidget {
       ),
     );
     if (updatedTransaction != null) {
-      context.read<SalesBloc>().add(const FetchSales());
+      _applyFilters();
     }
   }
 
-  void _showDeleteConfirmation(BuildContext context, int transactionId) {
-    // Now you can read the StockBloc because it's provided above in the tree.
-    final salesBloc = context.read<SalesBloc>();
+  void _showDeleteConfirmation(int transactionId) {
     showDialog(
       context: context,
       builder: (context) {
@@ -48,8 +128,7 @@ class SalesScreen extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                // Use stockBloc (or SalesBloc if appropriate) to process deletion.
-                salesBloc.add(DeleteTransaction(transactionId));
+                context.read<SalesBloc>().add(DeleteTransaction(transactionId));
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -65,8 +144,7 @@ class SalesScreen extends StatelessWidget {
     );
   }
 
-  /// Builds the card UI exactly as you designed it.
-  Widget _buildTransactionCard(BuildContext context, Transaction transaction) {
+  Widget _buildTransactionCard(Transaction transaction) {
     double profit = transaction.totalAgreedPrice - transaction.totalNetPrice;
     String dateCreatedStr =
         DateFormat('yyyy-MM-dd').format(transaction.dateCreated);
@@ -78,13 +156,12 @@ class SalesScreen extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       elevation: 2,
       child: InkWell(
-        onTap: () => _navigateToDetail(context, transaction),
+        onTap: () => _navigateToDetail(transaction),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Date Created as the title.
               Text(
                 dateCreatedStr,
                 style: const TextStyle(
@@ -97,7 +174,6 @@ class SalesScreen extends StatelessWidget {
               const SizedBox(height: 6.0),
               _buildAttributeRow("Last Updated:", lastUpdatedStr),
               const SizedBox(height: 12.0),
-              // Row with Edit and Delete buttons.
               Row(
                 children: [
                   Expanded(
@@ -106,7 +182,7 @@ class SalesScreen extends StatelessWidget {
                         backgroundColor: Colors.blue,
                         padding: const EdgeInsets.symmetric(vertical: 12.0),
                       ),
-                      onPressed: () => _navigateToEdit(context, transaction),
+                      onPressed: () => _navigateToEdit(transaction),
                       child: const Text(
                         'Edit',
                         style: TextStyle(
@@ -121,8 +197,8 @@ class SalesScreen extends StatelessWidget {
                         backgroundColor: Colors.red,
                         padding: const EdgeInsets.symmetric(vertical: 12.0),
                       ),
-                      onPressed: () => _showDeleteConfirmation(
-                          context, transaction.transactionId),
+                      onPressed: () =>
+                          _showDeleteConfirmation(transaction.transactionId),
                       child: const Text(
                         'Delete',
                         style: TextStyle(
@@ -139,7 +215,6 @@ class SalesScreen extends StatelessWidget {
     );
   }
 
-  /// Helper method to build a row for each attribute.
   Widget _buildAttributeRow(String label, String value) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,17 +237,98 @@ class SalesScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Sales')),
       body: Column(
         children: [
-          // Horizontally scrollable row of dropdown filters.
-          const SingleChildScrollView(
+          // Filters Row
+          SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
             child: Row(
               children: [
-                _DateRangeDropdown(),
-                SizedBox(width: 16.0),
-                _SortByDropdown(),
-                SizedBox(width: 16.0),
-                _SortOrderDropdown(),
+                // Date Range Dropdown
+                SizedBox(
+                  width: 180,
+                  child: DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'Date Range',
+                      border: OutlineInputBorder(),
+                    ),
+                    value: _selectedDateRange,
+                    items: <String>[
+                      'Last 7 Days',
+                      'Last Month',
+                      'Last Year',
+                      'All Dates',
+                      'Custom'
+                    ].map((value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        if (value == 'Custom') {
+                          _selectCustomRange();
+                        } else {
+                          _applyDatePreset(value);
+                        }
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(width: 16.0),
+                // Sort By Dropdown
+                SizedBox(
+                  width: 180,
+                  child: DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'Sort By',
+                      border: OutlineInputBorder(),
+                    ),
+                    value: _selectedSortBy,
+                    items: <String>['Last Updated', 'Stock', 'Profit']
+                        .map((value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedSortBy = value;
+                        });
+                        _applyFilters();
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(width: 16.0),
+                // Sort Order Dropdown
+                SizedBox(
+                  width: 180,
+                  child: DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'Sort Order',
+                      border: OutlineInputBorder(),
+                    ),
+                    value: _selectedSortOrder,
+                    items: <String>['Ascending', 'Descending'].map((value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedSortOrder = value;
+                        });
+                        _applyFilters();
+                      }
+                    },
+                  ),
+                ),
               ],
             ),
           ),
@@ -189,13 +345,13 @@ class SalesScreen extends StatelessWidget {
                   }
                   return RefreshIndicator(
                     onRefresh: () async {
-                      context.read<SalesBloc>().add(const FetchSales());
+                      _applyFilters();
                     },
                     child: ListView.builder(
                       itemCount: state.transactions.length,
                       itemBuilder: (context, index) {
                         final transaction = state.transactions[index];
-                        return _buildTransactionCard(context, transaction);
+                        return _buildTransactionCard(transaction);
                       },
                     ),
                   );
@@ -210,209 +366,15 @@ class SalesScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          // Navigate to AddSalesPage and wait for result.
           final result = await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AddSalesPage()),
           );
-          // If result is true, refresh the SalesScreen by dispatching FetchSales.
           if (result == true) {
-            context.read<SalesBloc>().add(const FetchSales());
+            _applyFilters();
           }
         },
         child: const Icon(Icons.add),
-      ),
-    );
-  }
-}
-
-/// Dropdown for selecting a date range.
-class _DateRangeDropdown extends StatefulWidget {
-  const _DateRangeDropdown();
-
-  @override
-  _DateRangeDropdownState createState() => _DateRangeDropdownState();
-}
-
-class _DateRangeDropdownState extends State<_DateRangeDropdown> {
-  String? _selectedDateRange = 'Last 7 Days';
-  DateTime? _startDate;
-  DateTime? _endDate;
-
-  @override
-  void initState() {
-    super.initState();
-    _applyPreset('Last 7 Days');
-  }
-
-  void _applyPreset(String preset) {
-    final now = DateTime.now();
-    setState(() {
-      _selectedDateRange = preset;
-      if (preset == 'Last 7 Days') {
-        _startDate = now.subtract(const Duration(days: 7));
-        _endDate = now;
-      } else if (preset == 'Last Month') {
-        _startDate = DateTime(now.year, now.month - 1, now.day);
-        _endDate = now;
-      } else if (preset == 'Last Year') {
-        _startDate = DateTime(now.year - 1, now.month, now.day);
-        _endDate = now;
-      } else {
-        _startDate = null;
-        _endDate = null;
-      }
-    });
-    _applyFilters();
-  }
-
-  Future<void> _selectCustomRange() async {
-    final now = DateTime.now();
-    final picked = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime(2000),
-      lastDate: now,
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedDateRange = 'Custom';
-        _startDate = picked.start;
-        _endDate = picked.end;
-      });
-      _applyFilters();
-    }
-  }
-
-  void _applyFilters() {
-    context.read<SalesBloc>().add(
-          FetchSales(startDate: _startDate, endDate: _endDate),
-        );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 180,
-      child: DropdownButtonFormField<String>(
-        decoration: const InputDecoration(
-          labelText: 'Date Range',
-          border: OutlineInputBorder(),
-        ),
-        value: _selectedDateRange,
-        items: <String>['Last 7 Days', 'Last Month', 'Last Year', 'Custom']
-            .map((value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value),
-          );
-        }).toList(),
-        onChanged: (value) {
-          if (value == 'Custom') {
-            _selectCustomRange();
-          } else if (value != null) {
-            _applyPreset(value);
-          }
-        },
-      ),
-    );
-  }
-}
-
-/// Dropdown for selecting the sort field.
-class _SortByDropdown extends StatefulWidget {
-  const _SortByDropdown();
-
-  @override
-  _SortByDropdownState createState() => _SortByDropdownState();
-}
-
-class _SortByDropdownState extends State<_SortByDropdown> {
-  String? _selectedSortBy = 'Last Updated';
-
-  void _applySortBy(String sortBy) {
-    setState(() {
-      _selectedSortBy = sortBy;
-    });
-    context.read<SalesBloc>().add(
-          FetchSales(sortBy: _mapSortBy(sortBy)),
-        );
-  }
-
-  String _mapSortBy(String sortBy) {
-    if (sortBy == 'Last Updated') return 'last_updated';
-    if (sortBy == 'Stock') return 'quantity';
-    if (sortBy == 'Profit') return 'profit';
-    return sortBy;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 180,
-      child: DropdownButtonFormField<String>(
-        decoration: const InputDecoration(
-          labelText: 'Sort By',
-          border: OutlineInputBorder(),
-        ),
-        value: _selectedSortBy,
-        items: <String>['Last Updated', 'Stock', 'Profit'].map((value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value),
-          );
-        }).toList(),
-        onChanged: (value) {
-          if (value != null) {
-            _applySortBy(value);
-          }
-        },
-      ),
-    );
-  }
-}
-
-/// Dropdown for selecting the sort order.
-class _SortOrderDropdown extends StatefulWidget {
-  const _SortOrderDropdown();
-
-  @override
-  _SortOrderDropdownState createState() => _SortOrderDropdownState();
-}
-
-class _SortOrderDropdownState extends State<_SortOrderDropdown> {
-  String _selectedSortOrder = 'Ascending';
-
-  void _applySortOrder(String order) {
-    setState(() {
-      _selectedSortOrder = order;
-    });
-    context.read<SalesBloc>().add(
-          FetchSales(
-              sortOrder: order.toLowerCase() == 'ascending' ? 'asc' : 'desc'),
-        );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 180,
-      child: DropdownButtonFormField<String>(
-        decoration: const InputDecoration(
-          labelText: 'Sort Order',
-          border: OutlineInputBorder(),
-        ),
-        value: _selectedSortOrder,
-        items: <String>['Ascending', 'Descending'].map((value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value),
-          );
-        }).toList(),
-        onChanged: (value) {
-          if (value != null) {
-            _applySortOrder(value);
-          }
-        },
       ),
     );
   }
