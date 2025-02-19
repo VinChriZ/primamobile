@@ -47,13 +47,13 @@ class StockBloc extends Bloc<StockEvent, StockState> {
         displayedProducts: sortedProducts,
         categories: categories,
         brands: brands,
-        selectedCategory: null,
-        selectedBrand: null,
+        selectedCategory: "All Categories",
+        selectedBrand: "All Brands",
         searchQuery: '',
         sortOption: 'Last Updated',
       ));
     } catch (e) {
-      emit(StockError('Failed to load products, categories, or brands.'));
+      emit(const StockError('Failed to load products, categories, or brands.'));
     }
   }
 

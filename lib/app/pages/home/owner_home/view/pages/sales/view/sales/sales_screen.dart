@@ -21,7 +21,7 @@ class _SalesScreenState extends State<SalesScreen> {
   DateTime? _endDate;
 
   // For sorting
-  String _selectedSortBy = 'Last Updated'; // Default remains Last Updated
+  String _selectedSortBy = 'Date Created'; // Default remains Last Updated
   String _selectedSortOrder = 'Descending'; // Default changed to Descending
 
   @override
@@ -75,6 +75,7 @@ class _SalesScreenState extends State<SalesScreen> {
     if (sortBy == 'Last Updated') return 'last_updated';
     if (sortBy == 'Stock') return 'quantity';
     if (sortBy == 'Profit') return 'profit';
+    if (sortBy == 'Date Created') return 'date_created';
     return sortBy;
   }
 
@@ -114,22 +115,24 @@ class _SalesScreenState extends State<SalesScreen> {
   }
 
   void _showDeleteConfirmation(int transactionId) {
+    // Capture the SalesBloc from the parent context
+    final salesBloc = context.read<SalesBloc>();
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Delete Transaction'),
           content:
               const Text('Are you sure you want to delete this transaction?'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
-                context.read<SalesBloc>().add(DeleteTransaction(transactionId));
-                Navigator.pop(context);
+                salesBloc.add(DeleteTransaction(transactionId));
+                Navigator.pop(dialogContext);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Transaction deleted successfully.'),
@@ -286,8 +289,12 @@ class _SalesScreenState extends State<SalesScreen> {
                       border: OutlineInputBorder(),
                     ),
                     value: _selectedSortBy,
-                    items: <String>['Last Updated', 'Stock', 'Profit']
-                        .map((value) {
+                    items: <String>[
+                      'Last Updated',
+                      'Stock',
+                      'Profit',
+                      'Date Created'
+                    ].map((value) {
                       return DropdownMenuItem<String>(
                         value: value,
                         child: Text(value),
