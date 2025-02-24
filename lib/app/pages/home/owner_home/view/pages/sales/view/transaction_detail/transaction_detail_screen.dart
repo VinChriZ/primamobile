@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:primamobile/app/models/transaction/transaction.dart';
 import 'package:primamobile/app/models/transaction/transaction_detail.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/bloc/transaction_detail/transaction_detail_bloc.dart';
@@ -12,8 +13,10 @@ class TransactionDetailScreen extends StatelessWidget {
   const TransactionDetailScreen({super.key, required this.transaction});
 
   /// Helper to build header attribute row with a fixed-width label and right-aligned value.
-  Widget _buildTransactionInfoRow(
-      {required String label, required String value}) {
+  Widget _buildTransactionInfoRow({
+    required String label,
+    required String value,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -115,7 +118,7 @@ class TransactionDetailScreen extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => _showDeleteDetailConfirmation(
-                        context, transactionId, detail.detailId),
+                        context, transaction.transactionId, detail.detailId),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                     ),
@@ -130,109 +133,6 @@ class TransactionDetailScreen extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  /// Dialog for adding a new detail.
-  void _showAddDetailDialog(BuildContext context, int transactionId) {
-    final _formKey = GlobalKey<FormState>();
-    String upc = '';
-    int quantity = 1;
-    double agreedPrice = 0.0;
-    final transactionDetailBloc = context.read<TransactionDetailBloc>();
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return BlocProvider.value(
-          value: transactionDetailBloc,
-          child: AlertDialog(
-            title: const Text('Add Transaction Detail'),
-            content: Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    TextFormField(
-                      decoration: const InputDecoration(labelText: 'UPC'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter UPC';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) => upc = value!,
-                    ),
-                    TextFormField(
-                      decoration: const InputDecoration(labelText: 'Quantity'),
-                      keyboardType: TextInputType.number,
-                      initialValue: '1',
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter quantity';
-                        }
-                        if (int.tryParse(value) == null ||
-                            int.parse(value) <= 0) {
-                          return 'Enter a valid quantity';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) => quantity = int.parse(value!),
-                    ),
-                    TextFormField(
-                      decoration:
-                          const InputDecoration(labelText: 'Agreed Price'),
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter agreed price';
-                        }
-                        if (double.tryParse(value) == null ||
-                            double.parse(value) <= 0) {
-                          return 'Enter a valid price';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) => agreedPrice = double.parse(value!),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
-                    transactionDetailBloc.add(
-                      AddTransactionDetail(
-                        transactionId,
-                        {
-                          'upc': upc,
-                          'quantity': quantity,
-                          'agreed_price': agreedPrice,
-                        },
-                      ),
-                    );
-                    Navigator.of(dialogContext).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Transaction detail added successfully.'),
-                      ),
-                    );
-                  }
-                },
-                child: const Text('Add'),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 
@@ -256,6 +156,17 @@ class TransactionDetailScreen extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
+                    TextFormField(
+                      initialValue: detail.upc,
+                      decoration: const InputDecoration(labelText: 'UPC'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter UPC';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) => upc = value!,
+                    ),
                     TextFormField(
                       initialValue: detail.quantity.toString(),
                       decoration: const InputDecoration(labelText: 'Quantity'),
@@ -317,9 +228,8 @@ class TransactionDetailScreen extends StatelessWidget {
                     Navigator.of(dialogContext).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content:
-                            Text('Transaction detail updated successfully.'),
-                      ),
+                          content:
+                              Text('Transaction detail updated successfully.')),
                     );
                   }
                 },
@@ -353,8 +263,8 @@ class TransactionDetailScreen extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                  transactionDetailBloc
-                      .add(DeleteTransactionDetail(transactionId, detailId));
+                  transactionDetailBloc.add(DeleteTransactionDetail(
+                      transaction.transactionId, detailId));
                   Navigator.of(dialogContext).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -363,6 +273,251 @@ class TransactionDetailScreen extends StatelessWidget {
                   );
                 },
                 child: const Text('Delete'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// Opens a bottom sheet with options to scan a barcode or search for a product.
+  void _openAddProductOptions(BuildContext context, int transactionId) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.qr_code_scanner),
+                title: const Text('Scan Barcode'),
+                onTap: () async {
+                  Navigator.pop(sheetContext);
+                  await _scanAndAddProduct(context, transactionId);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.search),
+                title: const Text('Search Product'),
+                onTap: () async {
+                  Navigator.pop(sheetContext);
+                  await _searchAndAddProduct(context, transactionId);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// Uses the barcode scanner to scan a product and then adds it.
+  Future<void> _scanAndAddProduct(
+      BuildContext context, int transactionId) async {
+    try {
+      final barcode = await FlutterBarcodeScanner.scanBarcode(
+        '#ff6666', // scanning line color
+        'Cancel',
+        false,
+        ScanMode.BARCODE,
+      );
+      if (barcode == '-1') return; // User cancelled.
+      final productRepository =
+          RepositoryProvider.of<ProductRepository>(context);
+      final product = await productRepository.fetchProduct(barcode);
+      // ignore: unnecessary_null_comparison
+      if (product != null) {
+        await _promptAddDetailDialog(context, product, transactionId);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Product not found')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error scanning barcode: $e')),
+      );
+    }
+  }
+
+  /// Opens a dialog to search for a product and then add it.
+  Future<void> _searchAndAddProduct(
+      BuildContext context, int transactionId) async {
+    try {
+      final productRepository =
+          RepositoryProvider.of<ProductRepository>(context);
+      final allProducts = await productRepository.fetchProducts();
+      final selectedProduct = await showDialog(
+        context: context,
+        builder: (dialogContext) {
+          final TextEditingController searchController =
+              TextEditingController();
+          List<dynamic> filteredProducts = allProducts;
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                title: const Text('Search Product'),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: searchController,
+                        decoration: const InputDecoration(
+                          labelText: 'Enter product name',
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (query) {
+                          setState(() {
+                            filteredProducts = allProducts
+                                .where((p) => p.name
+                                    .toLowerCase()
+                                    .contains(query.toLowerCase()))
+                                .toList();
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16.0),
+                      SizedBox(
+                        height: 300,
+                        width: double.maxFinite,
+                        child: filteredProducts.isEmpty
+                            ? const Center(child: Text('No products found'))
+                            : ListView.builder(
+                                itemCount: filteredProducts.length,
+                                itemBuilder: (context, index) {
+                                  final product = filteredProducts[index];
+                                  return ListTile(
+                                    title: Text(product.name),
+                                    subtitle: Text(
+                                      'Display Price: Rp${product.displayPrice.toStringAsFixed(0)}\nNet Price: Rp${product.netPrice.toStringAsFixed(0)}',
+                                    ),
+                                    onTap: () {
+                                      Navigator.pop(context, product);
+                                    },
+                                  );
+                                },
+                              ),
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+
+      if (selectedProduct != null) {
+        await _promptAddDetailDialog(context, selectedProduct, transactionId);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error searching products: $e')),
+      );
+    }
+  }
+
+  /// Prompts the user to enter quantity and agreed price for the selected product.
+  /// Once submitted, dispatches an AddTransactionDetail event.
+  Future<void> _promptAddDetailDialog(
+      BuildContext context, dynamic product, int transactionId) async {
+    final quantityController = TextEditingController();
+    final agreedPriceController =
+        TextEditingController(text: product.displayPrice.toString());
+    final transactionDetailBloc = context.read<TransactionDetailBloc>();
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return BlocProvider.value(
+          value: transactionDetailBloc,
+          child: AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            title: Text('Add ${product.name}'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Available stock: ${product.stock}'),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: quantityController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Quantity',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: agreedPriceController,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: 'Agreed Price (Rp)',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final int? quantity = int.tryParse(quantityController.text);
+                  final double? agreedPrice =
+                      double.tryParse(agreedPriceController.text);
+                  if (quantity == null ||
+                      quantity <= 0 ||
+                      agreedPrice == null ||
+                      agreedPrice <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Enter valid quantity and price')),
+                    );
+                    return;
+                  }
+                  if (quantity > product.stock) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Quantity exceeds available stock')),
+                    );
+                    return;
+                  }
+                  transactionDetailBloc.add(
+                    AddTransactionDetail(
+                      transactionId,
+                      {
+                        'upc': product.upc,
+                        'quantity': quantity,
+                        'agreed_price': agreedPrice,
+                      },
+                    ),
+                  );
+                  Navigator.pop(dialogContext);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Transaction detail added successfully')),
+                  );
+                },
+                child: const Text('Add'),
               ),
             ],
           ),
@@ -491,7 +646,7 @@ class TransactionDetailScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () =>
-            _showAddDetailDialog(context, transaction.transactionId),
+            _openAddProductOptions(context, transaction.transactionId),
         child: const Icon(Icons.add),
       ),
     );
