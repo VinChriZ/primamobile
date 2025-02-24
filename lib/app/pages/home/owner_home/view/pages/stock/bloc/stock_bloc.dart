@@ -65,7 +65,7 @@ class StockBloc extends Bloc<StockEvent, StockState> {
         // Reload products after adding
         add(LoadProducts());
       } catch (e) {
-        emit(StockError('Failed to add product.'));
+        emit(const StockError('Failed to add product.'));
       }
     }
   }
@@ -94,7 +94,7 @@ class StockBloc extends Bloc<StockEvent, StockState> {
         // Reload products after deletion
         add(LoadProducts());
       } catch (e) {
-        emit(StockError('Failed to delete product.'));
+        emit(const StockError('Failed to delete product.'));
       }
     }
   }

@@ -9,10 +9,10 @@ class InvoicePrintPreviewPage extends StatelessWidget {
   final List<TransactionDetail> details;
 
   const InvoicePrintPreviewPage({
-    Key? key,
+    super.key,
     required this.transaction,
     required this.details,
-  }) : super(key: key);
+  });
 
   // Helper widget to build a row for invoice info.
   Widget _buildRow({required String label, required String value}) {
@@ -108,9 +108,7 @@ class InvoicePrintPreviewPage extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8.0),
-            ...details
-                .map((detail) => _buildDetailItem(context, detail))
-                .toList(),
+            ...details.map((detail) => _buildDetailItem(context, detail)),
             const SizedBox(height: 20.0),
             Center(
               child: Column(
