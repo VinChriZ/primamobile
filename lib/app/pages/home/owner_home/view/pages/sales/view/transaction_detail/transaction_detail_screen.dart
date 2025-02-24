@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:mobile_scanner/mobile_scanner.dart'; // New import
 import 'package:primamobile/app/models/transaction/transaction.dart';
 import 'package:primamobile/app/models/transaction/transaction_detail.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/bloc/transaction_detail/transaction_detail_bloc.dart';
@@ -12,7 +12,6 @@ class TransactionDetailScreen extends StatelessWidget {
 
   const TransactionDetailScreen({super.key, required this.transaction});
 
-  /// Helper to build header attribute row with a fixed-width label and right-aligned value.
   Widget _buildTransactionInfoRow({
     required String label,
     required String value,
@@ -40,7 +39,6 @@ class TransactionDetailScreen extends StatelessWidget {
     );
   }
 
-  /// Builds the list of transaction details.
   Widget _buildTransactionDetailsList(BuildContext context,
       List<TransactionDetail> details, int transactionId) {
     if (details.isEmpty) {
@@ -136,9 +134,8 @@ class TransactionDetailScreen extends StatelessWidget {
     );
   }
 
-  /// Dialog for editing an existing detail.
   void _showEditDetailDialog(BuildContext context, TransactionDetail detail) {
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
     String upc = detail.upc;
     int quantity = detail.quantity;
     double agreedPrice = detail.agreedPrice;
@@ -152,7 +149,7 @@ class TransactionDetailScreen extends StatelessWidget {
           child: AlertDialog(
             title: const Text('Edit Transaction Detail'),
             content: Form(
-              key: _formKey,
+              key: formKey,
               child: SingleChildScrollView(
                 child: Column(
                   children: [
@@ -212,8 +209,8 @@ class TransactionDetailScreen extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
+                  if (formKey.currentState!.validate()) {
+                    formKey.currentState!.save();
                     transactionDetailBloc.add(
                       UpdateTransactionDetail(
                         transaction.transactionId,
@@ -242,7 +239,6 @@ class TransactionDetailScreen extends StatelessWidget {
     );
   }
 
-  /// Confirmation dialog for deleting a detail.
   void _showDeleteDetailConfirmation(
       BuildContext context, int transactionId, int detailId) {
     final transactionDetailBloc = context.read<TransactionDetailBloc>();
@@ -315,17 +311,17 @@ class TransactionDetailScreen extends StatelessWidget {
     );
   }
 
-  /// Uses the barcode scanner to scan a product and then adds it.
+  /// Uses mobile_scanner to scan a product barcode and then adds it.
   Future<void> _scanAndAddProduct(
       BuildContext context, int transactionId) async {
     try {
-      final barcode = await FlutterBarcodeScanner.scanBarcode(
-        '#ff6666', // scanning line color
-        'Cancel',
-        false,
-        ScanMode.BARCODE,
+      final barcode = await Navigator.push<String>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const BarcodeScannerPage(),
+        ),
       );
-      if (barcode == '-1') return; // User cancelled.
+      if (barcode == null || barcode.isEmpty) return;
       final productRepository =
           RepositoryProvider.of<ProductRepository>(context);
       final product = await productRepository.fetchProduct(barcode);
@@ -420,7 +416,6 @@ class TransactionDetailScreen extends StatelessWidget {
           );
         },
       );
-
       if (selectedProduct != null) {
         await _promptAddDetailDialog(context, selectedProduct, transactionId);
       }
@@ -432,7 +427,6 @@ class TransactionDetailScreen extends StatelessWidget {
   }
 
   /// Prompts the user to enter quantity and agreed price for the selected product.
-  /// Once submitted, dispatches an AddTransactionDetail event.
   Future<void> _promptAddDetailDialog(
       BuildContext context, dynamic product, int transactionId) async {
     final quantityController = TextEditingController();
@@ -539,7 +533,6 @@ class TransactionDetailScreen extends StatelessWidget {
             icon: const Icon(Icons.print),
             tooltip: 'Print Invoice',
             onPressed: () {
-              // Get the current bloc state
               final state = context.read<TransactionDetailBloc>().state;
               if (state is TransactionDetailLoaded) {
                 Navigator.of(context).push(
@@ -648,6 +641,47 @@ class TransactionDetailScreen extends StatelessWidget {
         onPressed: () =>
             _openAddProductOptions(context, transaction.transactionId),
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+/// A dedicated page for scanning barcodes using mobile_scanner.
+class BarcodeScannerPage extends StatefulWidget {
+  const BarcodeScannerPage({super.key});
+
+  @override
+  State<BarcodeScannerPage> createState() => _BarcodeScannerPageState();
+}
+
+class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
+  final MobileScannerController _controller = MobileScannerController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onDetect(BarcodeCapture capture) {
+    final List<Barcode> barcodes = capture.barcodes;
+    if (barcodes.isNotEmpty) {
+      final String? code = barcodes.first.rawValue;
+      if (code != null) {
+        // Stop scanning to prevent further detections.
+        _controller.stop();
+        Navigator.of(context).pop(code);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Scan Barcode')),
+      body: MobileScanner(
+        controller: _controller,
+        onDetect: _onDetect,
       ),
     );
   }

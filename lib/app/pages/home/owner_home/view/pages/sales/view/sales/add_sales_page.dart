@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:intl/intl.dart';
 import 'package:primamobile/app/models/models.dart';
 import 'package:primamobile/repository/product_repository.dart';
@@ -100,33 +100,32 @@ class _AddSalesPageState extends State<AddSalesPage> {
     );
   }
 
-  /// Scan barcode using a real scanner and then fetch product details.
+  /// Scan barcode using mobile_scanner.
   Future<void> _scanAndAddProduct() async {
     try {
-      // Scan barcode using flutter_barcode_scanner.
-      final barcode = await FlutterBarcodeScanner.scanBarcode(
-        '#ff6666', // scanning line color
-        'Cancel',
-        false,
-        ScanMode.BARCODE,
+      // Navigate to the scanner page and wait for a barcode result.
+      final barcode = await Navigator.push<String>(
+        context,
+        MaterialPageRoute(builder: (context) => const BarcodeScannerPage()),
       );
 
-      if (barcode == '-1') {
-        // User cancelled scanning.
+      if (barcode == null || barcode.isEmpty) {
+        // User cancelled scanning or no barcode detected.
         return;
       }
-      // Fetch the product using the scanned UPC.
+      // Fetch the product using the scanned barcode.
       final product = await _productRepository.fetchProduct(barcode);
       // ignore: unnecessary_null_comparison
       if (product != null) {
         await _promptAddProductDetail(product);
+      } else {
+        _showError('Product not found for barcode: $barcode');
       }
     } catch (e) {
       _showError('Error scanning barcode: $e');
     }
   }
 
-  /// Search for a product using a search dialog.
   /// Search for a product using a search dialog.
   Future<void> _searchAndAddProduct() async {
     try {
@@ -136,7 +135,6 @@ class _AddSalesPageState extends State<AddSalesPage> {
         builder: (context) {
           final TextEditingController searchController =
               TextEditingController();
-          // Initially, show all products.
           List<Product> filteredProducts = allProducts;
           return StatefulBuilder(
             builder: (context, setState) {
@@ -166,7 +164,6 @@ class _AddSalesPageState extends State<AddSalesPage> {
                         },
                       ),
                       const SizedBox(height: 16.0),
-                      // Make the dialog bigger by setting a larger height.
                       SizedBox(
                         height: 300,
                         width: double.maxFinite,
@@ -312,7 +309,6 @@ class _AddSalesPageState extends State<AddSalesPage> {
       return;
     }
     try {
-      // Create the transaction using the transaction repository.
       final transactionPayload = {
         'date_created': _transactionDate.toIso8601String(),
         'note': _notesController.text,
@@ -321,7 +317,6 @@ class _AddSalesPageState extends State<AddSalesPage> {
         transactionPayload,
       );
 
-      // For each product item, add a transaction detail.
       for (var item in _salesItems) {
         final detailPayload = {
           'upc': item.product.upc,
@@ -334,7 +329,6 @@ class _AddSalesPageState extends State<AddSalesPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Transaction added successfully')),
       );
-      // Pop with a true value to indicate success.
       Navigator.pop(context, true);
     } catch (e) {
       _showError('Failed to submit transaction: $e');
@@ -469,6 +463,47 @@ class _AddSalesPageState extends State<AddSalesPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddProductOptions,
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+/// A dedicated page for scanning barcodes using the mobile_scanner package.
+class BarcodeScannerPage extends StatefulWidget {
+  const BarcodeScannerPage({super.key});
+
+  @override
+  State<BarcodeScannerPage> createState() => _BarcodeScannerPageState();
+}
+
+class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
+  final MobileScannerController _controller = MobileScannerController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onDetect(BarcodeCapture capture) {
+    final List<Barcode> barcodes = capture.barcodes;
+    if (barcodes.isNotEmpty) {
+      final String? code = barcodes.first.rawValue;
+      if (code != null) {
+        // Stop further detection before popping.
+        _controller.stop();
+        Navigator.of(context).pop(code);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Scan Barcode')),
+      body: MobileScanner(
+        controller: _controller,
+        onDetect: _onDetect,
       ),
     );
   }
