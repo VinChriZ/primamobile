@@ -1,8 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:primamobile/repository/transaction_detail_repository.dart';
 import 'package:primamobile/repository/transaction_repository.dart';
 import 'package:primamobile/repository/product_repository.dart';
+import 'package:primamobile/repository/transaction_detail_repository.dart';
 
 part 'report_event.dart';
 part 'report_state.dart';
@@ -25,37 +25,53 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
       LoadReportEvent event, Emitter<ReportState> emit) async {
     emit(ReportLoading());
     try {
-      // Fetch transactions based on date filters
+      // Fetch transactions based on provided filter dates.
       final transactions = await transactionRepository.fetchTransactions(
           startDate: event.startDate, endDate: event.endDate);
 
-      // Aggregate data for the line charts:
-      // Sales line chart aggregates totalDisplayPrice per day
-      final salesData =
-          _aggregateLineChartData(transactions, (tx) => tx.quantity.toDouble());
-
-      // Profits line chart aggregates (totalAgreedPrice - totalNetPrice) per day
-      final profitsData = _aggregateLineChartData(
+      // For the "Total Sales" chart, aggregate quantity sold per day.
+      final Map<DateTime, double> salesData = {};
+      // For the "Total Profits" chart, aggregate (totalAgreedPrice - totalNetPrice) per day.
+      final Map<DateTime, double> profitsData = _aggregateLineChartData(
           transactions, (tx) => tx.totalAgreedPrice - tx.totalNetPrice);
 
-      // For the pie charts, here we simulate aggregated data.
-      // In your real implementation, consider joining transaction details with product info.
-      final brandTotals = <String, double>{
-        'Brand A': 1200.0,
-        'Brand B': 800.0,
-        'Brand C': 1500.0,
-      };
+      // Initialize aggregations for pie charts.
+      final Map<String, double> brandTotals = {};
+      final Map<String, double> categoryTotals = {};
 
-      final categoryTotals = <String, double>{
-        'Category X': 1000.0,
-        'Category Y': 1700.0,
-      };
+      // Process each transaction.
+      for (var tx in transactions) {
+        // Fetch transaction details for this transaction.
+        final details = await transactionDetailRepository
+            .fetchTransactionDetails(tx.transactionId);
+        double transactionQuantity = 0;
+        for (var detail in details) {
+          // Sum quantity from each transaction detail.
+          transactionQuantity += detail.quantity.toDouble();
+          // Fetch product info to determine brand and category.
+          final product = await productRepository.fetchProduct(detail.upc);
+          // Aggregate quantity by product brand.
+          brandTotals[product.brand] =
+              (brandTotals[product.brand] ?? 0) + detail.quantity.toDouble();
+          // Aggregate quantity by product category.
+          categoryTotals[product.category] =
+              (categoryTotals[product.category] ?? 0) +
+                  detail.quantity.toDouble();
+        }
+        // Group total sales by transaction date.
+        final date = DateTime(
+            tx.dateCreated.year, tx.dateCreated.month, tx.dateCreated.day);
+        salesData[date] = (salesData[date] ?? 0) + transactionQuantity;
+      }
 
+      // Emit a loaded state carrying the aggregated data along with the filter.
       emit(ReportLoaded(
         salesLineChart: salesData,
         profitsLineChart: profitsData,
         brandPieChart: brandTotals,
         categoryPieChart: categoryTotals,
+        startDate: event.startDate,
+        endDate: event.endDate,
       ));
     } catch (e) {
       emit(ReportError(message: e.toString()));
@@ -64,11 +80,10 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
 
   Future<void> _onChangeFilter(
       ChangeReportFilterEvent event, Emitter<ReportState> emit) async {
-    // Simply trigger a new load with the updated filters.
     add(LoadReportEvent(startDate: event.startDate, endDate: event.endDate));
   }
 
-  /// Helper method to aggregate transaction data for line charts.
+  /// Helper method to aggregate data for line charts.
   Map<DateTime, double> _aggregateLineChartData(
       List transactions, double Function(dynamic) valueSelector) {
     final Map<DateTime, double> data = {};

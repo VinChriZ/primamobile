@@ -171,9 +171,9 @@ class _ReportScreenState extends State<ReportScreen> {
         value: entry.value,
         color: colors[i++ % colors.length],
         title: '${entry.key}\n${percentage.toStringAsFixed(1)}%',
-        radius: 50,
+        radius: 70, // Increased radius for bigger sections
         titleStyle: const TextStyle(
-            fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+            fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black),
       );
     }).toList();
   }
@@ -196,7 +196,7 @@ class _ReportScreenState extends State<ReportScreen> {
                     ?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             SizedBox(
-              height: 200,
+              height: 250, // Increased chart height
               child: PieChart(
                 PieChartData(
                   sections: sections,
