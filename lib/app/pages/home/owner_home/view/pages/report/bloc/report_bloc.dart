@@ -25,9 +25,14 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
       LoadReportEvent event, Emitter<ReportState> emit) async {
     emit(ReportLoading());
     try {
-      // Fetch transactions based on provided filter dates.
+      // Apply default filter: if no dates provided, default to the last 7 days.
+      final DateTime endDate = event.endDate ?? DateTime.now();
+      final DateTime startDate =
+          event.startDate ?? endDate.subtract(const Duration(days: 7));
+
+      // Fetch transactions based on provided or default filter dates.
       final transactions = await transactionRepository.fetchTransactions(
-          startDate: event.startDate, endDate: event.endDate);
+          startDate: startDate, endDate: endDate);
 
       // For the "Total Sales" chart, aggregate quantity sold per day.
       final Map<DateTime, double> salesData = {};
@@ -70,8 +75,8 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
         profitsLineChart: profitsData,
         brandPieChart: brandTotals,
         categoryPieChart: categoryTotals,
-        startDate: event.startDate,
-        endDate: event.endDate,
+        startDate: startDate,
+        endDate: endDate,
       ));
     } catch (e) {
       emit(ReportError(message: e.toString()));
