@@ -56,29 +56,37 @@ class _ReportScreenState extends State<ReportScreen> {
     }
   }
 
-  /// Helper: Convert the aggregated Map<DateTime, double> into a list of FlSpot.
-  List<FlSpot> _createLineChartSpots(Map<DateTime, double> dataMap) {
-    final spots = <FlSpot>[];
-    if (dataMap.isEmpty) return spots;
+  /// Helper: Build a modern, animated bar chart using fl_chart.
+  /// The [leftReservedSize] allows more space for left axis labels.
+  Widget _buildBarChart(String title, Map<DateTime, double> dataMap,
+      {double leftReservedSize = 40}) {
     final entries = dataMap.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
-    final baseDate = entries.first.key;
-    for (var entry in entries) {
-      // x-axis: number of days since baseDate
-      final x = entry.key.difference(baseDate).inDays.toDouble();
-      spots.add(FlSpot(x, entry.value));
-    }
-    return spots;
-  }
-
-  /// Build a modern, animated line chart using fl_chart.
-  Widget _buildLineChart(String title, Map<DateTime, double> dataMap) {
-    final spots = _createLineChartSpots(dataMap);
-    if (spots.isEmpty) {
+    if (entries.isEmpty) {
       return const Center(child: Text('No data available'));
     }
-    final sortedDates = dataMap.keys.toList()..sort();
-    final firstDate = sortedDates.first;
+
+    // Create bar groups and a mapping for the bottom axis labels.
+    final List<BarChartGroupData> barGroups = [];
+    final Map<int, String> dateLabels = {};
+    for (int i = 0; i < entries.length; i++) {
+      final date = entries[i].key;
+      final value = entries[i].value;
+      barGroups.add(
+        BarChartGroupData(
+          x: i,
+          barRods: [
+            BarChartRodData(
+              toY: value,
+              color: Colors.blue,
+              width: 16,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ],
+        ),
+      );
+      dateLabels[i] = DateFormat.Md().format(date);
+    }
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -86,64 +94,72 @@ class _ReportScreenState extends State<ReportScreen> {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title,
+            Center(
+              child: Text(
+                title,
                 style: Theme.of(context)
                     .textTheme
-                    .headlineMedium
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+                    .headlineSmall
+                    ?.copyWith(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
             const SizedBox(height: 8),
             SizedBox(
               height: 200,
-              child: LineChart(
-                LineChartData(
-                  lineTouchData: const LineTouchData(
-                    touchTooltipData: LineTouchTooltipData(),
-                  ),
+              child: BarChart(
+                BarChartData(
+                  alignment: BarChartAlignment.spaceAround,
+                  barGroups: barGroups,
                   gridData: const FlGridData(show: true),
-                  borderData: FlBorderData(show: true),
+                  borderData: FlBorderData(show: false),
                   titlesData: FlTitlesData(
-                    topTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
-                    leftTitles: const AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 40,
-                      ),
-                    ),
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
                         reservedSize: 40,
-                        getTitlesWidget: (value, meta) {
-                          // Convert days offset back to date
-                          DateTime date =
-                              firstDate.add(Duration(days: value.toInt()));
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 4.0),
-                            child: Text(DateFormat.Md().format(date),
+                        getTitlesWidget: (double value, TitleMeta meta) {
+                          final label = dateLabels[value.toInt()] ?? '';
+                          return SideTitleWidget(
+                            meta: meta,
+                            space: 4.0,
+                            child: Text(label,
                                 style: const TextStyle(fontSize: 10)),
                           );
                         },
                       ),
                     ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: leftReservedSize,
+                        // Set an interval for Total Sales to avoid duplicate labels.
+                        interval: title == 'Total Sales' ? 1 : null,
+                        getTitlesWidget: (double value, TitleMeta meta) {
+                          if (title == 'Total Sales') {
+                            return SideTitleWidget(
+                              meta: meta,
+                              space: 4.0,
+                              child: Text('${value.toInt()}',
+                                  style: const TextStyle(fontSize: 10)),
+                            );
+                          }
+                          return SideTitleWidget(
+                            meta: meta,
+                            space: 4.0,
+                            child: Text(value.toStringAsFixed(0),
+                                style: const TextStyle(fontSize: 10)),
+                          );
+                        },
+                      ),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
-                  minX: spots.first.x,
-                  maxX: spots.last.x,
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: spots,
-                      isCurved: true,
-                      barWidth: 3,
-                      color: Colors.blue,
-                      dotData: const FlDotData(show: true),
-                      belowBarData: BarAreaData(
-                          show: true, color: Colors.blue.withOpacity(0.3)),
-                    )
-                  ],
                 ),
               ),
             ),
@@ -171,9 +187,9 @@ class _ReportScreenState extends State<ReportScreen> {
         value: entry.value,
         color: colors[i++ % colors.length],
         title: '${entry.key}\n${percentage.toStringAsFixed(1)}%',
-        radius: 70, // Increased radius for bigger sections
+        radius: 70,
         titleStyle: const TextStyle(
-            fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black),
+            fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black),
       );
     }).toList();
   }
@@ -187,16 +203,19 @@ class _ReportScreenState extends State<ReportScreen> {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title,
+            Center(
+              child: Text(
+                title,
                 style: Theme.of(context)
                     .textTheme
-                    .headlineMedium
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+                    .headlineSmall
+                    ?.copyWith(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
             const SizedBox(height: 8),
             SizedBox(
-              height: 250, // Increased chart height
+              height: 250,
               child: PieChart(
                 PieChartData(
                   sections: sections,
@@ -266,10 +285,10 @@ class _ReportScreenState extends State<ReportScreen> {
                   return SingleChildScrollView(
                     child: Column(
                       children: [
-                        // For "Total Sales", ensure aggregation uses quantity (update in ReportBloc accordingly)
-                        _buildLineChart('Total Sales', state.salesLineChart),
-                        _buildLineChart(
-                            'Total Profits', state.profitsLineChart),
+                        _buildBarChart(
+                            'Total Product Sold', state.salesLineChart),
+                        _buildBarChart('Total Profits', state.profitsLineChart,
+                            leftReservedSize: 60),
                         _buildPieChart(
                             'Sales by Product Brand', state.brandPieChart),
                         _buildPieChart('Sales by Product Category',
