@@ -33,14 +33,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.12.0"
-  barcode_scanner:
-    dependency: "direct main"
-    description:
-      name: barcode_scanner
-      sha256: "8b28a729e0c0eca49db23ae412e53e5f7ec6335089f6f41800a477add3716c66"
-      url: "https://pub.dev"
-    source: hosted
-    version: "6.1.1"
   bloc:
     dependency: "direct main"
     description:
@@ -325,14 +317,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
-  logging:
-    dependency: transitive
-    description:
-      name: logging
-      sha256: c8245ada5f1717ed44271ed1c26b8ce85ca3228fd2ffdb75468ab01979309d61
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.3.0"
   matcher:
     dependency: transitive
     description:

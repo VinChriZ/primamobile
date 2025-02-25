@@ -1,376 +1,413 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:primamobile/app/models/transaction/transaction.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/bloc/sales/sales_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/sales/add_sales_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/sales/sales_edit.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/transaction_detail/transaction_detail_page.dart';
 
-class SalesScreen extends StatefulWidget {
+class SalesScreen extends StatelessWidget {
   const SalesScreen({super.key});
 
-  @override
-  State<SalesScreen> createState() => _SalesScreenState();
-}
-
-class _SalesScreenState extends State<SalesScreen> {
-  // Filter state variables
-  String _selectedDateRange = 'All Dates'; // Default
-  DateTime? _startDate;
-  DateTime? _endDate;
-
-  // For sorting
-  String _selectedSortBy = 'Date Created'; // Default
-  String _selectedSortOrder = 'Descending'; // Default
-
-  @override
-  void initState() {
-    super.initState();
-    _applyDatePreset(_selectedDateRange);
-  }
-
-  // Updates date filters based on preset
-  void _applyDatePreset(String preset) {
+  /// Handles date range changes. Based on the selected value,
+  /// determines the appropriate start/end dates and dispatches a FetchSales event.
+  Future<void> _handleDateRangeChange(
+      BuildContext context, String? value, SalesState state) async {
+    String selectedDateRange = value ?? 'All Dates';
+    DateTime? startDate;
+    DateTime? endDate;
     final now = DateTime.now();
-    setState(() {
-      _selectedDateRange = preset;
-      if (preset == 'Last 7 Days') {
-        _startDate = now.subtract(const Duration(days: 7));
-        _endDate = now;
-      } else if (preset == 'Last Month') {
-        _startDate = DateTime(now.year, now.month - 1, now.day);
-        _endDate = now;
-      } else if (preset == 'Last Year') {
-        _startDate = DateTime(now.year - 1, now.month, now.day);
-        _endDate = now;
-      } else if (preset == 'All Dates') {
-        _startDate = null;
-        _endDate = null;
+
+    if (selectedDateRange == 'Last 7 Days') {
+      startDate = now.subtract(const Duration(days: 7));
+      endDate = now;
+    } else if (selectedDateRange == 'Last Month') {
+      startDate = DateTime(now.year, now.month - 1, now.day);
+      endDate = now;
+    } else if (selectedDateRange == 'Last Year') {
+      startDate = DateTime(now.year - 1, now.month, now.day);
+      endDate = now;
+    } else if (selectedDateRange == 'Custom') {
+      final picked = await showDateRangePicker(
+        context: context,
+        firstDate: DateTime(2000),
+        lastDate: now,
+      );
+      if (picked != null) {
+        startDate = picked.start;
+        endDate = picked.end;
+        selectedDateRange = 'Custom';
+      } else {
+        // If the user cancels, use the current state's values.
+        if (state is SalesLoaded) {
+          selectedDateRange = state.selectedDateRange;
+          startDate = state.startDate;
+          endDate = state.endDate;
+        }
       }
-    });
-    _applyFilters();
-  }
-
-  // Callback for custom date range selection
-  Future<void> _selectCustomRange() async {
-    final now = DateTime.now();
-    final picked = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime(2000),
-      lastDate: now,
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedDateRange = 'Custom';
-        _startDate = picked.start;
-        _endDate = picked.end;
-      });
-      _applyFilters();
+    } else {
+      // "All Dates"
+      startDate = null;
+      endDate = null;
     }
-  }
 
-  // Map the display sort field to the backend field name
-  String _mapSortBy(String sortBy) {
-    if (sortBy == 'Last Updated') return 'last_updated';
-    if (sortBy == 'Stock') return 'quantity';
-    if (sortBy == 'Profit') return 'profit';
-    if (sortBy == 'Date Created') return 'date_created';
-    return sortBy;
-  }
+    // Use current sort filters from state, or default values.
+    String sortBy =
+        (state is SalesLoaded) ? state.selectedSortBy : 'date_created';
+    String sortOrder =
+        (state is SalesLoaded) ? state.selectedSortOrder : 'desc';
 
-  // Dispatch the FetchSales event with all current filters.
-  void _applyFilters() {
     context.read<SalesBloc>().add(
           FetchSales(
-            startDate: _startDate,
-            endDate: _endDate,
-            sortBy: _mapSortBy(_selectedSortBy),
-            sortOrder: _selectedSortOrder.toLowerCase() == 'ascending'
-                ? 'asc'
-                : 'desc',
+            selectedDateRange: selectedDateRange,
+            startDate: startDate,
+            endDate: endDate,
+            sortBy: sortBy,
+            sortOrder: sortOrder,
           ),
         );
-  }
-
-  void _navigateToDetail(Transaction transaction) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TransactionDetailPage(transaction: transaction),
-      ),
-    );
-    _applyFilters();
-  }
-
-  void _navigateToEdit(Transaction transaction) async {
-    final updatedTransaction = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SalesEdit(transaction: transaction),
-      ),
-    );
-    if (updatedTransaction != null) {
-      _applyFilters();
-    }
-  }
-
-  void _showDeleteConfirmation(int transactionId) {
-    // Capture the SalesBloc from the parent context
-    final salesBloc = context.read<SalesBloc>();
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Delete Transaction'),
-          content:
-              const Text('Are you sure you want to delete this transaction?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                salesBloc.add(DeleteTransaction(transactionId));
-                Navigator.pop(dialogContext);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Transaction deleted successfully.'),
-                  ),
-                );
-              },
-              child: const Text('Delete'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildTransactionCard(Transaction transaction) {
-    double profit = transaction.totalAgreedPrice - transaction.totalNetPrice;
-    String dateCreatedStr =
-        DateFormat('yyyy-MM-dd').format(transaction.dateCreated);
-    String lastUpdatedStr =
-        DateFormat('yyyy-MM-dd HH:mm:ss').format(transaction.lastUpdated);
-
-    return Card(
-      color: Colors.lightBlue[100],
-      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      elevation: 2,
-      child: InkWell(
-        onTap: () => _navigateToDetail(transaction),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                dateCreatedStr,
-                style: const TextStyle(
-                    fontSize: 20.0, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12.0),
-              _buildAttributeRow("Profit:", "Rp${profit.toStringAsFixed(0)}"),
-              const SizedBox(height: 6.0),
-              _buildAttributeRow("Quantity:", transaction.quantity.toString()),
-              const SizedBox(height: 6.0),
-              _buildAttributeRow("Last Updated:", lastUpdatedStr),
-              const SizedBox(height: 12.0),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        padding: const EdgeInsets.symmetric(vertical: 12.0),
-                      ),
-                      onPressed: () => _navigateToEdit(transaction),
-                      child: const Text(
-                        'Edit',
-                        style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8.0),
-                  Expanded(
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(vertical: 12.0),
-                      ),
-                      onPressed: () =>
-                          _showDeleteConfirmation(transaction.transactionId),
-                      child: const Text(
-                        'Delete',
-                        style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAttributeRow(String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 180,
-          child: Text(
-            label,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
-        Expanded(child: Text(value)),
-      ],
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Sales')),
-      body: Column(
-        children: [
-          // Filters Row
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding:
-                const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-            child: Row(
-              children: [
-                // Date Range Dropdown
-                SizedBox(
-                  width: 180,
-                  child: DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'Date Range',
-                      border: OutlineInputBorder(),
+      body: BlocBuilder<SalesBloc, SalesState>(
+        builder: (context, state) {
+          // Provide defaults if the state is not yet SalesLoaded.
+          final selectedDateRange =
+              (state is SalesLoaded) ? state.selectedDateRange : 'All Dates';
+          final selectedSortBy =
+              (state is SalesLoaded) ? state.selectedSortBy : 'date_created';
+          final selectedSortOrder =
+              (state is SalesLoaded) ? state.selectedSortOrder : 'desc';
+
+          return Column(
+            children: [
+              // Filters Row
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                child: Row(
+                  children: [
+                    // Date Range Dropdown
+                    SizedBox(
+                      width: 180,
+                      child: DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(
+                          labelText: 'Date Range',
+                          border: OutlineInputBorder(),
+                        ),
+                        value: selectedDateRange,
+                        items: const [
+                          DropdownMenuItem(
+                              value: 'Last 7 Days', child: Text('Last 7 Days')),
+                          DropdownMenuItem(
+                              value: 'Last Month', child: Text('Last Month')),
+                          DropdownMenuItem(
+                              value: 'Last Year', child: Text('Last Year')),
+                          DropdownMenuItem(
+                              value: 'All Dates', child: Text('All Dates')),
+                          DropdownMenuItem(
+                              value: 'Custom', child: Text('Custom')),
+                        ],
+                        onChanged: (value) =>
+                            _handleDateRangeChange(context, value, state),
+                      ),
                     ),
-                    value: _selectedDateRange,
-                    items: <String>[
-                      'Last 7 Days',
-                      'Last Month',
-                      'Last Year',
-                      'All Dates',
-                      'Custom'
-                    ].map((value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        if (value == 'Custom') {
-                          _selectCustomRange();
-                        } else {
-                          _applyDatePreset(value);
-                        }
-                      }
-                    },
-                  ),
+                    const SizedBox(width: 16.0),
+                    // Sort By Dropdown
+                    SizedBox(
+                      width: 180,
+                      child: DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(
+                          labelText: 'Sort By',
+                          border: OutlineInputBorder(),
+                        ),
+                        value: selectedSortBy,
+                        items: const [
+                          DropdownMenuItem(
+                              value: 'last_updated',
+                              child: Text('Last Updated')),
+                          DropdownMenuItem(
+                              value: 'quantity', child: Text('Stock')),
+                          DropdownMenuItem(
+                              value: 'profit', child: Text('Profit')),
+                          DropdownMenuItem(
+                              value: 'date_created',
+                              child: Text('Date Created')),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) {
+                            context.read<SalesBloc>().add(
+                                  FetchSales(
+                                    selectedDateRange: selectedDateRange,
+                                    startDate: (state is SalesLoaded)
+                                        ? state.startDate
+                                        : null,
+                                    endDate: (state is SalesLoaded)
+                                        ? state.endDate
+                                        : null,
+                                    sortBy: value,
+                                    sortOrder: selectedSortOrder,
+                                  ),
+                                );
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16.0),
+                    // Sort Order Dropdown
+                    SizedBox(
+                      width: 180,
+                      child: DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(
+                          labelText: 'Sort Order',
+                          border: OutlineInputBorder(),
+                        ),
+                        // Display as "Ascending" or "Descending" based on stored value.
+                        value: selectedSortOrder.toLowerCase() == 'asc'
+                            ? 'Ascending'
+                            : 'Descending',
+                        items: const [
+                          DropdownMenuItem(
+                              value: 'Ascending', child: Text('Ascending')),
+                          DropdownMenuItem(
+                              value: 'Descending', child: Text('Descending')),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) {
+                            String sortOrder =
+                                value.toLowerCase() == 'ascending'
+                                    ? 'asc'
+                                    : 'desc';
+                            context.read<SalesBloc>().add(
+                                  FetchSales(
+                                    selectedDateRange: selectedDateRange,
+                                    startDate: (state is SalesLoaded)
+                                        ? state.startDate
+                                        : null,
+                                    endDate: (state is SalesLoaded)
+                                        ? state.endDate
+                                        : null,
+                                    sortBy: selectedSortBy,
+                                    sortOrder: sortOrder,
+                                  ),
+                                );
+                          }
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 16.0),
-                // Sort By Dropdown
-                SizedBox(
-                  width: 180,
-                  child: DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'Sort By',
-                      border: OutlineInputBorder(),
-                    ),
-                    value: _selectedSortBy,
-                    items: <String>[
-                      'Last Updated',
-                      'Stock',
-                      'Profit',
-                      'Date Created'
-                    ].map((value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedSortBy = value;
-                        });
-                        _applyFilters();
+              ),
+              // Transaction List
+              Expanded(
+                child: Builder(
+                  builder: (context) {
+                    if (state is SalesLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (state is SalesLoaded) {
+                      if (state.transactions.isEmpty) {
+                        return const Center(
+                            child: Text('No transactions available.'));
                       }
-                    },
-                  ),
-                ),
-                const SizedBox(width: 16.0),
-                // Sort Order Dropdown
-                SizedBox(
-                  width: 180,
-                  child: DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'Sort Order',
-                      border: OutlineInputBorder(),
-                    ),
-                    value: _selectedSortOrder,
-                    items: <String>['Ascending', 'Descending'].map((value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                          context.read<SalesBloc>().add(
+                                FetchSales(
+                                  selectedDateRange: state.selectedDateRange,
+                                  startDate: state.startDate,
+                                  endDate: state.endDate,
+                                  sortBy: state.selectedSortBy,
+                                  sortOrder: state.selectedSortOrder,
+                                ),
+                              );
+                        },
+                        child: ListView.builder(
+                          itemCount: state.transactions.length,
+                          itemBuilder: (context, index) {
+                            final transaction = state.transactions[index];
+                            return Card(
+                              color: Colors.lightBlue[100],
+                              margin: const EdgeInsets.symmetric(
+                                  vertical: 8.0, horizontal: 16.0),
+                              elevation: 2,
+                              child: InkWell(
+                                onTap: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          TransactionDetailPage(
+                                              transaction: transaction),
+                                    ),
+                                  );
+                                  context.read<SalesBloc>().add(
+                                        FetchSales(
+                                          selectedDateRange:
+                                              state.selectedDateRange,
+                                          startDate: state.startDate,
+                                          endDate: state.endDate,
+                                          sortBy: state.selectedSortBy,
+                                          sortOrder: state.selectedSortOrder,
+                                        ),
+                                      );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        DateFormat('yyyy-MM-dd')
+                                            .format(transaction.dateCreated),
+                                        style: const TextStyle(
+                                            fontSize: 20.0,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 12.0),
+                                      _buildAttributeRow("Profit:",
+                                          "Rp${(transaction.totalAgreedPrice - transaction.totalNetPrice).toStringAsFixed(0)}"),
+                                      const SizedBox(height: 6.0),
+                                      _buildAttributeRow("Quantity:",
+                                          transaction.quantity.toString()),
+                                      const SizedBox(height: 6.0),
+                                      _buildAttributeRow(
+                                          "Last Updated:",
+                                          DateFormat('yyyy-MM-dd HH:mm:ss')
+                                              .format(transaction.lastUpdated)),
+                                      const SizedBox(height: 12.0),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: TextButton(
+                                              style: TextButton.styleFrom(
+                                                backgroundColor: Colors.blue,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 12.0),
+                                              ),
+                                              onPressed: () async {
+                                                final updated =
+                                                    await Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        SalesEdit(
+                                                            transaction:
+                                                                transaction),
+                                                  ),
+                                                );
+                                                if (updated != null) {
+                                                  context.read<SalesBloc>().add(
+                                                        FetchSales(
+                                                          selectedDateRange: state
+                                                              .selectedDateRange,
+                                                          startDate:
+                                                              state.startDate,
+                                                          endDate:
+                                                              state.endDate,
+                                                          sortBy: state
+                                                              .selectedSortBy,
+                                                          sortOrder: state
+                                                              .selectedSortOrder,
+                                                        ),
+                                                      );
+                                                }
+                                              },
+                                              child: const Text('Edit',
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8.0),
+                                          Expanded(
+                                            child: TextButton(
+                                              style: TextButton.styleFrom(
+                                                backgroundColor: Colors.red,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 12.0),
+                                              ),
+                                              onPressed: () {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (dialogContext) {
+                                                    return AlertDialog(
+                                                      title: const Text(
+                                                          'Delete Transaction'),
+                                                      content: const Text(
+                                                          'Are you sure you want to delete this transaction?'),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: () =>
+                                                              Navigator.pop(
+                                                                  dialogContext),
+                                                          child: const Text(
+                                                              'Cancel'),
+                                                        ),
+                                                        TextButton(
+                                                          onPressed: () {
+                                                            context
+                                                                .read<
+                                                                    SalesBloc>()
+                                                                .add(DeleteTransaction(
+                                                                    transaction
+                                                                        .transactionId));
+                                                            Navigator.pop(
+                                                                dialogContext);
+                                                            ScaffoldMessenger
+                                                                    .of(context)
+                                                                .showSnackBar(
+                                                              const SnackBar(
+                                                                  content: Text(
+                                                                      'Transaction deleted successfully.')),
+                                                            );
+                                                          },
+                                                          child: const Text(
+                                                              'Delete',
+                                                              style: TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold)),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                );
+                                              },
+                                              child: const Text('Delete',
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedSortOrder = value;
-                        });
-                        _applyFilters();
-                      }
-                    },
-                  ),
+                    } else if (state is SalesError) {
+                      return Center(child: Text(state.message));
+                    }
+                    return const SizedBox.shrink();
+                  },
                 ),
-              ],
-            ),
-          ),
-          // Transaction List
-          Expanded(
-            child: BlocBuilder<SalesBloc, SalesState>(
-              builder: (context, state) {
-                if (state is SalesLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is SalesLoaded) {
-                  if (state.transactions.isEmpty) {
-                    return const Center(
-                        child: Text('No transactions available.'));
-                  }
-                  return RefreshIndicator(
-                    onRefresh: () async {
-                      _applyFilters();
-                    },
-                    child: ListView.builder(
-                      itemCount: state.transactions.length,
-                      itemBuilder: (context, index) {
-                        final transaction = state.transactions[index];
-                        return _buildTransactionCard(transaction);
-                      },
-                    ),
-                  );
-                } else if (state is SalesError) {
-                  return Center(child: Text(state.message));
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -379,11 +416,37 @@ class _SalesScreenState extends State<SalesScreen> {
             MaterialPageRoute(builder: (context) => const AddSalesPage()),
           );
           if (result == true) {
-            _applyFilters();
+            final currentState = context.read<SalesBloc>().state;
+            if (currentState is SalesLoaded) {
+              context.read<SalesBloc>().add(
+                    FetchSales(
+                      selectedDateRange: currentState.selectedDateRange,
+                      startDate: currentState.startDate,
+                      endDate: currentState.endDate,
+                      sortBy: currentState.selectedSortBy,
+                      sortOrder: currentState.selectedSortOrder,
+                    ),
+                  );
+            }
           }
         },
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  /// Helper widget to build a row for a given label/value pair.
+  Widget _buildAttributeRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 180,
+          child:
+              Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        ),
+        Expanded(child: Text(value)),
+      ],
     );
   }
 }
