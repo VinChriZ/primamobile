@@ -66,16 +66,14 @@ class _ReportScreenState extends State<ReportScreen> {
 
   /// Helper: Build a modern, animated bar chart using fl_chart.
   /// The [leftReservedSize] allows more space for left axis labels.
-  Widget _buildBarChart(String title, Map<DateTime, double> dataMap,
+  Widget _buildBarChart(
+      String title, Map<DateTime, double> dataMap, bool isMonthlyGrouping,
       {double leftReservedSize = 40}) {
     final entries = dataMap.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
     if (entries.isEmpty) {
       return const Center(child: Text('No data available'));
     }
-
-    // Determine if we're dealing with monthly grouping.
-    final bool isMonthlyGrouping = entries.first.key.day == 1;
 
     // Create bar groups and mapping for bottom axis labels.
     final List<BarChartGroupData> barGroups = [];
@@ -96,13 +94,14 @@ class _ReportScreenState extends State<ReportScreen> {
           ],
         ),
       );
+      // Format label based on the provided grouping flag.
       final label = isMonthlyGrouping
           ? DateFormat.MMM().format(date) // e.g., Jan, Feb, etc.
           : DateFormat.Md().format(date); // e.g., 3/15
       dateLabels[i] = label;
     }
 
-    // Compute the dynamic interval using your data.
+    // Compute a dynamic interval if needed (or set a fixed one).
     final double interval = _computeInterval(dataMap);
 
     return Card(
@@ -150,7 +149,6 @@ class _ReportScreenState extends State<ReportScreen> {
                       sideTitles: SideTitles(
                         showTitles: true,
                         reservedSize: leftReservedSize,
-                        // Use the computed interval for all charts.
                         interval: interval,
                         getTitlesWidget: (double value, TitleMeta meta) {
                           return SideTitleWidget(
@@ -324,12 +322,15 @@ class _ReportScreenState extends State<ReportScreen> {
                   return SingleChildScrollView(
                     child: Column(
                       children: [
-                        _buildBarChart(
-                            'Total Product Sold', state.salesLineChart),
+                        _buildBarChart('Total Product Sold',
+                            state.salesLineChart, state.isMonthlyGrouping),
                         _buildBarChart('Total Profits', state.profitsLineChart,
+                            state.isMonthlyGrouping,
                             leftReservedSize: 60),
-                        _buildBarChart('Number of Transactions',
-                            state.transactionCountChart),
+                        _buildBarChart(
+                            'Number of Transactions',
+                            state.transactionCountChart,
+                            state.isMonthlyGrouping),
                         _buildPieChart(
                             'Sales by Product Brand', state.brandPieChart),
                         _buildPieChart('Sales by Product Category',

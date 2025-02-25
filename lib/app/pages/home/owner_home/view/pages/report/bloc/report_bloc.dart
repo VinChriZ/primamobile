@@ -25,72 +25,65 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
       LoadReportEvent event, Emitter<ReportState> emit) async {
     emit(ReportLoading());
     try {
-      // Apply default filter: if no dates provided, default to the last 7 days.
+      // If dates are not provided, default to last 7 days.
       final DateTime endDate = event.endDate ?? DateTime.now();
       final DateTime startDate =
           event.startDate ?? endDate.subtract(const Duration(days: 7));
 
-      // Determine if we should group by month (for a full year filter)
-      final bool groupByMonth = endDate.difference(startDate).inDays >= 365;
+      // Group by month if the range is longer than 31 days.
+      final bool groupByMonth = endDate.difference(startDate).inDays > 31;
 
-      // Fetch transactions based on provided or default filter dates.
+      // Fetch transactions based on the date range.
       final transactions = await transactionRepository.fetchTransactions(
           startDate: startDate, endDate: endDate);
 
-      // For the "Total Sales" chart, aggregate quantity sold per day or month.
+      // Aggregate data for charts.
       final Map<DateTime, double> salesData = {};
-      // For the "Total Profits" chart, aggregate (totalAgreedPrice - totalNetPrice) per day or month.
       final Map<DateTime, double> profitsData = _aggregateLineChartData(
           transactions,
           (tx) => tx.totalAgreedPrice - tx.totalNetPrice,
           groupByMonth);
-
-      // New: For counting transactions per day or month.
       final Map<DateTime, double> transactionCountData = {};
 
-      // Initialize aggregations for pie charts.
+      // Data for pie charts.
       final Map<String, double> brandTotals = {};
       final Map<String, double> categoryTotals = {};
 
       // Process each transaction.
       for (var tx in transactions) {
-        // Determine grouping key based on the flag.
+        // Use grouping key based on the flag.
         final DateTime key = groupByMonth
             ? DateTime(tx.dateCreated.year, tx.dateCreated.month)
             : DateTime(
                 tx.dateCreated.year, tx.dateCreated.month, tx.dateCreated.day);
 
-        // Update sales data: accumulate total product quantity.
+        // Initialize product quantity.
         double transactionQuantity = 0;
-        // Fetch transaction details for this transaction.
+        // Fetch transaction details.
         final details = await transactionDetailRepository
             .fetchTransactionDetails(tx.transactionId);
         for (var detail in details) {
           transactionQuantity += detail.quantity.toDouble();
-          // Fetch product info to determine brand and category.
+          // Fetch product info to update pie chart aggregations.
           final product = await productRepository.fetchProduct(detail.upc);
-          // Aggregate quantity by product brand.
           brandTotals[product.brand] =
               (brandTotals[product.brand] ?? 0) + detail.quantity.toDouble();
-          // Aggregate quantity by product category.
           categoryTotals[product.category] =
               (categoryTotals[product.category] ?? 0) +
                   detail.quantity.toDouble();
         }
         salesData[key] = (salesData[key] ?? 0) + transactionQuantity;
-
-        // Increment transaction count for this grouping.
         transactionCountData[key] = (transactionCountData[key] ?? 0) + 1;
       }
 
-      // Emit a loaded state carrying the aggregated data along with the filter.
+      // Emit the loaded state with the grouping flag.
       emit(ReportLoaded(
         salesLineChart: salesData,
         profitsLineChart: profitsData,
-        transactionCountChart:
-            transactionCountData, // new field for transaction counts
+        transactionCountChart: transactionCountData,
         brandPieChart: brandTotals,
         categoryPieChart: categoryTotals,
+        isMonthlyGrouping: groupByMonth,
         startDate: startDate,
         endDate: endDate,
       ));
@@ -104,7 +97,7 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
     add(LoadReportEvent(startDate: event.startDate, endDate: event.endDate));
   }
 
-  /// Updated helper method to aggregate line chart data with an option for monthly grouping.
+  /// Helper method to aggregate chart data based on the grouping flag.
   Map<DateTime, double> _aggregateLineChartData(List transactions,
       double Function(dynamic) valueSelector, bool groupByMonth) {
     final Map<DateTime, double> data = {};

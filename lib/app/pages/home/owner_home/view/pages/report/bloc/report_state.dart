@@ -19,6 +19,7 @@ class ReportLoaded extends ReportState {
   final Map<String, double> brandPieChart;
   final Map<String, double> categoryPieChart;
   final Map<DateTime, double> transactionCountChart;
+  final bool isMonthlyGrouping;
 
   const ReportLoaded({
     required this.salesLineChart,
@@ -26,6 +27,7 @@ class ReportLoaded extends ReportState {
     required this.brandPieChart,
     required this.categoryPieChart,
     required this.transactionCountChart,
+    required this.isMonthlyGrouping,
     DateTime? startDate,
     DateTime? endDate,
   }) : super(startDate: startDate, endDate: endDate);
@@ -36,6 +38,8 @@ class ReportLoaded extends ReportState {
         profitsLineChart,
         brandPieChart,
         categoryPieChart,
+        transactionCountChart,
+        isMonthlyGrouping,
         startDate,
         endDate,
       ];
@@ -43,8 +47,12 @@ class ReportLoaded extends ReportState {
 
 class ReportError extends ReportState {
   final String message;
-  const ReportError({required this.message});
+  const ReportError({
+    required this.message,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) : super(startDate: startDate, endDate: endDate);
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, startDate, endDate];
 }
