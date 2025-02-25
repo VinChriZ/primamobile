@@ -56,6 +56,14 @@ class _ReportScreenState extends State<ReportScreen> {
     }
   }
 
+  double _computeInterval(Map<DateTime, double> dataMap) {
+    if (dataMap.isEmpty) return 1;
+    final maxVal = dataMap.values.reduce((a, b) => a > b ? a : b);
+    // Divide the max value into roughly 4 parts.
+    double interval = (maxVal / 4).ceilToDouble();
+    return interval < 1 ? 1 : interval;
+  }
+
   /// Helper: Build a modern, animated bar chart using fl_chart.
   /// The [leftReservedSize] allows more space for left axis labels.
   Widget _buildBarChart(String title, Map<DateTime, double> dataMap,
@@ -66,7 +74,10 @@ class _ReportScreenState extends State<ReportScreen> {
       return const Center(child: Text('No data available'));
     }
 
-    // Create bar groups and a mapping for the bottom axis labels.
+    // Determine if we're dealing with monthly grouping.
+    final bool isMonthlyGrouping = entries.first.key.day == 1;
+
+    // Create bar groups and mapping for bottom axis labels.
     final List<BarChartGroupData> barGroups = [];
     final Map<int, String> dateLabels = {};
     for (int i = 0; i < entries.length; i++) {
@@ -85,8 +96,14 @@ class _ReportScreenState extends State<ReportScreen> {
           ],
         ),
       );
-      dateLabels[i] = DateFormat.Md().format(date);
+      final label = isMonthlyGrouping
+          ? DateFormat.MMM().format(date) // e.g., Jan, Feb, etc.
+          : DateFormat.Md().format(date); // e.g., 3/15
+      dateLabels[i] = label;
     }
+
+    // Compute the dynamic interval using your data.
+    final double interval = _computeInterval(dataMap);
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -133,17 +150,9 @@ class _ReportScreenState extends State<ReportScreen> {
                       sideTitles: SideTitles(
                         showTitles: true,
                         reservedSize: leftReservedSize,
-                        // Set an interval for Total Sales to avoid duplicate labels.
-                        interval: title == 'Total Sales' ? 1 : null,
+                        // Use the computed interval for all charts.
+                        interval: interval,
                         getTitlesWidget: (double value, TitleMeta meta) {
-                          if (title == 'Total Sales') {
-                            return SideTitleWidget(
-                              meta: meta,
-                              space: 4.0,
-                              child: Text('${value.toInt()}',
-                                  style: const TextStyle(fontSize: 10)),
-                            );
-                          }
                           return SideTitleWidget(
                             meta: meta,
                             space: 4.0,
@@ -172,25 +181,55 @@ class _ReportScreenState extends State<ReportScreen> {
   /// Helper: Create pie chart sections from a Map<String, double>.
   List<PieChartSectionData> _createPieChartSections(
       Map<String, double> dataMap) {
+    // Calculate total for percentage computation.
     final total = dataMap.values.fold(0.0, (prev, element) => prev + element);
+
+    // Threshold: if a slice is less than 5% of total, group it into "Others".
+    const double thresholdPercentage = 5.0;
+    final Map<String, double> groupedData = {};
+    double othersTotal = 0.0;
+
+    // Group the data.
+    dataMap.forEach((key, value) {
+      final percentage = total == 0 ? 0 : (value / total * 100);
+      if (percentage < thresholdPercentage) {
+        othersTotal += value;
+      } else {
+        groupedData[key] = value;
+      }
+    });
+
+    if (othersTotal > 0) {
+      groupedData['Others'] = othersTotal;
+    }
+
+    // Create pie chart sections from the grouped data.
     int i = 0;
     final colors = [
       Colors.blue,
       Colors.red,
       Colors.green,
       Colors.orange,
-      Colors.purple
+      Colors.purple,
+      Colors.cyan,
+      Colors.teal,
     ];
-    return dataMap.entries.map((entry) {
+
+    return groupedData.entries.map((entry) {
       final percentage = total == 0 ? 0 : (entry.value / total * 100);
-      return PieChartSectionData(
+      final section = PieChartSectionData(
         value: entry.value,
-        color: colors[i++ % colors.length],
+        color: colors[i % colors.length],
         title: '${entry.key}\n${percentage.toStringAsFixed(1)}%',
         radius: 70,
         titleStyle: const TextStyle(
-            fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black),
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+        ),
       );
+      i++;
+      return section;
     }).toList();
   }
 
@@ -289,6 +328,8 @@ class _ReportScreenState extends State<ReportScreen> {
                             'Total Product Sold', state.salesLineChart),
                         _buildBarChart('Total Profits', state.profitsLineChart,
                             leftReservedSize: 60),
+                        _buildBarChart('Number of Transactions',
+                            state.transactionCountChart),
                         _buildPieChart(
                             'Sales by Product Brand', state.brandPieChart),
                         _buildPieChart('Sales by Product Category',

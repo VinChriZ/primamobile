@@ -30,15 +30,23 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
       final DateTime startDate =
           event.startDate ?? endDate.subtract(const Duration(days: 7));
 
+      // Determine if we should group by month (for a full year filter)
+      final bool groupByMonth = endDate.difference(startDate).inDays >= 365;
+
       // Fetch transactions based on provided or default filter dates.
       final transactions = await transactionRepository.fetchTransactions(
           startDate: startDate, endDate: endDate);
 
-      // For the "Total Sales" chart, aggregate quantity sold per day.
+      // For the "Total Sales" chart, aggregate quantity sold per day or month.
       final Map<DateTime, double> salesData = {};
-      // For the "Total Profits" chart, aggregate (totalAgreedPrice - totalNetPrice) per day.
+      // For the "Total Profits" chart, aggregate (totalAgreedPrice - totalNetPrice) per day or month.
       final Map<DateTime, double> profitsData = _aggregateLineChartData(
-          transactions, (tx) => tx.totalAgreedPrice - tx.totalNetPrice);
+          transactions,
+          (tx) => tx.totalAgreedPrice - tx.totalNetPrice,
+          groupByMonth);
+
+      // New: For counting transactions per day or month.
+      final Map<DateTime, double> transactionCountData = {};
 
       // Initialize aggregations for pie charts.
       final Map<String, double> brandTotals = {};
@@ -46,12 +54,18 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
 
       // Process each transaction.
       for (var tx in transactions) {
+        // Determine grouping key based on the flag.
+        final DateTime key = groupByMonth
+            ? DateTime(tx.dateCreated.year, tx.dateCreated.month)
+            : DateTime(
+                tx.dateCreated.year, tx.dateCreated.month, tx.dateCreated.day);
+
+        // Update sales data: accumulate total product quantity.
+        double transactionQuantity = 0;
         // Fetch transaction details for this transaction.
         final details = await transactionDetailRepository
             .fetchTransactionDetails(tx.transactionId);
-        double transactionQuantity = 0;
         for (var detail in details) {
-          // Sum quantity from each transaction detail.
           transactionQuantity += detail.quantity.toDouble();
           // Fetch product info to determine brand and category.
           final product = await productRepository.fetchProduct(detail.upc);
@@ -63,16 +77,18 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
               (categoryTotals[product.category] ?? 0) +
                   detail.quantity.toDouble();
         }
-        // Group total sales by transaction date.
-        final date = DateTime(
-            tx.dateCreated.year, tx.dateCreated.month, tx.dateCreated.day);
-        salesData[date] = (salesData[date] ?? 0) + transactionQuantity;
+        salesData[key] = (salesData[key] ?? 0) + transactionQuantity;
+
+        // Increment transaction count for this grouping.
+        transactionCountData[key] = (transactionCountData[key] ?? 0) + 1;
       }
 
       // Emit a loaded state carrying the aggregated data along with the filter.
       emit(ReportLoaded(
         salesLineChart: salesData,
         profitsLineChart: profitsData,
+        transactionCountChart:
+            transactionCountData, // new field for transaction counts
         brandPieChart: brandTotals,
         categoryPieChart: categoryTotals,
         startDate: startDate,
@@ -88,14 +104,16 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
     add(LoadReportEvent(startDate: event.startDate, endDate: event.endDate));
   }
 
-  /// Helper method to aggregate data for line charts.
-  Map<DateTime, double> _aggregateLineChartData(
-      List transactions, double Function(dynamic) valueSelector) {
+  /// Updated helper method to aggregate line chart data with an option for monthly grouping.
+  Map<DateTime, double> _aggregateLineChartData(List transactions,
+      double Function(dynamic) valueSelector, bool groupByMonth) {
     final Map<DateTime, double> data = {};
     for (var tx in transactions) {
-      final date = DateTime(
-          tx.dateCreated.year, tx.dateCreated.month, tx.dateCreated.day);
-      data[date] = (data[date] ?? 0) + valueSelector(tx);
+      final DateTime key = groupByMonth
+          ? DateTime(tx.dateCreated.year, tx.dateCreated.month)
+          : DateTime(
+              tx.dateCreated.year, tx.dateCreated.month, tx.dateCreated.day);
+      data[key] = (data[key] ?? 0) + valueSelector(tx);
     }
     return data;
   }

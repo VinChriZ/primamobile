@@ -18,12 +18,14 @@ class ReportLoaded extends ReportState {
   final Map<DateTime, double> profitsLineChart;
   final Map<String, double> brandPieChart;
   final Map<String, double> categoryPieChart;
+  final Map<DateTime, double> transactionCountChart;
 
   const ReportLoaded({
     required this.salesLineChart,
     required this.profitsLineChart,
     required this.brandPieChart,
     required this.categoryPieChart,
+    required this.transactionCountChart,
     DateTime? startDate,
     DateTime? endDate,
   }) : super(startDate: startDate, endDate: endDate);
