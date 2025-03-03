@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:primamobile/app/models/users/users.dart';
+import 'package:primamobile/repository/product_repository.dart';
 import 'package:primamobile/repository/user_session_repository.dart';
 
 part 'home_event.dart';
@@ -8,8 +9,12 @@ part 'home_state.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final UserSessionRepository userSessionRepository;
+  final ProductRepository productRepository;
 
-  HomeBloc({required this.userSessionRepository}) : super(HomeInitial()) {
+  HomeBloc({
+    required this.userSessionRepository,
+    required this.productRepository,
+  }) : super(HomeInitial()) {
     on<HomeStarted>(_onStarted);
   }
 

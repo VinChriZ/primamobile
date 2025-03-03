@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/home/bloc/home_bloc.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/barcode_scanner.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/product_detail.dart';
+import 'package:primamobile/repository/product_repository.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -17,7 +20,7 @@ class HomeScreen extends StatelessWidget {
           } else if (state is HomeLoaded) {
             return Column(
               children: [
-                const SizedBox(height: 40), // Add padding from the top
+                const SizedBox(height: 40),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Container(
@@ -26,7 +29,7 @@ class HomeScreen extends StatelessWidget {
                       color: Colors.blue.shade800,
                       borderRadius: BorderRadius.circular(12.0),
                     ),
-                    width: double.infinity, // Ensure the card is full width
+                    width: double.infinity,
                     child: Text(
                       'Welcome, ${state.user.username}!',
                       textAlign: TextAlign.center,
@@ -38,7 +41,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20), // Add padding below the card
+                const SizedBox(height: 20),
                 Expanded(
                   child: Center(
                     child: Text(
@@ -54,6 +57,42 @@ class HomeScreen extends StatelessWidget {
             );
           }
           return const Center(child: Text('Something went wrong.'));
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.camera_alt),
+        onPressed: () async {
+          // Navigate to the barcode scanner screen
+          final String? upc = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BarcodeScannerScreen(
+                onBarcodeScanned: (scannedCode) {},
+              ),
+            ),
+          );
+          if (upc != null) {
+            // Fetch the product details using the scanned UPC.
+            final productRepository =
+                RepositoryProvider.of<ProductRepository>(context);
+            try {
+              final product = await productRepository.fetchProduct(upc);
+              // Navigate to the product detail page
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProductDetailPage(product: product),
+                ),
+              );
+            } catch (e) {
+              // Handle error (e.g., product not found)
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Failed to fetch product details."),
+                ),
+              );
+            }
+          }
         },
       ),
     );

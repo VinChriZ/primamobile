@@ -15,7 +15,6 @@ class ProductDetailPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        // Removed title and actions
         backgroundColor: Colors.blue,
         elevation: 0,
       ),
