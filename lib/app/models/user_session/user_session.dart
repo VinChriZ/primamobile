@@ -12,8 +12,14 @@ class UserSession {
     DateTime? lastLogin,
     this.isLogin = false,
     this.token,
-  })  : user =
-            user ?? User(userId: 0, username: '', passwordHash: '', roleId: 0),
+  })  : user = user ??
+            User(
+              userId: 0,
+              username: '',
+              passwordHash: '',
+              roleId: 0,
+              active: true,
+            ),
         lastLogin = lastLogin ?? DateTime.now();
 
   // Factory method to create a UserSession from JSON
@@ -24,9 +30,11 @@ class UserSession {
         'username': json['username'],
         'password_hash': json['password_hash'],
         'role_id': json['role_id'],
+        'active': json['active'],
       }),
-      lastLogin:
-          DateTimeExtension.fromString(dateTimeString: json['last_login']),
+      lastLogin: DateTimeExtension.fromString(
+        dateTimeString: json['last_login'],
+      ),
       isLogin: json['is_login'] == 1,
       token: json['TOKEN'],
     );
@@ -38,6 +46,7 @@ class UserSession {
         'username': user.username,
         'password_hash': user.passwordHash,
         'role_id': user.roleId,
+        'active': user.active,
         'last_login': lastLogin.toLongString(),
         'is_login': isLogin ? 1 : 0,
         'TOKEN': token,

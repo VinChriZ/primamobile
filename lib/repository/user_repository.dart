@@ -21,7 +21,8 @@ class UserRepository {
       final updatedUser = userSession.user.copyWith(
         username: userDetails.username,
         roleId: userDetails.roleId,
-        passwordHash: userDetails.passwordHash, // If needed
+        passwordHash: userDetails.passwordHash,
+        active: userDetails.active,
       );
 
       final updatedUserSession = userSession.copyWith(user: updatedUser);
@@ -64,6 +65,7 @@ class UserRepository {
 
   Future<String> getName() async {
     final userSession = await _userSessionRepository.getUserSession();
-    return userSession.user.username; // Replace with your actual field
+    return userSession
+        .user.username; // Replace with your actual field if needed
   }
 }

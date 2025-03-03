@@ -3,12 +3,14 @@ class User {
   final String username;
   final String passwordHash;
   final int roleId;
+  final bool active;
 
   User({
     required this.userId,
     required this.username,
     required this.passwordHash,
     required this.roleId,
+    required this.active,
   });
 
   // Factory constructor to create a User from JSON
@@ -18,6 +20,7 @@ class User {
       username: json['username'],
       passwordHash: json['password_hash'],
       roleId: json['role_id'],
+      active: json['active'],
     );
   }
 
@@ -28,6 +31,7 @@ class User {
       'username': username,
       'password_hash': passwordHash,
       'role_id': roleId,
+      'active': active,
     };
   }
 
@@ -37,12 +41,14 @@ class User {
     String? username,
     String? passwordHash,
     int? roleId,
+    bool? active,
   }) {
     return User(
       userId: userId ?? this.userId,
       username: username ?? this.username,
       passwordHash: passwordHash ?? this.passwordHash,
       roleId: roleId ?? this.roleId,
+      active: active ?? this.active,
     );
   }
 }
