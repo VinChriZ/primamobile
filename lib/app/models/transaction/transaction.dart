@@ -1,3 +1,5 @@
+import 'package:primamobile/utils/globals.dart';
+
 class Transaction {
   final int transactionId;
   final double totalDisplayPrice;
@@ -7,6 +9,7 @@ class Transaction {
   final DateTime dateCreated;
   final String? note;
   final DateTime lastUpdated;
+  final int userId;
 
   Transaction({
     required this.transactionId,
@@ -17,6 +20,7 @@ class Transaction {
     required this.dateCreated,
     this.note,
     required this.lastUpdated,
+    required this.userId,
   });
 
   // Create a Transaction object from JSON
@@ -30,6 +34,7 @@ class Transaction {
       dateCreated: DateTime.parse(json['date_created']),
       note: json['note'],
       lastUpdated: DateTime.parse(json['last_updated']),
+      userId: json['user_id'],
     );
   }
 
@@ -39,6 +44,7 @@ class Transaction {
       'transaction_id': transactionId,
       'date_created': dateCreated.toUtc().toIso8601String(),
       if (note != null) 'note': note,
+      'user_id': Globals.userSession.user.userId,
     };
   }
 }

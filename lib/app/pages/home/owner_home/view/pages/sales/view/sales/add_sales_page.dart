@@ -6,6 +6,7 @@ import 'package:primamobile/app/models/models.dart';
 import 'package:primamobile/repository/product_repository.dart';
 import 'package:primamobile/repository/transaction_detail_repository.dart';
 import 'package:primamobile/repository/transaction_repository.dart';
+import 'package:primamobile/utils/globals.dart';
 
 /// A model representing a product added to the sales transaction.
 class SalesProductItem {
@@ -312,6 +313,7 @@ class _AddSalesPageState extends State<AddSalesPage> {
       final transactionPayload = {
         'date_created': _transactionDate.toIso8601String(),
         'note': _notesController.text,
+        'user_id': Globals.userSession.user.userId,
       };
       final transaction = await _transactionRepository.addTransaction(
         transactionPayload,
