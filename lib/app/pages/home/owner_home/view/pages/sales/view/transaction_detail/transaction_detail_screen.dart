@@ -6,7 +6,6 @@ import 'package:primamobile/app/models/transaction/transaction_detail.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/bloc/transaction_detail/transaction_detail_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/transaction_detail/invoice_page.dart';
 import 'package:primamobile/repository/product_repository.dart';
-import 'package:primamobile/repository/user_repository.dart';
 
 class TransactionDetailScreen extends StatelessWidget {
   final Transaction transaction;
@@ -597,39 +596,14 @@ class TransactionDetailScreen extends StatelessWidget {
                         .toString()
                         .split(' ')[0],
                   ),
-                  FutureBuilder(
-                    future: RepositoryProvider.of<UserRepository>(context)
-                        .fetchUser(updatedTransaction.userId),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8.0),
-                          child: CircularProgressIndicator(),
-                        );
-                      } else if (snapshot.hasError) {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8.0),
-                          child: Text('Error fetching user information'),
-                        );
-                      } else if (!snapshot.hasData) {
-                        return const SizedBox();
-                      } else {
-                        final user = snapshot.data!;
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildTransactionInfoRow(
-                              label: 'User ID:',
-                              value: user.userId.toString(),
-                            ),
-                            _buildTransactionInfoRow(
-                              label: 'Username:',
-                              value: user.username,
-                            ),
-                          ],
-                        );
-                      }
-                    },
+                  // New info rows for User ID and Username using the bloc's state
+                  _buildTransactionInfoRow(
+                    label: 'User ID:',
+                    value: state.user.userId.toString(),
+                  ),
+                  _buildTransactionInfoRow(
+                    label: 'Username:',
+                    value: state.user.username,
                   ),
                   if (updatedTransaction.note != null &&
                       updatedTransaction.note!.isNotEmpty)

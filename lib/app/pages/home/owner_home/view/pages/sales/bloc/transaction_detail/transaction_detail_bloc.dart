@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:primamobile/app/models/transaction/transaction.dart';
 import 'package:primamobile/app/models/transaction/transaction_detail.dart';
+import 'package:primamobile/app/models/users/users.dart';
 import 'package:primamobile/repository/transaction_detail_repository.dart';
 import 'package:primamobile/repository/transaction_repository.dart';
 import 'package:primamobile/repository/user_repository.dart';
@@ -26,8 +27,10 @@ class TransactionDetailBloc
     on<DeleteTransactionDetail>(_onDeleteTransactionDetail);
   }
 
-  Future<void> _onFetchTransactionDetails(FetchTransactionDetails event,
-      Emitter<TransactionDetailState> emit) async {
+  Future<void> _onFetchTransactionDetails(
+    FetchTransactionDetails event,
+    Emitter<TransactionDetailState> emit,
+  ) async {
     emit(TransactionDetailLoading());
     try {
       // Fetch the list of details...
@@ -36,7 +39,10 @@ class TransactionDetailBloc
       // Fetch the updated transaction header (includes computed fields)
       final transaction =
           await transactionRepository.fetchTransaction(event.transactionId);
-      emit(TransactionDetailLoaded(transaction: transaction, details: details));
+      // Fetch the user details using the userRepository (now inside the bloc)
+      final user = await userRepository.fetchUser(transaction.userId);
+      emit(TransactionDetailLoaded(
+          transaction: transaction, details: details, user: user));
     } catch (e) {
       emit(TransactionDetailError(
           'Failed to fetch transaction details: ${e.toString()}'));

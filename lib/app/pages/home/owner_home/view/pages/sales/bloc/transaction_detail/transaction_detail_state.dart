@@ -4,25 +4,26 @@ abstract class TransactionDetailState extends Equatable {
   const TransactionDetailState();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class TransactionDetailInitial extends TransactionDetailState {}
 
 class TransactionDetailLoading extends TransactionDetailState {}
 
-// Updated state: includes both the transaction header and its details
 class TransactionDetailLoaded extends TransactionDetailState {
-  final Transaction transaction; // Updated header info
+  final Transaction transaction;
   final List<TransactionDetail> details;
+  final User user; // New field
 
   const TransactionDetailLoaded({
     required this.transaction,
     required this.details,
+    required this.user,
   });
 
   @override
-  List<Object> get props => [transaction, details];
+  List<Object?> get props => [transaction, details, user];
 }
 
 class TransactionDetailError extends TransactionDetailState {
@@ -31,5 +32,5 @@ class TransactionDetailError extends TransactionDetailState {
   const TransactionDetailError(this.message);
 
   @override
-  List<Object> get props => [message];
+  List<Object?> get props => [message];
 }
