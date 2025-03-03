@@ -4,6 +4,7 @@ import 'package:primamobile/app/models/transaction/transaction.dart';
 import 'package:primamobile/app/models/transaction/transaction_detail.dart';
 import 'package:primamobile/repository/transaction_detail_repository.dart';
 import 'package:primamobile/repository/transaction_repository.dart';
+import 'package:primamobile/repository/user_repository.dart';
 
 part 'transaction_detail_event.dart';
 part 'transaction_detail_state.dart';
@@ -12,10 +13,12 @@ class TransactionDetailBloc
     extends Bloc<TransactionDetailEvent, TransactionDetailState> {
   final TransactionDetailRepository transactionDetailRepository;
   final TransactionRepository transactionRepository;
+  final UserRepository userRepository;
 
   TransactionDetailBloc({
     required this.transactionDetailRepository,
     required this.transactionRepository,
+    required this.userRepository,
   }) : super(TransactionDetailInitial()) {
     on<FetchTransactionDetails>(_onFetchTransactionDetails);
     on<AddTransactionDetail>(_onAddTransactionDetail);

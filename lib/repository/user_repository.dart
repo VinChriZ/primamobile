@@ -68,4 +68,14 @@ class UserRepository {
     return userSession
         .user.username; // Replace with your actual field if needed
   }
+
+  Future<User> fetchUser(int userId) async {
+    try {
+      final userDetails = await _userProvider.getUserDetails(userId);
+      return userDetails;
+    } catch (e) {
+      print('Error fetching user details for user_id $userId: $e');
+      rethrow;
+    }
+  }
 }
