@@ -32,54 +32,134 @@ class AccountScreen extends StatelessWidget {
           if (state is AccountLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is AccountLoaded) {
-            if (state.accounts.isEmpty) {
-              return const Center(child: Text("No accounts available"));
-            }
-            return ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: state.accounts.length,
-              itemBuilder: (context, index) {
-                final account = state.accounts[index];
-                return Card(
-                  elevation: 3,
-                  margin: const EdgeInsets.symmetric(vertical: 8.0),
-                  // Light green for active, light red for inactive
-                  color: account.active ? Colors.green[100] : Colors.red[100],
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                        vertical: 12.0, horizontal: 16.0),
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.blueAccent,
-                      child: Text(
-                        account.username[0].toUpperCase(),
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    title: Text(
-                      account.username,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    subtitle: Text("Role: ${_roleName(account.roleId)}"),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.blue),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => BlocProvider.value(
-                              value: BlocProvider.of<AccountBloc>(context),
-                              child: EditAccountPage(user: account),
-                            ),
+            final filteredAccounts = state.filteredAccounts;
+            return Column(
+              children: [
+                // Filters Row with updated styling
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0, vertical: 12.0),
+                  child: Row(
+                    children: [
+                      // Status Dropdown
+                      SizedBox(
+                        width: 180,
+                        child: DropdownButtonFormField<String>(
+                          decoration: const InputDecoration(
+                            labelText: 'Status',
+                            border: OutlineInputBorder(),
                           ),
-                        );
-                      },
-                    ),
+                          value: state.selectedStatus,
+                          items: const [
+                            DropdownMenuItem(
+                                value: 'All', child: Text('All Status')),
+                            DropdownMenuItem(
+                                value: 'Active', child: Text('Active')),
+                            DropdownMenuItem(
+                                value: 'Inactive', child: Text('Inactive')),
+                          ],
+                          onChanged: (value) {
+                            if (value != null) {
+                              context.read<AccountBloc>().add(
+                                    FilterAccounts(
+                                      selectedStatus: value,
+                                      selectedRole: state.selectedRole,
+                                    ),
+                                  );
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 16.0),
+                      // Role Dropdown
+                      SizedBox(
+                        width: 180,
+                        child: DropdownButtonFormField<String>(
+                          decoration: const InputDecoration(
+                            labelText: 'Role',
+                            border: OutlineInputBorder(),
+                          ),
+                          value: state.selectedRole,
+                          items: const [
+                            DropdownMenuItem(
+                                value: 'All', child: Text('All Roles')),
+                            DropdownMenuItem(
+                                value: 'Admin', child: Text('Admin')),
+                            DropdownMenuItem(
+                                value: 'Owner', child: Text('Owner')),
+                            DropdownMenuItem(
+                                value: 'Worker', child: Text('Worker')),
+                          ],
+                          onChanged: (value) {
+                            if (value != null) {
+                              context.read<AccountBloc>().add(
+                                    FilterAccounts(
+                                      selectedStatus: state.selectedStatus,
+                                      selectedRole: value,
+                                    ),
+                                  );
+                            }
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                );
-              },
+                ),
+                // Accounts List
+                Expanded(
+                  child: filteredAccounts.isEmpty
+                      ? const Center(child: Text("No accounts available"))
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(16.0),
+                          itemCount: filteredAccounts.length,
+                          itemBuilder: (context, index) {
+                            final account = filteredAccounts[index];
+                            return Card(
+                              elevation: 3,
+                              margin: const EdgeInsets.symmetric(vertical: 8.0),
+                              color: account.active
+                                  ? Colors.green[100]
+                                  : Colors.red[100],
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 12.0, horizontal: 16.0),
+                                leading: CircleAvatar(
+                                  backgroundColor: Colors.blueAccent,
+                                  child: Text(
+                                    account.username[0].toUpperCase(),
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                                title: Text(
+                                  account.username,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
+                                ),
+                                subtitle:
+                                    Text("Role: ${_roleName(account.roleId)}"),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.edit,
+                                      color: Colors.blue),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => BlocProvider.value(
+                                          value: context.read<AccountBloc>(),
+                                          child: EditAccountPage(user: account),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
             );
           } else if (state is AccountError) {
             return Center(child: Text("Error: ${state.message}"));
@@ -93,7 +173,7 @@ class AccountScreen extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (_) => BlocProvider.value(
-                value: BlocProvider.of<AccountBloc>(context),
+                value: context.read<AccountBloc>(),
                 child: const AddAccountPage(),
               ),
             ),
