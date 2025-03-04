@@ -37,7 +37,6 @@ class UserRepository {
     }
   }
 
-  // Asynchronous method to get the role as a string based on roleId
   Future<String> getRole() async {
     try {
       // Fetch the current UserSession
@@ -65,8 +64,7 @@ class UserRepository {
 
   Future<String> getName() async {
     final userSession = await _userSessionRepository.getUserSession();
-    return userSession
-        .user.username; // Replace with your actual field if needed
+    return userSession.user.username;
   }
 
   Future<User> fetchUser(int userId) async {
@@ -75,6 +73,42 @@ class UserRepository {
       return userDetails;
     } catch (e) {
       print('Error fetching user details for user_id $userId: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<User>> fetchAllUsers() async {
+    try {
+      return await _userProvider.fetchAllUsers();
+    } catch (e) {
+      print('Error fetching all users: $e');
+      rethrow;
+    }
+  }
+
+  Future<User> addUser(User user, String password) async {
+    try {
+      return await _userProvider.addUser(user, password);
+    } catch (e) {
+      print('Error adding user: $e');
+      rethrow;
+    }
+  }
+
+  Future<User> updateUser(int userId, Map<String, dynamic> updatedData) async {
+    try {
+      return await _userProvider.updateUser(userId, updatedData);
+    } catch (e) {
+      print('Error updating user: $e');
+      rethrow;
+    }
+  }
+
+  Future<User> deactivateUser(int userId) async {
+    try {
+      return await _userProvider.deactivateUser(userId);
+    } catch (e) {
+      print('Error deactivating user: $e');
       rethrow;
     }
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/pages/home/admin_home/bloc/admin_home_bloc.dart';
+import 'package:primamobile/app/pages/home/admin_home/view/pages/account/view/account_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/home/view/home_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/profile/view/profile_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/report/view/report_page.dart';
@@ -23,7 +24,7 @@ class AdminHomeScreen extends StatelessWidget {
           const StockPage(),
           const SalesPage(),
           const ReportPage(),
-          const Placeholder(),
+          const AccountPage(),
           const ProfilePage()
         ];
 
