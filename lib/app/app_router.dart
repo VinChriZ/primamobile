@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/authentication/bloc/authentication_bloc.dart';
 import 'package:primamobile/app/pages.dart';
+import 'package:primamobile/app/pages/home/admin_home/view/admin_home_page.dart';
 import 'package:primamobile/repository/user_repository.dart';
 import 'package:primamobile/repository/transaction_repository.dart';
 import 'package:primamobile/repository/transaction_detail_repository.dart';
@@ -57,8 +58,13 @@ class AppRouter {
 
                     switch (roleId) {
                       case 1: // Admin
-                        return const Placeholder(
-                          child: Text('Admin Page'),
+                        return MultiBlocProvider(
+                          providers: [
+                            BlocProvider.value(
+                              value: authenticationBloc,
+                            ),
+                          ],
+                          child: const AdminHomePage(),
                         );
                       case 2: // Owner
                         return MultiBlocProvider(
@@ -66,7 +72,6 @@ class AppRouter {
                             BlocProvider.value(
                               value: authenticationBloc,
                             ),
-                            // Add other BLoCs related to Owner here if needed
                           ],
                           child: const OwnerHomePage(),
                         );
