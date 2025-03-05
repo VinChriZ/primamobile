@@ -1,2 +1,0 @@
-D:/TugasAkhir/primamobile/android/app/.cxx/Debug/104y3p60/x86/CMakeFiles/edit_cache.dir
-D:/TugasAkhir/primamobile/android/app/.cxx/Debug/104y3p60/x86/CMakeFiles/rebuild_cache.dir
