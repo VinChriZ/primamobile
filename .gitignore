@@ -43,7 +43,15 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+
 # Ignore auto-generated Flutter plugin registrant files
 linux/flutter/generated_*
 macos/Flutter/GeneratedPluginRegistrant.swift
 windows/flutter/generated_*
+linux/flutter/*
+macos/Flutter/*
+windows/flutter/*
+
+# Ignore Android NDK / CMake auto-generated files
+android/app/.cxx/
+android/app/cxx/
