@@ -1,8 +1,16 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/report/bloc/report_bloc.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -12,6 +20,13 @@ class ReportScreen extends StatefulWidget {
 }
 
 class _ReportScreenState extends State<ReportScreen> {
+  // Global keys for each chart.
+  final GlobalKey _barChartKey1 = GlobalKey();
+  final GlobalKey _barChartKey2 = GlobalKey();
+  final GlobalKey _barChartKey3 = GlobalKey();
+  final GlobalKey _pieChartKey1 = GlobalKey();
+  final GlobalKey _pieChartKey2 = GlobalKey();
+
   String _selectedFilter = 'Last 7 Days';
   DateTime? _customStart;
   DateTime? _customEnd;
@@ -59,23 +74,20 @@ class _ReportScreenState extends State<ReportScreen> {
   double _computeInterval(Map<DateTime, double> dataMap) {
     if (dataMap.isEmpty) return 1;
     final maxVal = dataMap.values.reduce((a, b) => a > b ? a : b);
-    // Divide the max value into roughly 4 parts.
     double interval = (maxVal / 4).ceilToDouble();
     return interval < 1 ? 1 : interval;
   }
 
-  /// Helper: Build a modern, animated bar chart using fl_chart.
-  /// The [leftReservedSize] allows more space for left axis labels.
+  /// Build a bar chart wrapped in its own RepaintBoundary.
   Widget _buildBarChart(
       String title, Map<DateTime, double> dataMap, bool isMonthlyGrouping,
-      {double leftReservedSize = 40}) {
+      {double leftReservedSize = 40, required GlobalKey key}) {
     final entries = dataMap.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
     if (entries.isEmpty) {
       return const Center(child: Text('No data available'));
     }
 
-    // Create bar groups and mapping for bottom axis labels.
     final List<BarChartGroupData> barGroups = [];
     final Map<int, String> dateLabels = {};
     for (int i = 0; i < entries.length; i++) {
@@ -94,100 +106,96 @@ class _ReportScreenState extends State<ReportScreen> {
           ],
         ),
       );
-      // Format label based on the provided grouping flag.
       final label = isMonthlyGrouping
-          ? DateFormat.MMM().format(date) // e.g., Jan, Feb, etc.
-          : DateFormat.Md().format(date); // e.g., 3/15
+          ? DateFormat.MMM().format(date)
+          : DateFormat.Md().format(date);
       dateLabels[i] = label;
     }
-
-    // Compute a dynamic interval if needed (or set a fixed one).
     final double interval = _computeInterval(dataMap);
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 3,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Center(
-              child: Text(
-                title,
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineSmall
-                    ?.copyWith(fontSize: 18, fontWeight: FontWeight.bold),
+    return RepaintBoundary(
+      key: key,
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        elevation: 3,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Center(
+                child: Text(
+                  title,
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineSmall
+                      ?.copyWith(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 200,
-              child: BarChart(
-                BarChartData(
-                  alignment: BarChartAlignment.spaceAround,
-                  barGroups: barGroups,
-                  gridData: const FlGridData(show: true),
-                  borderData: FlBorderData(show: false),
-                  titlesData: FlTitlesData(
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 40,
-                        getTitlesWidget: (double value, TitleMeta meta) {
-                          final label = dateLabels[value.toInt()] ?? '';
-                          return SideTitleWidget(
-                            meta: meta,
-                            space: 4.0,
-                            child: Text(label,
-                                style: const TextStyle(fontSize: 10)),
-                          );
-                        },
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 200,
+                child: BarChart(
+                  BarChartData(
+                    alignment: BarChartAlignment.spaceAround,
+                    barGroups: barGroups,
+                    gridData: const FlGridData(show: true),
+                    borderData: FlBorderData(show: false),
+                    titlesData: FlTitlesData(
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 40,
+                          getTitlesWidget: (double value, TitleMeta meta) {
+                            final label = dateLabels[value.toInt()] ?? '';
+                            return SideTitleWidget(
+                              meta: meta,
+                              space: 4.0,
+                              child: Text(label,
+                                  style: const TextStyle(fontSize: 10)),
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: leftReservedSize,
-                        interval: interval,
-                        getTitlesWidget: (double value, TitleMeta meta) {
-                          return SideTitleWidget(
-                            meta: meta,
-                            space: 4.0,
-                            child: Text(value.toStringAsFixed(0),
-                                style: const TextStyle(fontSize: 10)),
-                          );
-                        },
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: leftReservedSize,
+                          interval: interval,
+                          getTitlesWidget: (double value, TitleMeta meta) {
+                            return SideTitleWidget(
+                              meta: meta,
+                              space: 4.0,
+                              child: Text(value.toStringAsFixed(0),
+                                  style: const TextStyle(fontSize: 10)),
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                    topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  /// Helper: Create pie chart sections from a Map<String, double>.
+  /// Helper to create pie chart sections.
   List<PieChartSectionData> _createPieChartSections(
       Map<String, double> dataMap) {
-    // Calculate total for percentage computation.
     final total = dataMap.values.fold(0.0, (prev, element) => prev + element);
-
-    // Threshold: if a slice is less than 5% of total, group it into "Others".
     const double thresholdPercentage = 5.0;
     final Map<String, double> groupedData = {};
     double othersTotal = 0.0;
 
-    // Group the data.
     dataMap.forEach((key, value) {
       final percentage = total == 0 ? 0 : (value / total * 100);
       if (percentage < thresholdPercentage) {
@@ -201,7 +209,6 @@ class _ReportScreenState extends State<ReportScreen> {
       groupedData['Others'] = othersTotal;
     }
 
-    // Create pie chart sections from the grouped data.
     int i = 0;
     final colors = [
       Colors.blue,
@@ -231,43 +238,109 @@ class _ReportScreenState extends State<ReportScreen> {
     }).toList();
   }
 
-  /// Build a modern, animated pie chart using fl_chart.
-  Widget _buildPieChart(String title, Map<String, double> dataMap) {
+  /// Build a pie chart wrapped in its own RepaintBoundary.
+  Widget _buildPieChart(String title, Map<String, double> dataMap,
+      {required GlobalKey key}) {
     final sections = _createPieChartSections(dataMap);
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 3,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Center(
-              child: Text(
-                title,
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineSmall
-                    ?.copyWith(fontSize: 18, fontWeight: FontWeight.bold),
+    return RepaintBoundary(
+      key: key,
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        elevation: 3,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Center(
+                child: Text(
+                  title,
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineSmall
+                      ?.copyWith(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 250,
-              child: PieChart(
-                PieChartData(
-                  sections: sections,
-                  sectionsSpace: 2,
-                  centerSpaceRadius: 40,
-                  pieTouchData: PieTouchData(
-                    touchCallback: (FlTouchEvent event, pieTouchResponse) {},
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 250,
+                child: PieChart(
+                  PieChartData(
+                    sections: sections,
+                    sectionsSpace: 2,
+                    centerSpaceRadius: 40,
+                    pieTouchData: PieTouchData(
+                      touchCallback: (FlTouchEvent event, pieTouchResponse) {},
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  /// Capture the widget referenced by [key] as a PNG image.
+  Future<Uint8List> _captureChart(GlobalKey key) async {
+    try {
+      final boundary =
+          key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ImageByteFormat.png);
+      return byteData!.buffer.asUint8List();
+    } catch (e) {
+      debugPrint("Error capturing chart: $e");
+      rethrow;
+    }
+  }
+
+  /// Generate a PDF where each chart is placed on its own page.
+  Future<Uint8List> _generatePdfFromCharts() async {
+    final pdf = pw.Document();
+    const pageFormat = PdfPageFormat.a4;
+    const margin = 20.0;
+
+    // Order of charts as they appear in the report.
+    final List<GlobalKey> chartKeys = [
+      _barChartKey1,
+      _barChartKey2,
+      _barChartKey3,
+      _pieChartKey1,
+      _pieChartKey2,
+    ];
+
+    for (var key in chartKeys) {
+      final imageBytes = await _captureChart(key);
+      final pdfImage = pw.MemoryImage(imageBytes);
+      pdf.addPage(
+        pw.Page(
+          pageFormat: pageFormat,
+          build: (pw.Context context) {
+            return pw.Padding(
+              padding: const pw.EdgeInsets.all(margin),
+              child: pw.Center(
+                child: pw.Image(pdfImage, fit: pw.BoxFit.contain),
+              ),
+            );
+          },
+        ),
+      );
+    }
+    return pdf.save();
+  }
+
+  /// Share the generated PDF.
+  void _sharePdf() async {
+    try {
+      final pdfData = await _generatePdfFromCharts();
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/sales_report.pdf');
+      await file.writeAsBytes(pdfData);
+      await Share.shareXFiles([XFile(file.path)], text: 'Sales Report PDF');
+    } catch (e) {
+      debugPrint('Error sharing PDF: $e');
+    }
   }
 
   @override
@@ -275,10 +348,17 @@ class _ReportScreenState extends State<ReportScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sales Report'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: _sharePdf,
+            tooltip: 'Share as PDF',
+          ),
+        ],
       ),
       body: Column(
         children: [
-          // Filter Controls
+          // Filter Controls.
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -322,19 +402,36 @@ class _ReportScreenState extends State<ReportScreen> {
                   return SingleChildScrollView(
                     child: Column(
                       children: [
-                        _buildBarChart('Total Product Sold',
-                            state.salesLineChart, state.isMonthlyGrouping),
-                        _buildBarChart('Total Profits', state.profitsLineChart,
-                            state.isMonthlyGrouping,
-                            leftReservedSize: 60),
                         _buildBarChart(
-                            'Number of Transactions',
-                            state.transactionCountChart,
-                            state.isMonthlyGrouping),
+                          'Total Product Sold',
+                          state.salesLineChart,
+                          state.isMonthlyGrouping,
+                          leftReservedSize: 40,
+                          key: _barChartKey1,
+                        ),
+                        _buildBarChart(
+                          'Total Profits',
+                          state.profitsLineChart,
+                          state.isMonthlyGrouping,
+                          leftReservedSize: 60,
+                          key: _barChartKey2,
+                        ),
+                        _buildBarChart(
+                          'Number of Transactions',
+                          state.transactionCountChart,
+                          state.isMonthlyGrouping,
+                          key: _barChartKey3,
+                        ),
                         _buildPieChart(
-                            'Sales by Product Brand', state.brandPieChart),
-                        _buildPieChart('Sales by Product Category',
-                            state.categoryPieChart),
+                          'Sales by Product Brand',
+                          state.brandPieChart,
+                          key: _pieChartKey1,
+                        ),
+                        _buildPieChart(
+                          'Sales by Product Category',
+                          state.categoryPieChart,
+                          key: _pieChartKey2,
+                        ),
                         const SizedBox(height: 16),
                       ],
                     ),

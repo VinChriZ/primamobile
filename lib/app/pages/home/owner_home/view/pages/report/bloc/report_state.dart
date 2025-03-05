@@ -28,9 +28,9 @@ class ReportLoaded extends ReportState {
     required this.categoryPieChart,
     required this.transactionCountChart,
     required this.isMonthlyGrouping,
-    DateTime? startDate,
-    DateTime? endDate,
-  }) : super(startDate: startDate, endDate: endDate);
+    super.startDate,
+    super.endDate,
+  });
 
   @override
   List<Object?> get props => [
@@ -49,9 +49,9 @@ class ReportError extends ReportState {
   final String message;
   const ReportError({
     required this.message,
-    DateTime? startDate,
-    DateTime? endDate,
-  }) : super(startDate: startDate, endDate: endDate);
+    super.startDate,
+    super.endDate,
+  });
 
   @override
   List<Object?> get props => [message, startDate, endDate];
