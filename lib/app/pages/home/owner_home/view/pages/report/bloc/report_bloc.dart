@@ -88,7 +88,13 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
         endDate: endDate,
       ));
     } catch (e) {
-      emit(ReportError(message: e.toString()));
+      if (e.toString().contains("404")) {
+        emit(const ReportError(
+            message: "No transactions on the selected date."));
+      } else {
+        emit(const ReportError(
+            message: "Failed to load report data. Please try again later."));
+      }
     }
   }
 

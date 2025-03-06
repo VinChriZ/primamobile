@@ -394,53 +394,68 @@ class _ReportScreenState extends State<ReportScreen> {
             ),
           ),
           Expanded(
-            child: BlocBuilder<ReportBloc, ReportState>(
-              builder: (context, state) {
-                if (state is ReportLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is ReportLoaded) {
-                  return SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        _buildBarChart(
-                          'Total Product Sold',
-                          state.salesLineChart,
-                          state.isMonthlyGrouping,
-                          leftReservedSize: 40,
-                          key: _barChartKey1,
-                        ),
-                        _buildBarChart(
-                          'Total Profits',
-                          state.profitsLineChart,
-                          state.isMonthlyGrouping,
-                          leftReservedSize: 60,
-                          key: _barChartKey2,
-                        ),
-                        _buildBarChart(
-                          'Number of Transactions',
-                          state.transactionCountChart,
-                          state.isMonthlyGrouping,
-                          key: _barChartKey3,
-                        ),
-                        _buildPieChart(
-                          'Sales by Product Brand',
-                          state.brandPieChart,
-                          key: _pieChartKey1,
-                        ),
-                        _buildPieChart(
-                          'Sales by Product Category',
-                          state.categoryPieChart,
-                          key: _pieChartKey2,
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                    ),
-                  );
-                } else if (state is ReportError) {
-                  return Center(child: Text('Error: ${state.message}'));
-                }
-                return Container();
+            child: RefreshIndicator(
+              onRefresh: () async {
+                _applyFilter();
               },
+              child: BlocBuilder<ReportBloc, ReportState>(
+                builder: (context, state) {
+                  if (state is ReportLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is ReportLoaded) {
+                    return SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Column(
+                        children: [
+                          _buildBarChart(
+                            'Total Product Sold',
+                            state.salesLineChart,
+                            state.isMonthlyGrouping,
+                            leftReservedSize: 40,
+                            key: _barChartKey1,
+                          ),
+                          _buildBarChart(
+                            'Total Profits',
+                            state.profitsLineChart,
+                            state.isMonthlyGrouping,
+                            leftReservedSize: 60,
+                            key: _barChartKey2,
+                          ),
+                          _buildBarChart(
+                            'Number of Transactions',
+                            state.transactionCountChart,
+                            state.isMonthlyGrouping,
+                            key: _barChartKey3,
+                          ),
+                          _buildPieChart(
+                            'Sales by Product Brand',
+                            state.brandPieChart,
+                            key: _pieChartKey1,
+                          ),
+                          _buildPieChart(
+                            'Sales by Product Category',
+                            state.categoryPieChart,
+                            key: _pieChartKey2,
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    );
+                  } else if (state is ReportError) {
+                    // Ensure a scrollable widget is returned to enable pull-to-refresh.
+                    return SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: SizedBox(
+                        height: 300,
+                        child: Center(
+                          child: Text('Error: ${state.message}'),
+                        ),
+                      ),
+                    );
+                  }
+                  return Container();
+                },
+              ),
             ),
           ),
         ],
