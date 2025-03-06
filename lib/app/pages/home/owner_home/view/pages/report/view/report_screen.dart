@@ -360,37 +360,33 @@ class _ReportScreenState extends State<ReportScreen> {
         children: [
           // Filter Controls.
           Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: DropdownButton<String>(
-                    isExpanded: true,
-                    value: _selectedFilter,
-                    items: const [
-                      'Last 7 Days',
-                      'Last Month',
-                      'Last Year',
-                      'Custom'
-                    ]
-                        .map((value) =>
-                            DropdownMenuItem(value: value, child: Text(value)))
-                        .toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedFilter = value;
-                        });
-                        if (value == 'Custom') {
-                          _selectCustomDateRange();
-                        } else {
-                          _applyFilter();
-                        }
-                      }
-                    },
-                  ),
-                ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: DropdownButtonFormField<String>(
+              decoration: const InputDecoration(
+                labelText: 'Date Range',
+                border: OutlineInputBorder(),
+              ),
+              value: _selectedFilter,
+              items: const [
+                DropdownMenuItem(
+                    value: 'Last 7 Days', child: Text('Last 7 Days')),
+                DropdownMenuItem(
+                    value: 'Last Month', child: Text('Last Month')),
+                DropdownMenuItem(value: 'Last Year', child: Text('Last Year')),
+                DropdownMenuItem(value: 'Custom', child: Text('Custom')),
               ],
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    _selectedFilter = value;
+                  });
+                  if (value == 'Custom') {
+                    _selectCustomDateRange();
+                  } else {
+                    _applyFilter();
+                  }
+                }
+              },
             ),
           ),
           Expanded(
