@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:primamobile/app/pages/home/worker_home/view/pages/worker_report/bloc/worker_report_bloc.dart';
-import 'package:primamobile/app/pages/home/worker_home/view/pages/worker_report/view/add_report_page.dart';
-import 'package:primamobile/app/pages/home/worker_home/view/pages/worker_report/view/edit_report_page.dart';
+import 'package:primamobile/app/pages/home/worker_home/view/pages/worker_report/bloc/report/worker_report_bloc.dart';
+import 'package:primamobile/app/pages/home/worker_home/view/pages/worker_report/view/report/add_report_page.dart';
+import 'package:primamobile/app/pages/home/worker_home/view/pages/worker_report/view/report/edit_report_page.dart';
+import 'package:primamobile/app/pages/home/worker_home/view/pages/worker_report/view/report_detail/worker_report_detail_page.dart';
 
 class WorkerReportScreen extends StatelessWidget {
   const WorkerReportScreen({super.key});
@@ -220,30 +221,32 @@ class WorkerReportScreen extends StatelessWidget {
                           itemBuilder: (context, index) {
                             final report = state.reports[index];
                             return Card(
+                              color: Colors.lightBlue[100],
                               margin: const EdgeInsets.symmetric(
                                   vertical: 8.0, horizontal: 16.0),
                               elevation: 2,
                               child: InkWell(
                                 onTap: () async {
-                                  // Navigate to edit page
-                                  final updated = await Navigator.push(
+                                  // Navigate to the worker report detail screen
+                                  await Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) =>
-                                            EditReportPage(report: report)),
+                                      builder: (context) =>
+                                          WorkerReportDetailPage(
+                                              report: report),
+                                    ),
                                   );
-                                  if (updated != null) {
-                                    context.read<WorkerReportBloc>().add(
-                                          FetchWorkerReport(
-                                            selectedDateRange:
-                                                state.selectedDateRange,
-                                            startDate: state.startDate,
-                                            endDate: state.endDate,
-                                            sortBy: state.selectedSortBy,
-                                            sortOrder: state.selectedSortOrder,
-                                          ),
-                                        );
-                                  }
+                                  // Refresh list after returning:
+                                  context.read<WorkerReportBloc>().add(
+                                        FetchWorkerReport(
+                                          selectedDateRange:
+                                              state.selectedDateRange,
+                                          startDate: state.startDate,
+                                          endDate: state.endDate,
+                                          sortBy: state.selectedSortBy,
+                                          sortOrder: state.selectedSortOrder,
+                                        ),
+                                      );
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.all(16.0),

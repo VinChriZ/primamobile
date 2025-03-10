@@ -5,7 +5,7 @@ import 'package:primamobile/app/pages/home/owner_home/view/pages/home/view/home_
 import 'package:primamobile/app/pages/home/owner_home/view/pages/profile/view/profile_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/sales/sales_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/stock_page.dart';
-import 'package:primamobile/app/pages/home/worker_home/view/pages/worker_report/view/worker_report_page.dart';
+import 'package:primamobile/app/pages/home/worker_home/view/pages/worker_report/view/report/worker_report_page.dart';
 
 class WorkerHomeScreen extends StatelessWidget {
   const WorkerHomeScreen({super.key});
