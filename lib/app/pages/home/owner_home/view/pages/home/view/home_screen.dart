@@ -4,6 +4,7 @@ import 'package:primamobile/app/pages/home/owner_home/view/pages/home/bloc/home_
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/barcode_scanner.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/product_detail.dart';
 import 'package:primamobile/repository/product_repository.dart';
+import 'package:primamobile/utils/globals.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -66,7 +67,32 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Dashboard"),
+        backgroundColor: Colors.white,
+        elevation: 2,
+        toolbarHeight: 80,
+        // Wrap the flexibleSpace with SafeArea to avoid overlapping the notification bar.
+        flexibleSpace: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.blue[900],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child: Text(
+                  "Welcome ${Globals.userSession.user.username}",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
       body: BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
@@ -75,6 +101,11 @@ class HomeScreen extends StatelessWidget {
           } else if (state is HomeError) {
             return Center(child: Text(state.message));
           } else if (state is HomeLoaded) {
+            // If role_id is not 1 or 2, hide all cards.
+            if (Globals.userSession.user.roleId != 1 &&
+                Globals.userSession.user.roleId != 2) {
+              return const Center(child: Text("No content available."));
+            }
             final dashboard = state.dashboardData;
             return RefreshIndicator(
               onRefresh: () async {
