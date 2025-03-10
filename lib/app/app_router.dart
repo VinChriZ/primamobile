@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/authentication/bloc/authentication_bloc.dart';
 import 'package:primamobile/app/pages.dart';
 import 'package:primamobile/app/pages/home/admin_home/view/admin_home_page.dart';
+import 'package:primamobile/app/pages/home/worker_home/view/worker_home_page.dart';
 import 'package:primamobile/repository/user_repository.dart';
 import 'package:primamobile/repository/transaction_repository.dart';
 import 'package:primamobile/repository/transaction_detail_repository.dart';
@@ -76,8 +77,13 @@ class AppRouter {
                           child: const OwnerHomePage(),
                         );
                       case 3: // Worker
-                        return const Placeholder(
-                          child: Text('Worker Page'),
+                        return MultiBlocProvider(
+                          providers: [
+                            BlocProvider.value(
+                              value: authenticationBloc,
+                            ),
+                          ],
+                          child: const WorkerHomePage(),
                         );
                       default:
                         return const Scaffold(
