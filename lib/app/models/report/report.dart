@@ -21,8 +21,8 @@ class Report {
     return Report(
       reportId: json['report_id'] as int,
       userId: json['user_id'] as int,
-      dateCreated: DateTime.parse(json['date_created'] as String),
-      lastUpdated: DateTime.parse(json['last_updated'] as String),
+      dateCreated: DateTime.parse(json['date_created']),
+      lastUpdated: DateTime.parse(json['last_updated']),
       type: json['type'] as String,
       status: json['status'] as String,
     );

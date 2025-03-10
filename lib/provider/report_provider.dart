@@ -3,15 +3,36 @@ import 'package:primamobile/provider/dio/dio_client.dart';
 import 'package:primamobile/provider/models/request_api/request_api.dart';
 
 class ReportProvider {
-  // Fetch all reports with optional filtering by status and type
-  Future<List<Report>> getReports({String? status, String? reportType}) async {
+  // Fetch all reports with optional filtering and sorting
+  Future<List<Report>> getReports({
+    DateTime? startDate,
+    DateTime? endDate,
+    String? sortBy,
+    String? sortOrder,
+    String? status,
+    String? reportType,
+  }) async {
     final Map<String, dynamic> queryParameters = {};
+
+    if (startDate != null) {
+      queryParameters['start_date'] = startDate.toIso8601String();
+    }
+    if (endDate != null) {
+      queryParameters['end_date'] = endDate.toIso8601String();
+    }
+    if (sortBy != null) {
+      queryParameters['sort_by'] = sortBy;
+    }
+    if (sortOrder != null) {
+      queryParameters['sort_order'] = sortOrder;
+    }
     if (status != null) {
       queryParameters['status'] = status;
     }
     if (reportType != null) {
       queryParameters['report_type'] = reportType;
     }
+
     final RequestParam param = RequestParam(parameters: queryParameters);
     final RequestObject request = RequestObjectFunction(requestParam: param);
 

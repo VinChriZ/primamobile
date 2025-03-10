@@ -4,10 +4,23 @@ import 'package:primamobile/provider/report_provider.dart';
 class ReportRepository {
   final ReportProvider _provider = ReportProvider();
 
-  // Fetch all reports with optional filters
-  Future<List<Report>> fetchReports(
-      {String? status, String? reportType}) async {
-    return await _provider.getReports(status: status, reportType: reportType);
+  // Fetch all reports with optional filters and sorting
+  Future<List<Report>> fetchReports({
+    DateTime? startDate,
+    DateTime? endDate,
+    String? sortBy,
+    String? sortOrder,
+    String? status,
+    String? reportType,
+  }) async {
+    return await _provider.getReports(
+      startDate: startDate,
+      endDate: endDate,
+      sortBy: sortBy,
+      sortOrder: sortOrder,
+      status: status,
+      reportType: reportType,
+    );
   }
 
   // Fetch a specific report by ID

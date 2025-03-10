@@ -7,8 +7,10 @@ import 'package:primamobile/repository/login_repository.dart';
 import 'package:primamobile/repository/user_session_repository.dart';
 import 'package:primamobile/repository/user_repository.dart';
 import 'package:primamobile/repository/product_repository.dart';
-import 'package:primamobile/repository/transaction_repository.dart'; // Added
-import 'package:primamobile/repository/transaction_detail_repository.dart'; // Added
+import 'package:primamobile/repository/transaction_repository.dart';
+import 'package:primamobile/repository/transaction_detail_repository.dart';
+import 'package:primamobile/repository/report_repository.dart';
+import 'package:primamobile/repository/report_detail_repository.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -22,6 +24,8 @@ class App extends StatelessWidget {
     final productRepository = ProductRepository();
     final transactionRepository = TransactionRepository();
     final transactionDetailRepository = TransactionDetailRepository();
+    final reportRepository = ReportRepository();
+    final reportDetailRepository = ReportDetailRepository();
 
     // Create an instance of AuthenticationBloc with dependencies
     final authenticationBloc = AuthenticationBloc(
@@ -35,6 +39,8 @@ class App extends StatelessWidget {
       userRepository: userRepository,
       transactionRepository: transactionRepository,
       transactionDetailRepository: transactionDetailRepository,
+      reportRepository: reportRepository,
+      reportDetailRepository: reportDetailRepository,
     );
 
     return MultiRepositoryProvider(
@@ -45,6 +51,8 @@ class App extends StatelessWidget {
         RepositoryProvider.value(value: productRepository),
         RepositoryProvider.value(value: transactionRepository),
         RepositoryProvider.value(value: transactionDetailRepository),
+        RepositoryProvider.value(value: reportRepository),
+        RepositoryProvider.value(value: reportDetailRepository),
       ],
       child: BlocProvider.value(
         value: authenticationBloc,
@@ -52,10 +60,6 @@ class App extends StatelessWidget {
           title: 'PrimaMobile',
           theme: ThemeData(
             brightness: Brightness.light,
-            // colorScheme: ColorScheme.fromSwatch().copyWith(
-            //   secondary:
-            //       Colors.lightBlue, // Change the secondary color to green
-            // ),
             floatingActionButtonTheme: const FloatingActionButtonThemeData(
               backgroundColor: Colors.lightBlue,
               foregroundColor: Colors.white,
@@ -68,7 +72,6 @@ class App extends StatelessWidget {
           initialRoute: '/',
           onGenerateRoute: appRouter.onGenerateRoutes,
           debugShowCheckedModeBanner: false,
-
           // Device Preview
           builder: DevicePreview.appBuilder,
           locale: DevicePreview.locale(context),

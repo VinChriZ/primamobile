@@ -9,6 +9,8 @@ import 'package:primamobile/app/pages/home/worker_home/view/worker_home_page.dar
 import 'package:primamobile/repository/user_repository.dart';
 import 'package:primamobile/repository/transaction_repository.dart';
 import 'package:primamobile/repository/transaction_detail_repository.dart';
+import 'package:primamobile/repository/report_repository.dart';
+import 'package:primamobile/repository/report_detail_repository.dart';
 import 'package:primamobile/utils/globals.dart';
 
 class AppRouter {
@@ -16,12 +18,16 @@ class AppRouter {
   final UserRepository userRepository;
   final TransactionRepository transactionRepository;
   final TransactionDetailRepository transactionDetailRepository;
+  final ReportRepository reportRepository;
+  final ReportDetailRepository reportDetailRepository;
 
   AppRouter({
     required this.authenticationBloc,
     required this.userRepository,
     required this.transactionRepository,
     required this.transactionDetailRepository,
+    required this.reportRepository,
+    required this.reportDetailRepository,
   });
 
   Route<dynamic> onGenerateRoutes(RouteSettings settings) {
@@ -61,27 +67,21 @@ class AppRouter {
                       case 1: // Admin
                         return MultiBlocProvider(
                           providers: [
-                            BlocProvider.value(
-                              value: authenticationBloc,
-                            ),
+                            BlocProvider.value(value: authenticationBloc),
                           ],
                           child: const AdminHomePage(),
                         );
                       case 2: // Owner
                         return MultiBlocProvider(
                           providers: [
-                            BlocProvider.value(
-                              value: authenticationBloc,
-                            ),
+                            BlocProvider.value(value: authenticationBloc),
                           ],
                           child: const OwnerHomePage(),
                         );
                       case 3: // Worker
                         return MultiBlocProvider(
                           providers: [
-                            BlocProvider.value(
-                              value: authenticationBloc,
-                            ),
+                            BlocProvider.value(value: authenticationBloc),
                           ],
                           child: const WorkerHomePage(),
                         );

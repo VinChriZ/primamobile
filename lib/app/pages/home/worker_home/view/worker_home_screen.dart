@@ -5,6 +5,7 @@ import 'package:primamobile/app/pages/home/owner_home/view/pages/home/view/home_
 import 'package:primamobile/app/pages/home/owner_home/view/pages/profile/view/profile_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/sales/sales_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/stock_page.dart';
+import 'package:primamobile/app/pages/home/worker_home/view/pages/worker_report/view/worker_report_page.dart';
 
 class WorkerHomeScreen extends StatelessWidget {
   const WorkerHomeScreen({super.key});
@@ -20,6 +21,7 @@ class WorkerHomeScreen extends StatelessWidget {
           const HomePage(),
           const StockPage(),
           const SalesPage(),
+          const WorkerReportPage(),
           const ProfilePage()
         ];
 
@@ -47,6 +49,8 @@ class WorkerHomeScreen extends StatelessWidget {
               BottomNavigationBarItem(
                   icon: Icon(Icons.inventory), label: 'Stock'),
               BottomNavigationBarItem(icon: Icon(Icons.sell), label: 'Sales'),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.edit_document), label: 'Report'),
               BottomNavigationBarItem(
                   icon: Icon(Icons.person), label: 'Profile'),
             ],
