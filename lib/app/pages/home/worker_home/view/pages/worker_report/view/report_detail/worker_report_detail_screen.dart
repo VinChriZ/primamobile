@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:primamobile/app/models/report/report.dart';
 import 'package:primamobile/app/models/report/report_detail.dart';
 import 'package:primamobile/app/pages/home/worker_home/view/pages/worker_report/bloc/report_detail/bloc/worker_report_detail_bloc.dart';
+import 'package:primamobile/repository/product_repository.dart';
 
 class WorkerReportDetailScreen extends StatelessWidget {
   final Report report;
@@ -38,7 +39,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
   }
 
   Widget _buildReportDetailsList(
-      BuildContext context, List<ReportDetail> details) {
+      BuildContext context, Report report, List<ReportDetail> details) {
     if (details.isEmpty) {
       return const Center(child: Text('No report details available.'));
     }
@@ -46,12 +47,14 @@ class WorkerReportDetailScreen extends StatelessWidget {
       itemCount: details.length,
       itemBuilder: (context, index) {
         final detail = details[index];
-        return _buildReportDetailCard(context, detail);
+        return _buildReportDetailCard(context, report, detail);
       },
     );
   }
 
-  Widget _buildReportDetailCard(BuildContext context, ReportDetail detail) {
+  Widget _buildReportDetailCard(
+      BuildContext context, Report report, ReportDetail detail) {
+    final productRepository = RepositoryProvider.of<ProductRepository>(context);
     return Card(
       color: Colors.white,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -62,26 +65,53 @@ class WorkerReportDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'UPC: ${detail.upc}',
-              style:
-                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+            // Instead of showing UPC, fetch and show the product name.
+            FutureBuilder(
+              future: productRepository.fetchProduct(detail.upc),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Text(
+                    'Loading...',
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+                  );
+                } else if (snapshot.hasError) {
+                  return Text(
+                    'Error: ${snapshot.error}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16.0),
+                  );
+                } else if (snapshot.hasData) {
+                  final product = snapshot.data;
+                  return Text(
+                    product?.name ??
+                        detail
+                            .upc, // Use product name if not null, otherwise fallback to UPC.
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16.0),
+                  );
+                } else {
+                  return Text(
+                    detail.upc,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16.0),
+                  );
+                }
+              },
             ),
+
             const SizedBox(height: 4.0),
             Text(
               'Quantity: ${detail.quantity}',
               style: const TextStyle(fontSize: 16.0),
             ),
-            const SizedBox(height: 4.0),
             const SizedBox(height: 12.0),
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
-                      // Implement edit functionality if needed.
-                      // For example, show a dialog to edit the detail.
-                    },
+                    onPressed: () =>
+                        _showEditReportDetailDialog(context, report, detail),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                     ),
@@ -94,12 +124,8 @@ class WorkerReportDetailScreen extends StatelessWidget {
                 const SizedBox(width: 8.0),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
-                      context.read<WorkerReportDetailBloc>().add(
-                            DeleteWorkerReportDetail(
-                                report.reportId, detail.reportDetailId),
-                          );
-                    },
+                    onPressed: () =>
+                        _showDeleteDetailConfirmation(context, report, detail),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                     ),
@@ -117,9 +143,129 @@ class WorkerReportDetailScreen extends StatelessWidget {
     );
   }
 
+  // Shows a dialog to edit the report detail
+  void _showEditReportDetailDialog(
+      BuildContext context, Report report, ReportDetail detail) {
+    final formKey = GlobalKey<FormState>();
+    String upc = detail.upc;
+    int quantity = detail.quantity;
+    final workerReportDetailBloc = context.read<WorkerReportDetailBloc>();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Edit Report Detail'),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    initialValue: detail.upc,
+                    decoration: const InputDecoration(labelText: 'UPC'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter UPC';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) => upc = value!,
+                  ),
+                  TextFormField(
+                    initialValue: detail.quantity.toString(),
+                    decoration: const InputDecoration(labelText: 'Quantity'),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter quantity';
+                      }
+                      if (int.tryParse(value) == null ||
+                          int.parse(value) <= 0) {
+                        return 'Enter a valid quantity';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) => quantity = int.parse(value!),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  formKey.currentState!.save();
+                  workerReportDetailBloc.add(
+                    UpdateWorkerReportDetail(
+                      report.reportId,
+                      detail.reportDetailId,
+                      {
+                        'upc': upc,
+                        'quantity': quantity,
+                      },
+                    ),
+                  );
+                  Navigator.of(dialogContext).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Report detail updated successfully.')),
+                  );
+                }
+              },
+              child: const Text('Update'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Shows a confirmation dialog before deleting a report detail.
+  void _showDeleteDetailConfirmation(
+      BuildContext context, Report report, ReportDetail detail) {
+    final workerReportDetailBloc = context.read<WorkerReportDetailBloc>();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Delete Report Detail'),
+          content:
+              const Text('Are you sure you want to delete this report detail?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                workerReportDetailBloc.add(
+                  DeleteWorkerReportDetail(
+                      report.reportId, detail.reportDetailId),
+                );
+                Navigator.of(dialogContext).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Report detail deleted successfully.')),
+                );
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Use the report date as the app bar title.
     final String reportDateStr =
         DateFormat('yyyy-MM-dd').format(report.dateCreated);
     return Scaffold(
@@ -134,9 +280,9 @@ class WorkerReportDetailScreen extends StatelessWidget {
           } else if (state is WorkerReportDetailLoaded) {
             return RefreshIndicator(
               onRefresh: () async {
-                context.read<WorkerReportDetailBloc>().add(
-                      FetchWorkerReportDetails(report.reportId),
-                    );
+                context
+                    .read<WorkerReportDetailBloc>()
+                    .add(FetchWorkerReportDetails(report.reportId));
               },
               child: ListView(
                 padding: const EdgeInsets.all(16.0),
@@ -174,7 +320,8 @@ class WorkerReportDetailScreen extends StatelessWidget {
                   ),
                   SizedBox(
                     height: 400, // Adjust height as needed.
-                    child: _buildReportDetailsList(context, state.details),
+                    child:
+                        _buildReportDetailsList(context, report, state.details),
                   ),
                 ],
               ),
@@ -187,8 +334,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Implement adding a new report detail.
-          // For example, show a dialog similar to your AddReportPage.
+          // Implement adding a new report detail, similar to your other add flows.
         },
         child: const Icon(Icons.add),
       ),
