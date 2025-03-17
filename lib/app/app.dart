@@ -60,6 +60,28 @@ class App extends StatelessWidget {
           title: 'PrimaMobile',
           theme: ThemeData(
             brightness: Brightness.light,
+            colorScheme: const ColorScheme.light(
+              primary: Colors.lightBlue,
+              secondary: Colors.lightBlue,
+              onSecondary: Colors.white,
+            ),
+            primaryColor: Colors.lightBlue,
+            primarySwatch: Colors.lightBlue,
+            dialogTheme: DialogTheme(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+                side: const BorderSide(color: Colors.lightBlue),
+              ),
+            ),
+            buttonTheme: const ButtonThemeData(
+              buttonColor: Colors.lightBlue,
+              textTheme: ButtonTextTheme.primary,
+            ),
+            textSelectionTheme: const TextSelectionThemeData(
+              cursorColor: Colors.lightBlue,
+              selectionColor: Color(0x4D03A9F4),
+              selectionHandleColor: Colors.lightBlue,
+            ),
             floatingActionButtonTheme: const FloatingActionButtonThemeData(
               backgroundColor: Colors.lightBlue,
               foregroundColor: Colors.white,
