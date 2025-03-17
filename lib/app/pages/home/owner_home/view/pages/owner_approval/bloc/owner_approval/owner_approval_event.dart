@@ -7,7 +7,34 @@ abstract class OwnerApprovalEvent extends Equatable {
 }
 
 class FetchOwnerApprovals extends OwnerApprovalEvent {
-  const FetchOwnerApprovals();
+  final String selectedDateRange;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final String sortBy;
+  final String sortOrder;
+  final String? status;
+  final String? reportType;
+
+  const FetchOwnerApprovals({
+    this.selectedDateRange = 'All Dates',
+    this.startDate,
+    this.endDate,
+    this.sortBy = 'date_created',
+    this.sortOrder = 'desc',
+    this.status,
+    this.reportType,
+  });
+
+  @override
+  List<Object?> get props => [
+        selectedDateRange,
+        startDate,
+        endDate,
+        sortBy,
+        sortOrder,
+        status,
+        reportType
+      ];
 }
 
 class ApproveReport extends OwnerApprovalEvent {

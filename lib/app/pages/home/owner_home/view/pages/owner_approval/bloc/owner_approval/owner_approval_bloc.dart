@@ -18,9 +18,25 @@ class OwnerApprovalBloc extends Bloc<OwnerApprovalEvent, OwnerApprovalState> {
       FetchOwnerApprovals event, Emitter<OwnerApprovalState> emit) async {
     emit(OwnerApprovalLoading());
     try {
-      // Fetch all reports without filtering.
-      final reports = await reportRepository.fetchReports();
-      emit(OwnerApprovalLoaded(reports: reports));
+      // Fetch reports with filtering and sorting parameters
+      final reports = await reportRepository.fetchReports(
+        startDate: event.startDate,
+        endDate: event.endDate,
+        sortBy: event.sortBy,
+        sortOrder: event.sortOrder,
+        status: event.status,
+        reportType: event.reportType,
+      );
+      emit(OwnerApprovalLoaded(
+        reports: reports,
+        selectedDateRange: event.selectedDateRange,
+        selectedSortBy: event.sortBy,
+        selectedSortOrder: event.sortOrder,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        selectedStatus: event.status,
+        selectedReportType: event.reportType,
+      ));
     } catch (e) {
       emit(OwnerApprovalError('Failed to fetch reports: ${e.toString()}'));
     }
@@ -29,9 +45,23 @@ class OwnerApprovalBloc extends Bloc<OwnerApprovalEvent, OwnerApprovalState> {
   Future<void> _onApproveReport(
       ApproveReport event, Emitter<OwnerApprovalState> emit) async {
     try {
-      // Use new repository function for approval
       await reportRepository.approveReport(event.reportId);
-      add(const FetchOwnerApprovals());
+
+      // After approval, refresh the list with the same filters
+      if (state is OwnerApprovalLoaded) {
+        final currentState = state as OwnerApprovalLoaded;
+        add(FetchOwnerApprovals(
+          selectedDateRange: currentState.selectedDateRange,
+          startDate: currentState.startDate,
+          endDate: currentState.endDate,
+          sortBy: currentState.selectedSortBy,
+          sortOrder: currentState.selectedSortOrder,
+          status: currentState.selectedStatus,
+          reportType: currentState.selectedReportType,
+        ));
+      } else {
+        add(const FetchOwnerApprovals());
+      }
     } catch (e) {
       emit(OwnerApprovalError('Failed to approve report: ${e.toString()}'));
     }
@@ -40,9 +70,23 @@ class OwnerApprovalBloc extends Bloc<OwnerApprovalEvent, OwnerApprovalState> {
   Future<void> _onDenyReport(
       DenyReport event, Emitter<OwnerApprovalState> emit) async {
     try {
-      // Use new repository function for denial
       await reportRepository.denyReport(event.reportId);
-      add(const FetchOwnerApprovals());
+
+      // After denial, refresh the list with the same filters
+      if (state is OwnerApprovalLoaded) {
+        final currentState = state as OwnerApprovalLoaded;
+        add(FetchOwnerApprovals(
+          selectedDateRange: currentState.selectedDateRange,
+          startDate: currentState.startDate,
+          endDate: currentState.endDate,
+          sortBy: currentState.selectedSortBy,
+          sortOrder: currentState.selectedSortOrder,
+          status: currentState.selectedStatus,
+          reportType: currentState.selectedReportType,
+        ));
+      } else {
+        add(const FetchOwnerApprovals());
+      }
     } catch (e) {
       emit(OwnerApprovalError('Failed to deny report: ${e.toString()}'));
     }
