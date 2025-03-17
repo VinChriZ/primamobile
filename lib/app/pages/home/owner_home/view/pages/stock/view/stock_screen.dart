@@ -14,6 +14,40 @@ class StockScreen extends StatelessWidget {
     context.read<StockBloc>().add(LoadProducts());
   }
 
+  /// Helper widget to build a row for a given label/value pair.
+  Widget _buildAttributeRow(String label, String value) {
+    // Extract the base label without the colon
+    String baseLabel =
+        label.endsWith(':') ? label.substring(0, label.length - 1) : label;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 110, // Width to accommodate longer labels
+          padding: const EdgeInsets.only(right: 5), // Add right padding
+          child: Text(
+            baseLabel,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+            textAlign: TextAlign.left,
+          ),
+        ),
+        const SizedBox(width: 5), // Space before colon
+        const Text(
+          ":",
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(width: 10), // Space after colon
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontSize: 15),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -258,10 +292,22 @@ class StockScreen extends StatelessWidget {
                                                       ),
                                                       const SizedBox(
                                                           height: 8.0),
-                                                      Text(
-                                                          'Stock: ${product.stock}'),
-                                                      Text(
-                                                        'Last Updated: ${product.lastUpdated != null ? DateFormat('yyyy-MM-dd').format(product.lastUpdated!) : 'N/A'}',
+                                                      // Replace direct Text widgets with _buildAttributeRow
+                                                      _buildAttributeRow(
+                                                          'Stock',
+                                                          product.stock
+                                                              .toString()),
+                                                      const SizedBox(
+                                                          height: 4.0),
+                                                      _buildAttributeRow(
+                                                        'Last Updated',
+                                                        product.lastUpdated !=
+                                                                null
+                                                            ? DateFormat(
+                                                                    'yyyy-MM-dd')
+                                                                .format(product
+                                                                    .lastUpdated!)
+                                                            : 'N/A',
                                                       ),
                                                     ],
                                                   ),
