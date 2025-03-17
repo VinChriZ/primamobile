@@ -39,6 +39,10 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       final categories = results[1] as List<String>;
       final brands = results[2] as List<String>;
 
+      // Sort categories and brands alphabetically
+      categories.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+      brands.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+
       // Apply sorting before emitting
       final sortedProducts = _applySorting(allProducts, 'Last Updated');
 
