@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:primamobile/app/models/report/report.dart';
-import 'package:primamobile/app/pages/home/owner_home/view/pages/owner_approval/bloc/owner_approval_bloc.dart';
-import 'package:primamobile/app/pages/home/owner_home/view/pages/owner_approval/owner_approval_detail_page.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/owner_approval/bloc/owner_approval/owner_approval_bloc.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/owner_approval/view/owner_approval_detail_page.dart';
 
 class OwnerApprovalScreen extends StatelessWidget {
   const OwnerApprovalScreen({super.key});

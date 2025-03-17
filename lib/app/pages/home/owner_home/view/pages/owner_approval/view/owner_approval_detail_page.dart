@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/models/report/report.dart';
-import 'package:primamobile/app/pages/home/owner_home/view/pages/owner_approval/bloc/owner_approval_detail_bloc.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/owner_approval/bloc/owner_approval_detail/owner_approval_detail_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/owner_approval/view/owner_approval_detail_screen.dart';
 import 'package:primamobile/repository/report_detail_repository.dart';
 

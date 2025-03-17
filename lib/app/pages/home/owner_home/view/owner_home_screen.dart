@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/bloc/owner_home_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/home/view/home_page.dart';
-import 'package:primamobile/app/pages/home/owner_home/view/pages/owner_approval/owner_approval_page.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/owner_approval/view/owner_approval_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/profile/view/profile_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/report/view/report_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/sales/sales_page.dart';
