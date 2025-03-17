@@ -52,3 +52,11 @@ class DenyReport extends OwnerApprovalEvent {
   @override
   List<Object?> get props => [reportId];
 }
+
+class DeleteOwnerApproval extends OwnerApprovalEvent {
+  final int reportId;
+  const DeleteOwnerApproval(this.reportId);
+
+  @override
+  List<Object?> get props => [reportId];
+}

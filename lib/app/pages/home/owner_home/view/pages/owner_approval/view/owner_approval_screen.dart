@@ -360,7 +360,7 @@ class OwnerApprovalScreen extends StatelessWidget {
                                                 },
                                                 style: ElevatedButton.styleFrom(
                                                     backgroundColor:
-                                                        Colors.red),
+                                                        Colors.orange[800]),
                                                 child: const Text('Deny',
                                                     style: TextStyle(
                                                         color: Colors.white)),
@@ -368,6 +368,68 @@ class OwnerApprovalScreen extends StatelessWidget {
                                             ),
                                           ],
                                         ),
+                                      // Add spacing if the approve/deny buttons are shown
+                                      if (status == 'waiting')
+                                        const SizedBox(height: 12.0),
+                                      // Delete button - reverted to original style
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (dialogContext) {
+                                                return AlertDialog(
+                                                  title: const Text(
+                                                      'Delete Report'),
+                                                  content: const Text(
+                                                      'Are you sure you want to delete this report?'),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              dialogContext),
+                                                      child:
+                                                          const Text('Cancel'),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () {
+                                                        context
+                                                            .read<
+                                                                OwnerApprovalBloc>()
+                                                            .add(DeleteOwnerApproval(
+                                                                report
+                                                                    .reportId));
+                                                        Navigator.pop(
+                                                            dialogContext);
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          const SnackBar(
+                                                              content: Text(
+                                                                  'Report deleted successfully.')),
+                                                        );
+                                                      },
+                                                      child:
+                                                          const Text('Delete'),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.red,
+                                          ),
+                                          child: const Text(
+                                            'Delete',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
