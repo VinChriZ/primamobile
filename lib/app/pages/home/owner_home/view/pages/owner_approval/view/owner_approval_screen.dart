@@ -286,6 +286,18 @@ class OwnerApprovalScreen extends StatelessWidget {
                               cardColor = Colors.white; // fallback
                             }
 
+                            // Capitalize the status
+                            String capitalizedStatus = '';
+                            if (status == 'waiting') {
+                              capitalizedStatus = 'Waiting';
+                            } else if (status == 'approved') {
+                              capitalizedStatus = 'Approved';
+                            } else if (status == 'disapproved') {
+                              capitalizedStatus = 'Disapproved';
+                            } else {
+                              capitalizedStatus = report.status;
+                            }
+
                             return InkWell(
                               onTap: () async {
                                 await Navigator.push(
@@ -325,10 +337,86 @@ class OwnerApprovalScreen extends StatelessWidget {
                                             fontSize: 18.0,
                                             fontWeight: FontWeight.bold),
                                       ),
-                                      const SizedBox(height: 8.0),
-                                      Text('Type: ${report.type}'),
-                                      Text('Status: ${report.status}'),
                                       const SizedBox(height: 12.0),
+
+                                      // Improved alignment for report information
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          // Labels column
+                                          const SizedBox(
+                                            width: 70,
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text('Type',
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                                SizedBox(height: 4),
+                                                Text('Status',
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                                SizedBox(height: 4),
+                                                Text('Created',
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                              ],
+                                            ),
+                                          ),
+
+                                          // Separator column
+                                          const SizedBox(
+                                            width: 16,
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(':'),
+                                                SizedBox(height: 4),
+                                                Text(':'),
+                                                SizedBox(height: 4),
+                                                Text(':'),
+                                              ],
+                                            ),
+                                          ),
+
+                                          // Values column
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(report.type),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  capitalizedStatus, // Using capitalized status
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    color: status == 'waiting'
+                                                        ? Colors.blue[700]
+                                                        : status == 'approved'
+                                                            ? Colors.green[700]
+                                                            : Colors.red[700],
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(DateFormat(
+                                                        'dd MMM yyyy') // Removed the time portion
+                                                    .format(
+                                                        report.dateCreated)),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      const SizedBox(height: 16.0),
+
                                       // Only display approve/deny buttons if report is waiting.
                                       if (status == 'waiting')
                                         Row(
