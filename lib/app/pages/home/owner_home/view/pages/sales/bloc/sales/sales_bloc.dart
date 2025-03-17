@@ -66,8 +66,16 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
         });
         break;
       case 'date_created':
-        sorted.sort(
-            (a, b) => orderMultiplier * a.dateCreated.compareTo(b.dateCreated));
+        sorted.sort((a, b) {
+          // Primary sort by date_created
+          int dateCompare =
+              orderMultiplier * a.dateCreated.compareTo(b.dateCreated);
+          if (dateCompare != 0) {
+            return dateCompare;
+          }
+          // Secondary sort by last_updated (always descending for better UX)
+          return b.lastUpdated.compareTo(a.lastUpdated);
+        });
         break;
       default:
         break;

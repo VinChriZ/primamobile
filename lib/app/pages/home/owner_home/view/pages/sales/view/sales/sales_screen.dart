@@ -437,15 +437,34 @@ class SalesScreen extends StatelessWidget {
 
   /// Helper widget to build a row for a given label/value pair.
   Widget _buildAttributeRow(String label, String value) {
+    // Extract the base label without the colon
+    String baseLabel =
+        label.endsWith(':') ? label.substring(0, label.length - 1) : label;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          width: 180,
-          child:
-              Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        Container(
+          width: 110, // Increased width to accommodate "Last Updated"
+          padding: const EdgeInsets.only(right: 5), // Add right padding
+          child: Text(
+            baseLabel,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+            textAlign: TextAlign.left,
+          ),
         ),
-        Expanded(child: Text(value)),
+        const SizedBox(width: 5), // Space before colon
+        const Text(
+          ":",
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(width: 10), // Space after colon
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontSize: 15),
+          ),
+        ),
       ],
     );
   }
