@@ -12,9 +12,16 @@ class WorkerReportDetailScreen extends StatelessWidget {
 
   const WorkerReportDetailScreen({super.key, required this.report});
 
+  // Helper to check if the report is editable
+  bool get _isReportEditable {
+    final status = report.status.toLowerCase();
+    return status != 'approved' && status != 'disapproved';
+  }
+
   Widget _buildAttributeRow({
     required String label,
     required String value,
+    TextStyle? valueStyle,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -31,7 +38,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 16.0),
+              style: valueStyle ?? const TextStyle(fontSize: 16.0),
             ),
           ),
         ],
@@ -56,6 +63,8 @@ class WorkerReportDetailScreen extends StatelessWidget {
   Widget _buildReportDetailCard(
       BuildContext context, Report report, ReportDetail detail) {
     final productRepository = RepositoryProvider.of<ProductRepository>(context);
+    final bool isEditable = _isReportEditable;
+
     return Card(
       color: Colors.white,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -104,37 +113,39 @@ class WorkerReportDetailScreen extends StatelessWidget {
               style: const TextStyle(fontSize: 16.0),
             ),
             const SizedBox(height: 12.0),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () =>
-                        _showEditReportDetailDialog(context, report, detail),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                    ),
-                    child: const Text(
-                      'Edit',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8.0),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () =>
-                        _showDeleteDetailConfirmation(context, report, detail),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                    ),
-                    child: const Text(
-                      'Delete',
-                      style: TextStyle(color: Colors.white),
+            // Only show edit/delete buttons if the report is editable
+            if (isEditable)
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          _showEditReportDetailDialog(context, report, detail),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                      ),
+                      child: const Text(
+                        'Edit',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                  const SizedBox(width: 8.0),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => _showDeleteDetailConfirmation(
+                          context, report, detail),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
+                      child: const Text(
+                        'Delete',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
           ],
         ),
       ),
@@ -261,7 +272,6 @@ class WorkerReportDetailScreen extends StatelessWidget {
   }
 
   // New functions to support adding a report detail (similar to the transaction detail screen).
-
   void _openAddProductOptions(BuildContext context, int reportId) {
     showModalBottomSheet(
       context: context,
@@ -478,6 +488,8 @@ class WorkerReportDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final String reportDateStr =
         DateFormat('yyyy-MM-dd').format(report.dateCreated);
+    final bool isEditable = _isReportEditable;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(reportDateStr),
@@ -517,6 +529,18 @@ class WorkerReportDetailScreen extends StatelessWidget {
                   _buildAttributeRow(
                     label: 'Status:',
                     value: report.status,
+                    // Add color to status text based on the status
+                    valueStyle: TextStyle(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.w500,
+                      color: report.status.toLowerCase() == 'waiting'
+                          ? Colors.blue[700]
+                          : report.status.toLowerCase() == 'approved'
+                              ? Colors.green[700]
+                              : report.status.toLowerCase() == 'disapproved'
+                                  ? Colors.red[700]
+                                  : null,
+                    ),
                   ),
                   const SizedBox(height: 16.0),
                   const Divider(),
@@ -542,10 +566,13 @@ class WorkerReportDetailScreen extends StatelessWidget {
           return const Center(child: Text('No data.'));
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openAddProductOptions(context, report.reportId),
-        child: const Icon(Icons.add),
-      ),
+      // Only show the FAB if the report is editable
+      floatingActionButton: isEditable
+          ? FloatingActionButton(
+              onPressed: () => _openAddProductOptions(context, report.reportId),
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
   }
 }

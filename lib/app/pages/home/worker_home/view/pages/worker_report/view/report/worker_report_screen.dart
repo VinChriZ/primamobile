@@ -220,8 +220,38 @@ class WorkerReportScreen extends StatelessWidget {
                           itemCount: state.reports.length,
                           itemBuilder: (context, index) {
                             final report = state.reports[index];
+                            final status = report.status.toLowerCase();
+
+                            // Set card color based on status
+                            Color? cardColor;
+                            if (status == 'waiting') {
+                              cardColor = Colors.lightBlue[100];
+                            } else if (status == 'approved') {
+                              cardColor = Colors.lightGreen[100];
+                            } else if (status == 'disapproved') {
+                              cardColor = Colors.red[100];
+                            } else {
+                              cardColor = Colors.white;
+                            }
+
+                            // Check if the report is editable (not approved/disapproved)
+                            final bool isEditable =
+                                status != 'approved' && status != 'disapproved';
+
+                            // Capitalize the status for display
+                            String capitalizedStatus = '';
+                            if (status == 'waiting') {
+                              capitalizedStatus = 'Waiting';
+                            } else if (status == 'approved') {
+                              capitalizedStatus = 'Approved';
+                            } else if (status == 'disapproved') {
+                              capitalizedStatus = 'Disapproved';
+                            } else {
+                              capitalizedStatus = report.status;
+                            }
+
                             return Card(
-                              color: Colors.lightBlue[100],
+                              color: cardColor,
                               margin: const EdgeInsets.symmetric(
                                   vertical: 8.0, horizontal: 16.0),
                               elevation: 2,
@@ -264,114 +294,130 @@ class WorkerReportScreen extends StatelessWidget {
                                       const SizedBox(height: 12.0),
                                       Text("Type: ${report.type}"),
                                       const SizedBox(height: 6.0),
-                                      Text("Status: ${report.status}"),
+                                      Text(
+                                        "Status: $capitalizedStatus",
+                                        style: TextStyle(
+                                          color: status == 'waiting'
+                                              ? Colors.blue[700]
+                                              : status == 'approved'
+                                                  ? Colors.green[700]
+                                                  : Colors.red[700],
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
                                       const SizedBox(height: 6.0),
                                       Text(
                                         "Last Updated: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(report.lastUpdated)}",
                                       ),
                                       const SizedBox(height: 12.0),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: TextButton(
-                                              style: TextButton.styleFrom(
-                                                  backgroundColor: Colors.blue),
-                                              onPressed: () async {
-                                                final updated =
-                                                    await Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          EditReportPage(
-                                                              report: report)),
-                                                );
-                                                if (updated != null) {
-                                                  context
-                                                      .read<WorkerReportBloc>()
-                                                      .add(
-                                                        FetchWorkerReport(
-                                                          selectedDateRange: state
-                                                              .selectedDateRange,
-                                                          startDate:
-                                                              state.startDate,
-                                                          endDate:
-                                                              state.endDate,
-                                                          sortBy: state
-                                                              .selectedSortBy,
-                                                          sortOrder: state
-                                                              .selectedSortOrder,
-                                                        ),
-                                                      );
-                                                }
-                                              },
-                                              child: const Text('Edit',
-                                                  style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold)),
+                                      // Only show edit/delete buttons if the report is editable
+                                      if (isEditable)
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: TextButton(
+                                                style: TextButton.styleFrom(
+                                                    backgroundColor:
+                                                        Colors.blue),
+                                                onPressed: () async {
+                                                  final updated =
+                                                      await Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            EditReportPage(
+                                                                report:
+                                                                    report)),
+                                                  );
+                                                  if (updated != null) {
+                                                    context
+                                                        .read<
+                                                            WorkerReportBloc>()
+                                                        .add(
+                                                          FetchWorkerReport(
+                                                            selectedDateRange: state
+                                                                .selectedDateRange,
+                                                            startDate:
+                                                                state.startDate,
+                                                            endDate:
+                                                                state.endDate,
+                                                            sortBy: state
+                                                                .selectedSortBy,
+                                                            sortOrder: state
+                                                                .selectedSortOrder,
+                                                          ),
+                                                        );
+                                                  }
+                                                },
+                                                child: const Text('Edit',
+                                                    style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(width: 8.0),
-                                          Expanded(
-                                            child: TextButton(
-                                              style: TextButton.styleFrom(
-                                                  backgroundColor: Colors.red),
-                                              onPressed: () {
-                                                showDialog(
-                                                  context: context,
-                                                  builder: (dialogContext) {
-                                                    return AlertDialog(
-                                                      title: const Text(
-                                                          'Delete Report'),
-                                                      content: const Text(
-                                                          'Are you sure you want to delete this report?'),
-                                                      actions: [
-                                                        TextButton(
-                                                          onPressed: () =>
+                                            const SizedBox(width: 8.0),
+                                            Expanded(
+                                              child: TextButton(
+                                                style: TextButton.styleFrom(
+                                                    backgroundColor:
+                                                        Colors.red),
+                                                onPressed: () {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (dialogContext) {
+                                                      return AlertDialog(
+                                                        title: const Text(
+                                                            'Delete Report'),
+                                                        content: const Text(
+                                                            'Are you sure you want to delete this report?'),
+                                                        actions: [
+                                                          TextButton(
+                                                            onPressed: () =>
+                                                                Navigator.pop(
+                                                                    dialogContext),
+                                                            child: const Text(
+                                                                'Cancel'),
+                                                          ),
+                                                          TextButton(
+                                                            onPressed: () {
+                                                              context
+                                                                  .read<
+                                                                      WorkerReportBloc>()
+                                                                  .add(DeleteWorkerReport(
+                                                                      report
+                                                                          .reportId));
                                                               Navigator.pop(
-                                                                  dialogContext),
-                                                          child: const Text(
-                                                              'Cancel'),
-                                                        ),
-                                                        TextButton(
-                                                          onPressed: () {
-                                                            context
-                                                                .read<
-                                                                    WorkerReportBloc>()
-                                                                .add(DeleteWorkerReport(
-                                                                    report
-                                                                        .reportId));
-                                                            Navigator.pop(
-                                                                dialogContext);
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(
-                                                              const SnackBar(
-                                                                  content: Text(
-                                                                      'Report deleted successfully.')),
-                                                            );
-                                                          },
-                                                          child: const Text(
-                                                              'Delete',
-                                                              style: TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold)),
-                                                        ),
-                                                      ],
-                                                    );
-                                                  },
-                                                );
-                                              },
-                                              child: const Text('Delete',
-                                                  style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold)),
+                                                                  dialogContext);
+                                                              ScaffoldMessenger
+                                                                      .of(context)
+                                                                  .showSnackBar(
+                                                                const SnackBar(
+                                                                    content: Text(
+                                                                        'Report deleted successfully.')),
+                                                              );
+                                                            },
+                                                            child: const Text(
+                                                                'Delete',
+                                                                style: TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold)),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                                child: const Text('Delete',
+                                                    style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
+                                          ],
+                                        ),
                                     ],
                                   ),
                                 ),

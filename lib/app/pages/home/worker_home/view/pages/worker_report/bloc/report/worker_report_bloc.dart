@@ -13,7 +13,6 @@ class WorkerReportBloc extends Bloc<WorkerReportEvent, WorkerReportState> {
       : super(WorkerReportInitial()) {
     on<FetchWorkerReport>(_onFetchWorkerReport);
     on<DeleteWorkerReport>(_onDeleteWorkerReport);
-    // You can add more events like UpdateWorkerReport if needed.
   }
 
   Future<void> _onFetchWorkerReport(
@@ -28,7 +27,6 @@ class WorkerReportBloc extends Bloc<WorkerReportEvent, WorkerReportState> {
         status: event.status,
         reportType: event.reportType,
       );
-      // Optionally, apply client-side sorting if needed.
       emit(WorkerReportLoaded(
         reports: reports,
         selectedDateRange: event.selectedDateRange,
