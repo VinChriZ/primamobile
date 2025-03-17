@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/bloc/owner_home_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/home/view/home_page.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/owner_approval/owner_approval_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/profile/view/profile_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/report/view/report_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/sales/sales_page.dart';
@@ -22,6 +23,7 @@ class OwnerHomeScreen extends StatelessWidget {
           const StockPage(),
           const SalesPage(),
           const ReportPage(),
+          const OwnerApprovalPage(),
           const ProfilePage()
         ];
 
@@ -51,6 +53,8 @@ class OwnerHomeScreen extends StatelessWidget {
               BottomNavigationBarItem(icon: Icon(Icons.sell), label: 'Sales'),
               BottomNavigationBarItem(
                   icon: Icon(Icons.bar_chart), label: 'Report'),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.check_box), label: 'Approval'),
               BottomNavigationBarItem(
                   icon: Icon(Icons.person), label: 'Profile'),
             ],

@@ -149,4 +149,38 @@ class ReportProvider {
       rethrow;
     }
   }
+
+  // Approve a report
+  Future<String> approveReport(int reportId) async {
+    try {
+      final response = await dioClient.put('/reports/$reportId/approve');
+      print('Approve Report Response: ${response.data}'); // Debug log
+      if (response.statusCode == 200) {
+        return response.data['message'];
+      } else {
+        throw Exception(
+            'Failed to approve report. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error approving report: $e'); // Debug log
+      throw Exception('Error approving report: $e');
+    }
+  }
+
+  // Deny a report
+  Future<String> denyReport(int reportId) async {
+    try {
+      final response = await dioClient.put('/reports/$reportId/deny');
+      print('Deny Report Response: ${response.data}'); // Debug log
+      if (response.statusCode == 200) {
+        return response.data['message'];
+      } else {
+        throw Exception(
+            'Failed to deny report. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error denying report: $e'); // Debug log
+      throw Exception('Error denying report: $e');
+    }
+  }
 }

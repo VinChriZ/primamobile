@@ -42,4 +42,14 @@ class ReportRepository {
   Future<void> removeReport(int reportId) async {
     await _provider.deleteReport(reportId);
   }
+
+  // Approve a report
+  Future<String> approveReport(int reportId) async {
+    return await _provider.approveReport(reportId);
+  }
+
+  // Deny a report
+  Future<String> denyReport(int reportId) async {
+    return await _provider.denyReport(reportId);
+  }
 }
