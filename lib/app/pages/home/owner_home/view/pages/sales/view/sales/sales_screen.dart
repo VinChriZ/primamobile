@@ -445,8 +445,8 @@ class SalesScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 110, // Increased width to accommodate "Last Updated"
-          padding: const EdgeInsets.only(right: 5), // Add right padding
+          width: 150, // Increased width from 110 to 130
+          padding: const EdgeInsets.only(right: 5),
           child: Text(
             baseLabel,
             style: const TextStyle(fontWeight: FontWeight.w600),

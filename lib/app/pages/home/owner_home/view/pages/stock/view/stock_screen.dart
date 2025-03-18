@@ -24,7 +24,7 @@ class StockScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 110, // Width to accommodate longer labels
+          width: 150, // Increased width from 110 to 130
           padding: const EdgeInsets.only(right: 5), // Add right padding
           child: Text(
             baseLabel,
