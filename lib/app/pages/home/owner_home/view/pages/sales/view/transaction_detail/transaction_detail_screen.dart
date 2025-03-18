@@ -12,26 +12,51 @@ class TransactionDetailScreen extends StatelessWidget {
 
   const TransactionDetailScreen({super.key, required this.transaction});
 
+  // Add currency formatting helper
+  String _formatCurrency(double value) {
+    return value.toStringAsFixed(0).replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
+  }
+
   Widget _buildTransactionInfoRow({
     required String label,
     required String value,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+    // Updated to align label left with consistent spacing
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
       child: Row(
         children: [
           SizedBox(
-            width: 200.0,
+            width: 180.0,
             child: Text(
               label,
               style:
-                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0),
+              textAlign: TextAlign.left,
             ),
+          ),
+          const Text(
+            ' : ',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 16.0),
+              style: const TextStyle(fontSize: 15.0),
             ),
           ),
         ],
@@ -42,7 +67,17 @@ class TransactionDetailScreen extends StatelessWidget {
   Widget _buildTransactionDetailsList(BuildContext context,
       List<TransactionDetail> details, int transactionId) {
     if (details.isEmpty) {
-      return const Center(child: Text('No transaction details available.'));
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'No transaction details available.',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+          ],
+        ),
+      );
     }
     return ListView.builder(
       itemCount: details.length,
@@ -58,9 +93,9 @@ class TransactionDetailScreen extends StatelessWidget {
     final productRepository = RepositoryProvider.of<ProductRepository>(context);
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
       elevation: 3.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -70,33 +105,68 @@ class TransactionDetailScreen extends StatelessWidget {
               future: productRepository.fetchProduct(detail.upc),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Text(
-                    'Loading...',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  return const Padding(
+                    padding: EdgeInsets.only(bottom: 8.0),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          height: 15,
+                          width: 15,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        SizedBox(width: 10),
+                        Text('Loading product...'),
+                      ],
+                    ),
                   );
                 } else if (snapshot.hasError) {
-                  return Text(
-                    'Error: ${snapshot.error}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Text(
+                      'Error: ${snapshot.error}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
+                    ),
                   );
                 } else if (snapshot.hasData) {
                   final product = snapshot.data!;
-                  return Text(
-                    product.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Text(
+                      product.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16.0,
+                      ),
+                    ),
                   );
                 } else {
-                  return Text(
-                    detail.upc,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Text(
+                      detail.upc,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   );
                 }
               },
             ),
-            const SizedBox(height: 4.0),
-            Text('Quantity: ${detail.quantity}'),
-            const SizedBox(height: 2.0),
-            Text('Agreed Price: Rp${detail.agreedPrice.toStringAsFixed(0)}'),
+            const Divider(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Qty: ${detail.quantity}',
+                  style: const TextStyle(fontSize: 14.0),
+                ),
+                Text(
+                  'Agreed Price: Rp${_formatCurrency(detail.agreedPrice)}',
+                  style: const TextStyle(fontSize: 14.0),
+                ),
+              ],
+            ),
             const SizedBox(height: 12.0),
             Row(
               children: [
@@ -105,11 +175,13 @@ class TransactionDetailScreen extends StatelessWidget {
                     onPressed: () => _showEditDetailDialog(context, detail),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      elevation: 1,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                    child: const Text(
-                      'Edit',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    child: const Text('Edit'),
                   ),
                 ),
                 const SizedBox(width: 8.0),
@@ -119,11 +191,13 @@ class TransactionDetailScreen extends StatelessWidget {
                         context, transaction.transactionId, detail.detailId),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      elevation: 1,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                    child: const Text(
-                      'Delete',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    child: const Text('Delete'),
                   ),
                 ),
               ],
@@ -393,7 +467,7 @@ class TransactionDetailScreen extends StatelessWidget {
                                   return ListTile(
                                     title: Text(product.name),
                                     subtitle: Text(
-                                      'Display Price: Rp${product.displayPrice.toStringAsFixed(0)}\nNet Price: Rp${product.netPrice.toStringAsFixed(0)}',
+                                      'Display Price: Rp${_formatCurrency(product.displayPrice)}\nNet Price: Rp${_formatCurrency(product.netPrice)}',
                                     ),
                                     onTap: () {
                                       Navigator.pop(context, product);
@@ -528,6 +602,7 @@ class TransactionDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(dateStr),
         centerTitle: true,
+        elevation: 2,
         actions: [
           IconButton(
             icon: const Icon(Icons.print),
@@ -559,88 +634,153 @@ class TransactionDetailScreen extends StatelessWidget {
           } else if (state is TransactionDetailLoaded) {
             final updatedTransaction = state.transaction;
             final details = state.details;
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: <Widget>[
-                  _buildTransactionInfoRow(
-                    label: 'Total Display Price:',
-                    value:
-                        'Rp${updatedTransaction.totalDisplayPrice.toStringAsFixed(0)}',
-                  ),
-                  _buildTransactionInfoRow(
-                    label: 'Total Agreed Price:',
-                    value:
-                        'Rp${updatedTransaction.totalAgreedPrice.toStringAsFixed(0)}',
-                  ),
-                  _buildTransactionInfoRow(
-                    label: 'Total Net Price:',
-                    value:
-                        'Rp${updatedTransaction.totalNetPrice.toStringAsFixed(0)}',
-                  ),
-                  _buildTransactionInfoRow(
-                    label: 'Quantity:',
-                    value: updatedTransaction.quantity.toString(),
-                  ),
-                  _buildTransactionInfoRow(
-                    label: 'Date Created:',
-                    value: updatedTransaction.dateCreated
-                        .toLocal()
-                        .toString()
-                        .split(' ')[0],
-                  ),
-                  _buildTransactionInfoRow(
-                    label: 'Last Updated:',
-                    value: updatedTransaction.lastUpdated
-                        .toLocal()
-                        .toString()
-                        .split(' ')[0],
-                  ),
-                  // New info rows for User ID and Username using the bloc's state
-                  _buildTransactionInfoRow(
-                    label: 'User ID:',
-                    value: state.user.userId.toString(),
-                  ),
-                  _buildTransactionInfoRow(
-                    label: 'Username:',
-                    value: state.user.username,
-                  ),
-                  if (updatedTransaction.note != null &&
-                      updatedTransaction.note!.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(8.0),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.black),
-                          borderRadius: BorderRadius.circular(4.0),
-                        ),
-                        child: Text(
-                          updatedTransaction.note!,
-                          style: const TextStyle(fontSize: 16.0),
+            return Container(
+              color: Colors.grey.shade50,
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Transaction Summary',
+                              style: TextStyle(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 12.0),
+                            _buildTransactionInfoRow(
+                              label: 'Total Display Price',
+                              value:
+                                  'Rp${_formatCurrency(updatedTransaction.totalDisplayPrice)}',
+                            ),
+                            _buildTransactionInfoRow(
+                              label: 'Total Agreed Price',
+                              value:
+                                  'Rp${_formatCurrency(updatedTransaction.totalAgreedPrice)}',
+                            ),
+                            _buildTransactionInfoRow(
+                              label: 'Total Net Price',
+                              value:
+                                  'Rp${_formatCurrency(updatedTransaction.totalNetPrice)}',
+                            ),
+                            _buildTransactionInfoRow(
+                              label: 'Quantity',
+                              value: updatedTransaction.quantity.toString(),
+                            ),
+                            _buildTransactionInfoRow(
+                              label: 'Date Created',
+                              value: updatedTransaction.dateCreated
+                                  .toLocal()
+                                  .toString()
+                                  .split(' ')[0],
+                            ),
+                            _buildTransactionInfoRow(
+                              label: 'Last Updated',
+                              value: updatedTransaction.lastUpdated
+                                  .toLocal()
+                                  .toString()
+                                  .split(' ')[0],
+                            ),
+                            _buildTransactionInfoRow(
+                              label: 'User ID',
+                              value: state.user.userId.toString(),
+                            ),
+                            _buildTransactionInfoRow(
+                              label: 'Username',
+                              value: state.user.username,
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  const Divider(),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Product List:',
-                      style: TextStyle(
-                          fontSize: 18.0, fontWeight: FontWeight.bold),
+                    if (updatedTransaction.note != null &&
+                        updatedTransaction.note!.isNotEmpty) ...[
+                      const SizedBox(height: 12.0),
+                      Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Notes:',
+                                style: TextStyle(
+                                  fontSize: 16.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                updatedTransaction.note!,
+                                style: const TextStyle(fontSize: 15.0),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 16.0),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4.0),
+                      child: Text(
+                        'Product List',
+                        style: TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
+                    const SizedBox(height: 8.0),
+                    Expanded(
+                      child: _buildTransactionDetailsList(
+                          context, details, updatedTransaction.transactionId),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          } else if (state is TransactionDetailError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    state.message,
+                    style: const TextStyle(fontSize: 16),
+                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8.0),
-                  Expanded(
-                    child: _buildTransactionDetailsList(
-                        context, details, updatedTransaction.transactionId),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<TransactionDetailBloc>().add(
+                          FetchTransactionDetails(transaction.transactionId));
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('Try Again'),
                   ),
                 ],
               ),
             );
-          } else if (state is TransactionDetailError) {
-            return Center(child: Text(state.message));
           } else {
             return const Center(child: Text('Unknown state.'));
           }
@@ -649,6 +789,7 @@ class TransactionDetailScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () =>
             _openAddProductOptions(context, transaction.transactionId),
+        backgroundColor: Colors.blue,
         child: const Icon(Icons.add),
       ),
     );
