@@ -299,29 +299,28 @@ class SalesScreen extends StatelessWidget {
                             final profit = transaction.totalAgreedPrice -
                                 transaction.totalNetPrice;
 
-                            return _buildCard(
-                              title: 'Transaction: $dateString',
-                              child: InkWell(
-                                onTap: () async {
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          TransactionDetailPage(
-                                              transaction: transaction),
-                                    ),
-                                  );
-                                  context.read<SalesBloc>().add(
-                                        FetchSales(
-                                          selectedDateRange:
-                                              state.selectedDateRange,
-                                          startDate: state.startDate,
-                                          endDate: state.endDate,
-                                          sortBy: state.selectedSortBy,
-                                          sortOrder: state.selectedSortOrder,
-                                        ),
-                                      );
-                                },
+                            return InkWell(
+                              onTap: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => TransactionDetailPage(
+                                        transaction: transaction),
+                                  ),
+                                );
+                                context.read<SalesBloc>().add(
+                                      FetchSales(
+                                        selectedDateRange:
+                                            state.selectedDateRange,
+                                        startDate: state.startDate,
+                                        endDate: state.endDate,
+                                        sortBy: state.selectedSortBy,
+                                        sortOrder: state.selectedSortOrder,
+                                      ),
+                                    );
+                              },
+                              child: _buildCard(
+                                title: 'Transaction: $dateString',
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
