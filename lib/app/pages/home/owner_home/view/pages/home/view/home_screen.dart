@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/home/bloc/home_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/barcode_scanner.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/product_detail.dart';
@@ -10,33 +11,72 @@ class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   /// Returns "-" if the value is 0; otherwise, returns a string formatted
-  /// with an optional prefix.
+  /// with an optional prefix and thousands separators.
   String formatTodayValue(dynamic value, {String prefix = ''}) {
     if (value == 0) {
       return '-';
     } else {
+      // Create a NumberFormat instance for Indonesian format (uses . as thousand separator)
+      final NumberFormat formatter = NumberFormat.decimalPattern('id_ID');
+
       if (value is double) {
-        return '$prefix${value.toStringAsFixed(2)}';
+        // Format the double value with thousands separator
+        return '$prefix${formatter.format(value)}';
       } else {
-        return '$prefix$value';
+        // Format the integer value with thousands separator
+        return '$prefix${formatter.format(value)}';
       }
     }
   }
 
-  Widget buildStatRow(String label, String value) {
+  Widget buildStatRow(String label, String value,
+      {IconData? icon, bool useBullet = false}) {
+    // Extract the base label without the colon
+    String baseLabel =
+        label.endsWith(':') ? label.substring(0, label.length - 1) : label;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.0),
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(
-            width: 100,
+          if (icon != null) ...[
+            Icon(icon, size: 18, color: Colors.blue[700]),
+            const SizedBox(width: 8),
+          ] else if (useBullet) ...[
+            Text(
+              "➤ ", // Right-pointing arrow bullet
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.blue[700],
+                fontSize: 14,
+              ),
+            ),
+          ],
+          Container(
+            width: 70,
+            padding: const EdgeInsets.only(right: 5),
             child: Text(
-              '$label:',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              baseLabel,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.left,
             ),
           ),
+          const SizedBox(width: 5),
+          const Text(
+            ":",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(width: 10),
           Expanded(
-            child: Text(value, textAlign: TextAlign.left),
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 14),
+              textAlign: TextAlign.left,
+            ),
           ),
         ],
       ),
@@ -45,19 +85,54 @@ class HomeScreen extends StatelessWidget {
 
   Widget buildCard({
     required Widget child,
+    Color? color,
+    String? title,
+    IconData? titleIcon,
   }) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 16),
       child: Card(
-        color: Colors.lightBlue.shade100,
-        elevation: 4,
+        color: color ?? Colors.white,
+        elevation: 3,
+        shadowColor: Colors.black26,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.blue.shade100, width: 1),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: child,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (title != null) ...[
+                Row(
+                  children: [
+                    if (titleIcon != null) ...[
+                      Icon(
+                        titleIcon,
+                        size: 20,
+                        color: Colors.blue[800],
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue[800],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Divider(color: Colors.blue.shade100, thickness: 1),
+                const SizedBox(height: 8),
+              ],
+              child,
+            ],
+          ),
         ),
       ),
     );
@@ -66,6 +141,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 2,
@@ -76,19 +152,40 @@ class HomeScreen extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: Container(
               width: double.infinity,
+              height: 60,
               decoration: BoxDecoration(
-                color: Colors.blue[900],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Text(
-                  "Welcome ${Globals.userSession.user.username}",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                gradient: LinearGradient(
+                  colors: [Colors.blue[800]!, Colors.blue[600]!],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  )
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.store,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    "Welcome, ${Globals.userSession.user.username}!",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -117,35 +214,71 @@ class HomeScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
-                      // Card for Low Stock Products
+                      // Card for Low Stock Products - Changed background to white
                       buildCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Low Stock Products',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            dashboard.lowStockProducts.isEmpty
-                                ? const Text('No products with low stock.')
-                                : Column(
-                                    children: dashboard.lowStockProducts
-                                        .map(
-                                          (product) => ListTile(
-                                            contentPadding: EdgeInsets.zero,
-                                            title: Text(product.name),
-                                            subtitle:
-                                                Text('Stock: ${product.stock}'),
-                                          ),
-                                        )
-                                        .toList(),
+                        title: 'Low Stock Products',
+                        titleIcon: Icons.warning,
+                        color: Colors.white, // Changed from red[50] to white
+                        child: dashboard.lowStockProducts.isEmpty
+                            ? const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8.0),
+                                child: Text(
+                                  'No products with low stock.',
+                                  style: TextStyle(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.w500,
                                   ),
-                          ],
-                        ),
+                                ),
+                              )
+                            : ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: dashboard.lowStockProducts.length,
+                                separatorBuilder: (context, index) => Divider(
+                                  color: Colors.red.shade100,
+                                ),
+                                itemBuilder: (context, index) {
+                                  final product =
+                                      dashboard.lowStockProducts[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 4.0),
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.inventory,
+                                          color: Colors.red,
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text(
+                                            product.name,
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red[100],
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: Text(
+                                            'Stock: ${product.stock}',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.red,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
                       ),
                       // Row for Transactions and Items Sold
                       Row(
@@ -155,10 +288,12 @@ class HomeScreen extends StatelessWidget {
                               margin:
                                   const EdgeInsets.only(right: 8, bottom: 16),
                               child: Card(
-                                color: Colors.lightBlue.shade100,
-                                elevation: 4,
+                                elevation: 3,
+                                shadowColor: Colors.black26,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(16),
+                                  side: BorderSide(
+                                      color: Colors.blue.shade100, width: 1),
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(16.0),
@@ -166,26 +301,41 @@ class HomeScreen extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                        'Sales',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.receipt,
+                                              color: Colors.blue[800]),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Sales',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.blue[800],
+                                            ),
+                                          ),
+                                        ],
                                       ),
+                                      const SizedBox(height: 12),
+                                      Divider(
+                                          color: Colors.blue.shade100,
+                                          thickness: 1),
                                       const SizedBox(height: 8),
                                       buildStatRow(
                                         'Today',
                                         formatTodayValue(
                                             dashboard.transactionsToday),
+                                        useBullet: true,
                                       ),
                                       buildStatRow(
                                         'Month',
                                         dashboard.transactionsMonth.toString(),
+                                        useBullet: true,
                                       ),
                                       buildStatRow(
                                         'Year',
                                         dashboard.transactionsYear.toString(),
+                                        useBullet: true,
                                       ),
                                     ],
                                   ),
@@ -198,10 +348,12 @@ class HomeScreen extends StatelessWidget {
                               margin:
                                   const EdgeInsets.only(left: 8, bottom: 16),
                               child: Card(
-                                color: Colors.lightBlue.shade100,
-                                elevation: 4,
+                                elevation: 3,
+                                shadowColor: Colors.black26,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(16),
+                                  side: BorderSide(
+                                      color: Colors.blue.shade100, width: 1),
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(16.0),
@@ -209,26 +361,41 @@ class HomeScreen extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                        'Items Sold',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.shopping_cart,
+                                              color: Colors.blue[800]),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Items Sold',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.blue[800],
+                                            ),
+                                          ),
+                                        ],
                                       ),
+                                      const SizedBox(height: 12),
+                                      Divider(
+                                          color: Colors.blue.shade100,
+                                          thickness: 1),
                                       const SizedBox(height: 8),
                                       buildStatRow(
                                         'Today',
                                         formatTodayValue(
                                             dashboard.itemsSoldToday),
+                                        useBullet: true,
                                       ),
                                       buildStatRow(
                                         'Month',
                                         dashboard.itemsSoldMonth.toString(),
+                                        useBullet: true,
                                       ),
                                       buildStatRow(
                                         'Year',
                                         dashboard.itemsSoldYear.toString(),
+                                        useBullet: true,
                                       ),
                                     ],
                                   ),
@@ -238,53 +405,48 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      // Card for Profit
+                      // Card for Profit with formatted values
                       buildCard(
+                        title: 'Profit',
+                        titleIcon: Icons.trending_up,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Profit',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
                             buildStatRow(
                               'Today',
                               formatTodayValue(dashboard.profitToday,
                                   prefix: 'Rp. '),
+                              useBullet: true,
                             ),
                             buildStatRow(
                               'Month',
-                              'Rp. ${dashboard.profitMonth.toStringAsFixed(2)}',
+                              'Rp. ${formatTodayValue(dashboard.profitMonth)}',
+                              useBullet: true,
                             ),
                             buildStatRow(
                               'Year',
-                              'Rp. ${dashboard.profitYear.toStringAsFixed(2)}',
+                              'Rp. ${formatTodayValue(dashboard.profitYear)}',
+                              useBullet: true,
                             ),
                           ],
                         ),
                       ),
-                      // Card for Total Stock Price
+                      // Card for Total Stock Price with centered value
                       buildCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Total Stock Price',
-                              style: TextStyle(
-                                fontSize: 18,
+                        title: 'Total Stock Price',
+                        titleIcon: Icons.inventory_2,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          child: Center(
+                            child: Text(
+                              'Rp. ${formatTodayValue(dashboard.totalStockPrice)}',
+                              style: const TextStyle(
+                                fontSize: 20,
                                 fontWeight: FontWeight.bold,
+                                color: Colors.black,
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            buildStatRow(
-                              'Total',
-                              'Rp. ${dashboard.totalStockPrice.toStringAsFixed(2)}',
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ],
@@ -296,8 +458,10 @@ class HomeScreen extends StatelessWidget {
           return const Center(child: Text('Unexpected state'));
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.camera_alt),
+      floatingActionButton: FloatingActionButton.extended(
+        icon: const Icon(Icons.camera_alt),
+        label: const Text("Scan"),
+        backgroundColor: Colors.blue[700],
         onPressed: () async {
           // Navigate to the barcode scanner screen
           final String? upc = await Navigator.push(
