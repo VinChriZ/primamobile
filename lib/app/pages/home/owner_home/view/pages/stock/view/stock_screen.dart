@@ -28,29 +28,92 @@ class StockScreen extends StatelessWidget {
           padding: const EdgeInsets.only(right: 5), // Add right padding
           child: Text(
             baseLabel,
-            style: const TextStyle(fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16, // Increased from 15
+            ),
             textAlign: TextAlign.left,
           ),
         ),
         const SizedBox(width: 5), // Space before colon
         const Text(
           ":",
-          style: TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 16, // Increased from 15
+          ),
         ),
         const SizedBox(width: 10), // Space after colon
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(fontSize: 15),
+            style: const TextStyle(fontSize: 16), // Increased from 15
           ),
         ),
       ],
     );
   }
 
+  /// Helper widget to build a card with consistent styling across the app.
+  Widget _buildCard({
+    required Widget child,
+    Color? color,
+    String? title,
+    IconData? titleIcon,
+  }) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      child: Card(
+        color: color ?? Colors.white,
+        elevation: 3,
+        shadowColor: Colors.black26,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.blue.shade300, width: 1),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (title != null) ...[
+                Row(
+                  children: [
+                    if (titleIcon != null) ...[
+                      Icon(
+                        titleIcon,
+                        size: 20,
+                        color: Colors.blue[800],
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Divider(color: Colors.blue.shade300, thickness: 1),
+                const SizedBox(height: 8),
+              ],
+              child,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(title: const Text('Stock')),
       body: Column(
         children: [
@@ -249,192 +312,167 @@ class StockScreen extends StatelessWidget {
                                       ],
                                     )
                                   : ListView.builder(
-                                      padding: const EdgeInsets.all(16.0),
+                                      padding: EdgeInsets.zero,
                                       itemCount:
                                           stockState.displayedProducts.length,
                                       itemBuilder: (context, index) {
                                         final product =
                                             stockState.displayedProducts[index];
-                                        return Card(
-                                          color: Colors.lightBlue[100],
-                                          margin: const EdgeInsets.symmetric(
-                                              vertical: 8.0),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(16.0),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.stretch,
-                                              children: [
-                                                InkWell(
-                                                  onTap: () {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            ProductDetailPage(
-                                                                product:
-                                                                    product),
-                                                      ),
-                                                    );
-                                                  },
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        product.name,
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                      const SizedBox(
-                                                          height: 8.0),
-                                                      // Replace direct Text widgets with _buildAttributeRow
-                                                      _buildAttributeRow(
-                                                          'Stock',
-                                                          product.stock
-                                                              .toString()),
-                                                      const SizedBox(
-                                                          height: 4.0),
-                                                      _buildAttributeRow(
-                                                        'Last Updated',
-                                                        product.lastUpdated !=
-                                                                null
-                                                            ? DateFormat(
-                                                                    'yyyy-MM-dd')
-                                                                .format(product
-                                                                    .lastUpdated!)
-                                                            : 'N/A',
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 8.0),
-                                                Row(
-                                                  children: [
-                                                    Expanded(
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(4.0),
-                                                        child: ElevatedButton(
-                                                          style: ElevatedButton
-                                                              .styleFrom(
-                                                            backgroundColor:
-                                                                Colors.blue,
-                                                            foregroundColor:
-                                                                Colors.white,
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .symmetric(
-                                                                    vertical:
-                                                                        12.0),
-                                                          ),
-                                                          onPressed: () {
-                                                            Navigator.push(
-                                                              context,
-                                                              MaterialPageRoute(
-                                                                builder: (_) =>
-                                                                    BlocProvider
-                                                                        .value(
-                                                                  value: context
-                                                                      .read<
-                                                                          StockBloc>(),
-                                                                  child: EditProductPage(
-                                                                      product:
-                                                                          product),
-                                                                ),
-                                                              ),
-                                                            );
-                                                          },
-                                                          child: const Text(
-                                                            'Edit',
-                                                            style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          ),
-                                                        ),
-                                                      ),
+                                        return _buildCard(
+                                          title: product.name,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
+                                            children: [
+                                              InkWell(
+                                                onTap: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          ProductDetailPage(
+                                                              product: product),
                                                     ),
-                                                    Expanded(
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(4.0),
-                                                        child: ElevatedButton(
-                                                          style: ElevatedButton
-                                                              .styleFrom(
-                                                            backgroundColor:
-                                                                Colors.red,
-                                                            foregroundColor:
-                                                                Colors.white,
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .symmetric(
-                                                                    vertical:
-                                                                        12.0),
-                                                          ),
-                                                          onPressed: () {
-                                                            final stockBloc =
-                                                                context.read<
-                                                                    StockBloc>();
-                                                            showDialog(
-                                                              context: context,
-                                                              builder:
-                                                                  (dialogContext) =>
-                                                                      AlertDialog(
-                                                                title: const Text(
-                                                                    'Delete Product'),
-                                                                content: const Text(
-                                                                    'Are you sure you want to delete this product?'),
-                                                                actions: [
-                                                                  TextButton(
-                                                                    onPressed: () =>
-                                                                        Navigator.of(dialogContext)
-                                                                            .pop(),
-                                                                    child: const Text(
-                                                                        'Cancel'),
-                                                                  ),
-                                                                  TextButton(
-                                                                    onPressed:
-                                                                        () {
-                                                                      stockBloc.add(
-                                                                          DeleteProduct(
-                                                                              product.upc));
-                                                                      Navigator.of(
-                                                                              dialogContext)
-                                                                          .pop();
-                                                                    },
-                                                                    child:
-                                                                        const Text(
-                                                                      'Delete',
-                                                                      style: TextStyle(
-                                                                          fontWeight:
-                                                                              FontWeight.bold),
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            );
-                                                          },
-                                                          child: const Text(
-                                                            'Delete',
-                                                            style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          ),
-                                                        ),
-                                                      ),
+                                                  );
+                                                },
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    _buildAttributeRow(
+                                                        'Stock',
+                                                        product.stock
+                                                            .toString()),
+                                                    const SizedBox(height: 4.0),
+                                                    _buildAttributeRow(
+                                                      'Last Updated',
+                                                      product.lastUpdated !=
+                                                              null
+                                                          ? DateFormat(
+                                                                  'yyyy-MM-dd')
+                                                              .format(product
+                                                                  .lastUpdated!)
+                                                          : 'N/A',
                                                     ),
                                                   ],
                                                 ),
-                                              ],
-                                            ),
+                                              ),
+                                              const SizedBox(height: 16.0),
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: ElevatedButton(
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        backgroundColor:
+                                                            Colors.blue,
+                                                        foregroundColor:
+                                                            Colors.white,
+                                                        padding: const EdgeInsets
+                                                            .symmetric(
+                                                            vertical:
+                                                                10.0), // Reduced padding
+                                                      ),
+                                                      onPressed: () {
+                                                        Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (_) =>
+                                                                BlocProvider
+                                                                    .value(
+                                                              value: context.read<
+                                                                  StockBloc>(),
+                                                              child: EditProductPage(
+                                                                  product:
+                                                                      product),
+                                                            ),
+                                                          ),
+                                                        );
+                                                      },
+                                                      child: const Text(
+                                                        'Edit',
+                                                        style: TextStyle(
+                                                          fontSize:
+                                                              14, // Reduced from 16
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8.0),
+                                                  Expanded(
+                                                    child: ElevatedButton(
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        backgroundColor:
+                                                            Colors.red,
+                                                        foregroundColor:
+                                                            Colors.white,
+                                                        padding: const EdgeInsets
+                                                            .symmetric(
+                                                            vertical:
+                                                                10.0), // Reduced padding
+                                                      ),
+                                                      onPressed: () {
+                                                        final stockBloc =
+                                                            context.read<
+                                                                StockBloc>();
+                                                        showDialog(
+                                                          context: context,
+                                                          builder:
+                                                              (dialogContext) =>
+                                                                  AlertDialog(
+                                                            title: const Text(
+                                                                'Delete Product'),
+                                                            content: const Text(
+                                                                'Are you sure you want to delete this product?'),
+                                                            actions: [
+                                                              TextButton(
+                                                                onPressed: () =>
+                                                                    Navigator.of(
+                                                                            dialogContext)
+                                                                        .pop(),
+                                                                child: const Text(
+                                                                    'Cancel'),
+                                                              ),
+                                                              TextButton(
+                                                                onPressed: () {
+                                                                  stockBloc.add(
+                                                                      DeleteProduct(
+                                                                          product
+                                                                              .upc));
+                                                                  Navigator.of(
+                                                                          dialogContext)
+                                                                      .pop();
+                                                                },
+                                                                child:
+                                                                    const Text(
+                                                                  'Delete',
+                                                                  style: TextStyle(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        );
+                                                      },
+                                                      child: const Text(
+                                                        'Delete',
+                                                        style: TextStyle(
+                                                          fontSize:
+                                                              14, // Reduced from 16
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
                                           ),
                                         );
                                       },
@@ -452,7 +490,10 @@ class StockScreen extends StatelessWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
+        icon: const Icon(Icons.add),
+        label: const Text("Add Product"),
+        backgroundColor: Colors.blue[700],
         onPressed: () {
           final stockBloc = context.read<StockBloc>();
           Navigator.push(
@@ -465,7 +506,6 @@ class StockScreen extends StatelessWidget {
             ),
           );
         },
-        child: const Icon(Icons.add),
       ),
     );
   }

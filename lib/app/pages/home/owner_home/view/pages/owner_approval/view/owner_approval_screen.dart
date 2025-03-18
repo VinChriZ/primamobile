@@ -72,9 +72,107 @@ class OwnerApprovalScreen extends StatelessWidget {
         );
   }
 
+  /// Helper widget to build a card with consistent styling across the app.
+  // ignore: unused_element
+  Widget _buildCard({
+    required Widget child,
+    Color? color,
+    String? title,
+    IconData? titleIcon,
+  }) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      child: Card(
+        color: color ?? Colors.white,
+        elevation: 3,
+        shadowColor: Colors.black26,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.blue.shade100, width: 1),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (title != null) ...[
+                Row(
+                  children: [
+                    if (titleIcon != null) ...[
+                      Icon(
+                        titleIcon,
+                        size: 20,
+                        color: Colors.blue[800],
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue[800],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Divider(color: Colors.blue.shade100, thickness: 1),
+                const SizedBox(height: 8),
+              ],
+              child,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Helper widget to build a row for a given label/value pair.
+  Widget _buildAttributeRow(String label, String value) {
+    // Extract the base label without the colon
+    String baseLabel =
+        label.endsWith(':') ? label.substring(0, label.length - 1) : label;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 100,
+          padding: const EdgeInsets.only(right: 5),
+          child: Text(
+            baseLabel,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+            textAlign: TextAlign.left,
+          ),
+        ),
+        const SizedBox(width: 5), // Space before colon
+        const Text(
+          ":",
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(width: 10), // Space after colon
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontSize: 16),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(title: const Text('Owner Approvals')),
       body: BlocBuilder<OwnerApprovalBloc, OwnerApprovalState>(
         builder: (context, state) {
@@ -270,20 +368,24 @@ class OwnerApprovalScreen extends StatelessWidget {
                               );
                         },
                         child: ListView.builder(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.all(8.0),
                           itemCount: reports.length,
                           itemBuilder: (context, index) {
                             final report = reports[index];
                             final status = report.status.toLowerCase();
-                            Color? cardColor;
+
+                            // Determine border color based on status
+                            BorderSide borderSide;
                             if (status == 'waiting') {
-                              cardColor = Colors.lightBlue[100];
+                              borderSide = BorderSide(
+                                  color: Colors.blue.shade300, width: 1.5);
                             } else if (status == 'approved') {
-                              cardColor = Colors.lightGreen[100];
-                            } else if (status == 'disapproved') {
-                              cardColor = Colors.red[100];
+                              borderSide = BorderSide(
+                                  color: Colors.green.shade300, width: 1.5);
                             } else {
-                              cardColor = Colors.white; // fallback
+                              // disapproved
+                              borderSide = BorderSide(
+                                  color: Colors.red.shade300, width: 1.5);
                             }
 
                             // Capitalize the status
@@ -296,6 +398,20 @@ class OwnerApprovalScreen extends StatelessWidget {
                               capitalizedStatus = 'Disapproved';
                             } else {
                               capitalizedStatus = report.status;
+                            }
+
+                            // Get an icon and color based on status
+                            IconData statusIcon;
+                            Color statusColor;
+                            if (status == 'waiting') {
+                              statusIcon = Icons.hourglass_empty;
+                              statusColor = Colors.orange;
+                            } else if (status == 'approved') {
+                              statusIcon = Icons.check_circle;
+                              statusColor = Colors.green;
+                            } else {
+                              statusIcon = Icons.cancel;
+                              statusColor = Colors.red;
                             }
 
                             return InkWell(
@@ -320,205 +436,246 @@ class OwnerApprovalScreen extends StatelessWidget {
                                       ),
                                     );
                               },
-                              child: Card(
-                                color: cardColor,
-                                margin:
-                                    const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        DateFormat('yyyy-MM-dd')
-                                            .format(report.dateCreated),
-                                        style: const TextStyle(
-                                            fontSize: 18.0,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(height: 12.0),
-
-                                      // Improved alignment for report information
-                                      Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          // Labels column
-                                          const SizedBox(
-                                            width: 70,
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text('Type',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold)),
-                                                SizedBox(height: 4),
-                                                Text('Status',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold)),
-                                                SizedBox(height: 4),
-                                                Text('Created',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold)),
-                                              ],
-                                            ),
+                              child: Container(
+                                width: double.infinity,
+                                margin: const EdgeInsets.symmetric(
+                                    vertical: 8.0, horizontal: 16.0),
+                                child: Card(
+                                  color: Colors.white,
+                                  elevation: 3,
+                                  shadowColor: Colors.black26,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    side: borderSide,
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Report: ${DateFormat('yyyy-MM-dd').format(report.dateCreated)}',
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors
+                                                .black, // Changed from blue to black
                                           ),
-
-                                          // Separator column
-                                          const SizedBox(
-                                            width: 16,
-                                            child: Column(
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Divider(
+                                            color: status == 'waiting'
+                                                ? Colors.blue.shade300
+                                                : status == 'approved'
+                                                    ? Colors.green.shade300
+                                                    : Colors.red.shade300,
+                                            thickness: 1),
+                                        const SizedBox(height: 8),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            _buildAttributeRow(
+                                                "Type", report.type),
+                                            const SizedBox(height: 6.0),
+                                            Row(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
-                                                Text(':'),
-                                                SizedBox(height: 4),
-                                                Text(':'),
-                                                SizedBox(height: 4),
-                                                Text(':'),
-                                              ],
-                                            ),
-                                          ),
-
-                                          // Values column
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(report.type),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  capitalizedStatus, // Using capitalized status
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.w500,
-                                                    color: status == 'waiting'
-                                                        ? Colors.blue[700]
-                                                        : status == 'approved'
-                                                            ? Colors.green[700]
-                                                            : Colors.red[700],
+                                                Container(
+                                                  width: 100,
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          right: 5),
+                                                  child: const Text(
+                                                    "Status",
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      fontSize: 16,
+                                                    ),
+                                                    textAlign: TextAlign.left,
                                                   ),
                                                 ),
-                                                const SizedBox(height: 4),
-                                                Text(DateFormat(
-                                                        'dd MMM yyyy') // Removed the time portion
-                                                    .format(
-                                                        report.dateCreated)),
+                                                const SizedBox(width: 5),
+                                                const Text(
+                                                  ":",
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 10),
+                                                Expanded(
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(
+                                                        statusIcon,
+                                                        color: statusColor,
+                                                        size: 18,
+                                                      ),
+                                                      const SizedBox(width: 5),
+                                                      Text(
+                                                        capitalizedStatus,
+                                                        style: TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: statusColor,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
                                               ],
                                             ),
-                                          ),
-                                        ],
-                                      ),
-
-                                      const SizedBox(height: 16.0),
-
-                                      // Only display approve/deny buttons if report is waiting.
-                                      if (status == 'waiting')
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: ElevatedButton(
-                                                onPressed: () {
-                                                  context
-                                                      .read<OwnerApprovalBloc>()
-                                                      .add(ApproveReport(
-                                                          report.reportId));
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.green),
-                                                child: const Text('Approve',
-                                                    style: TextStyle(
-                                                        color: Colors.white)),
-                                              ),
+                                            const SizedBox(height: 6.0),
+                                            _buildAttributeRow(
+                                              "Created",
+                                              DateFormat('dd MMM yyyy')
+                                                  .format(report.dateCreated),
                                             ),
-                                            const SizedBox(width: 8.0),
-                                            Expanded(
-                                              child: ElevatedButton(
-                                                onPressed: () {
-                                                  context
-                                                      .read<OwnerApprovalBloc>()
-                                                      .add(DenyReport(
-                                                          report.reportId));
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.orange[800]),
-                                                child: const Text('Deny',
-                                                    style: TextStyle(
-                                                        color: Colors.white)),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      // Add spacing if the approve/deny buttons are shown
-                                      if (status == 'waiting')
-                                        const SizedBox(height: 12.0),
-                                      // Delete button - reverted to original style
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: ElevatedButton(
-                                          onPressed: () {
-                                            showDialog(
-                                              context: context,
-                                              builder: (dialogContext) {
-                                                return AlertDialog(
-                                                  title: const Text(
-                                                      'Delete Report'),
-                                                  content: const Text(
-                                                      'Are you sure you want to delete this report?'),
-                                                  actions: [
-                                                    TextButton(
-                                                      onPressed: () =>
-                                                          Navigator.pop(
-                                                              dialogContext),
-                                                      child:
-                                                          const Text('Cancel'),
-                                                    ),
-                                                    TextButton(
+                                            const SizedBox(height: 12.0),
+
+                                            // Only display approve/deny buttons if report is waiting.
+                                            if (status == 'waiting')
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: ElevatedButton(
                                                       onPressed: () {
                                                         context
                                                             .read<
                                                                 OwnerApprovalBloc>()
-                                                            .add(DeleteOwnerApproval(
+                                                            .add(ApproveReport(
                                                                 report
                                                                     .reportId));
-                                                        Navigator.pop(
-                                                            dialogContext);
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                          const SnackBar(
-                                                              content: Text(
-                                                                  'Report deleted successfully.')),
-                                                        );
                                                       },
-                                                      child:
-                                                          const Text('Delete'),
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        backgroundColor:
+                                                            Colors.green,
+                                                        foregroundColor:
+                                                            Colors.white,
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 10.0),
+                                                      ),
+                                                      child: const Text(
+                                                        'Approve',
+                                                        style: TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
                                                     ),
-                                                  ],
-                                                );
-                                              },
-                                            );
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red,
-                                          ),
-                                          child: const Text(
-                                            'Delete',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
+                                                  ),
+                                                  const SizedBox(width: 8.0),
+                                                  Expanded(
+                                                    child: ElevatedButton(
+                                                      onPressed: () {
+                                                        context
+                                                            .read<
+                                                                OwnerApprovalBloc>()
+                                                            .add(DenyReport(
+                                                                report
+                                                                    .reportId));
+                                                      },
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        backgroundColor:
+                                                            Colors.orange[800],
+                                                        foregroundColor:
+                                                            Colors.white,
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 10.0),
+                                                      ),
+                                                      child: const Text(
+                                                        'Deny',
+                                                        style: TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            if (status == 'waiting')
+                                              const SizedBox(height: 8.0),
+                                            // Delete button
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: ElevatedButton(
+                                                onPressed: () {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (dialogContext) {
+                                                      return AlertDialog(
+                                                        title: const Text(
+                                                            'Delete Report'),
+                                                        content: const Text(
+                                                            'Are you sure you want to delete this report?'),
+                                                        actions: [
+                                                          TextButton(
+                                                            onPressed: () =>
+                                                                Navigator.pop(
+                                                                    dialogContext),
+                                                            child: const Text(
+                                                                'Cancel'),
+                                                          ),
+                                                          TextButton(
+                                                            onPressed: () {
+                                                              context
+                                                                  .read<
+                                                                      OwnerApprovalBloc>()
+                                                                  .add(DeleteOwnerApproval(
+                                                                      report
+                                                                          .reportId));
+                                                              Navigator.pop(
+                                                                  dialogContext);
+                                                              ScaffoldMessenger
+                                                                      .of(context)
+                                                                  .showSnackBar(
+                                                                const SnackBar(
+                                                                    content: Text(
+                                                                        'Report deleted successfully.')),
+                                                              );
+                                                            },
+                                                            child: const Text(
+                                                                'Delete'),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.red,
+                                                  foregroundColor: Colors.white,
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      vertical: 10.0),
+                                                ),
+                                                child: const Text(
+                                                  'Delete',
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
                                             ),
-                                          ),
+                                          ],
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),

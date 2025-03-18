@@ -98,7 +98,7 @@ class HomeScreen extends StatelessWidget {
         shadowColor: Colors.black26,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.blue.shade100, width: 1),
+          side: BorderSide(color: Colors.blue.shade300, width: 1),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -127,7 +127,7 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Divider(color: Colors.blue.shade100, thickness: 1),
+                Divider(color: Colors.blue.shade300, thickness: 1),
                 const SizedBox(height: 8),
               ],
               child,
@@ -293,7 +293,7 @@ class HomeScreen extends StatelessWidget {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                   side: BorderSide(
-                                      color: Colors.blue.shade100, width: 1),
+                                      color: Colors.blue.shade300, width: 1),
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(16.0),
@@ -318,7 +318,7 @@ class HomeScreen extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 12),
                                       Divider(
-                                          color: Colors.blue.shade100,
+                                          color: Colors.blue.shade300,
                                           thickness: 1),
                                       const SizedBox(height: 8),
                                       buildStatRow(
@@ -353,7 +353,7 @@ class HomeScreen extends StatelessWidget {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                   side: BorderSide(
-                                      color: Colors.blue.shade100, width: 1),
+                                      color: Colors.blue.shade300, width: 1),
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(16.0),
@@ -378,7 +378,7 @@ class HomeScreen extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 12),
                                       Divider(
-                                          color: Colors.blue.shade100,
+                                          color: Colors.blue.shade300,
                                           thickness: 1),
                                       const SizedBox(height: 8),
                                       buildStatRow(
