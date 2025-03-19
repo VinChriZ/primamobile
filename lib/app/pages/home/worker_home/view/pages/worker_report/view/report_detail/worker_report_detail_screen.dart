@@ -18,27 +18,47 @@ class WorkerReportDetailScreen extends StatelessWidget {
     return status != 'approved' && status != 'disapproved';
   }
 
-  Widget _buildAttributeRow({
-    required String label,
-    required String value,
-    TextStyle? valueStyle,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+  Widget _buildAttributeRow({required String label, required String value}) {
+    // Updated to align label left with consistent spacing
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
       child: Row(
         children: [
           SizedBox(
-            width: 150.0,
+            width: 120,
             child: Text(
               label,
-              style:
-                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15.0,
+                  color: Colors.black),
+              textAlign: TextAlign.left,
             ),
+          ),
+          const Text(
+            ' : ',
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15.0,
+                color: Colors.black),
           ),
           Expanded(
             child: Text(
               value,
-              style: valueStyle ?? const TextStyle(fontSize: 16.0),
+              style: const TextStyle(fontSize: 15.0, color: Colors.black),
             ),
           ),
         ],
@@ -46,75 +66,111 @@ class WorkerReportDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildReportDetailsList(
-      BuildContext context, Report report, List<ReportDetail> details) {
-    if (details.isEmpty) {
-      return const Center(child: Text('No report details available.'));
+  // Get color based on status for the card border
+  Color _getStatusBorderColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'approved':
+        return Colors.green.shade600;
+      case 'disapproved':
+        return Colors.red.shade600;
+      case 'waiting':
+        return Colors.blue.shade600;
+      default:
+        return Colors.grey.shade300;
     }
-    return ListView.builder(
-      itemCount: details.length,
-      itemBuilder: (context, index) {
-        final detail = details[index];
-        return _buildReportDetailCard(context, report, detail);
-      },
-    );
   }
 
-  Widget _buildReportDetailCard(
-      BuildContext context, Report report, ReportDetail detail) {
+  Widget _buildDetailCard(BuildContext context, ReportDetail detail) {
     final productRepository = RepositoryProvider.of<ProductRepository>(context);
     final bool isEditable = _isReportEditable;
 
     return Card(
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 3.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      elevation: 3,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+        side:
+            BorderSide(color: _getStatusBorderColor(report.status), width: 1.0),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Instead of showing UPC, fetch and show the product name.
+            // Fetch and display the product name instead of UPC.
             FutureBuilder(
               future: productRepository.fetchProduct(detail.upc),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Text(
-                    'Loading...',
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+                  return const Padding(
+                    padding: EdgeInsets.only(bottom: 8.0),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          height: 15,
+                          width: 15,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        SizedBox(width: 10),
+                        Text('Loading product...'),
+                      ],
+                    ),
                   );
                 } else if (snapshot.hasError) {
-                  return Text(
-                    'Error: ${snapshot.error}',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16.0),
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Text(
+                      'Error: ${snapshot.error}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
+                    ),
                   );
                 } else if (snapshot.hasData) {
                   final product = snapshot.data;
-                  return Text(
-                    product?.name ?? detail.upc,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16.0),
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        product?.name ?? detail.upc,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16.0,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'UPC: ${detail.upc}',
+                        style: const TextStyle(
+                          fontSize: 12.0,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
                   );
                 } else {
                   return Text(
                     detail.upc,
                     style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16.0),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16.0,
+                      color: Colors.black,
+                    ),
                   );
                 }
               },
             ),
-            const SizedBox(height: 4.0),
+            const Divider(),
             Text(
               'Quantity: ${detail.quantity}',
-              style: const TextStyle(fontSize: 16.0),
+              style: const TextStyle(fontSize: 15.0, color: Colors.black),
             ),
-            const SizedBox(height: 12.0),
+
             // Only show edit/delete buttons if the report is editable
-            if (isEditable)
+            if (isEditable) ...[
+              const SizedBox(height: 12.0),
               Row(
                 children: [
                   Expanded(
@@ -123,11 +179,10 @@ class WorkerReportDetailScreen extends StatelessWidget {
                           _showEditReportDetailDialog(context, report, detail),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
                       ),
-                      child: const Text(
-                        'Edit',
-                        style: TextStyle(color: Colors.white),
-                      ),
+                      child: const Text('Edit'),
                     ),
                   ),
                   const SizedBox(width: 8.0),
@@ -137,15 +192,15 @@ class WorkerReportDetailScreen extends StatelessWidget {
                           context, report, detail),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
                       ),
-                      child: const Text(
-                        'Delete',
-                        style: TextStyle(color: Colors.white),
-                      ),
+                      child: const Text('Delete'),
                     ),
                   ),
                 ],
               ),
+            ],
           ],
         ),
       ),
@@ -486,19 +541,28 @@ class WorkerReportDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String reportDateStr =
-        DateFormat('yyyy-MM-dd').format(report.dateCreated);
-    final bool isEditable = _isReportEditable;
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(reportDateStr),
+        title: Text(
+          DateFormat('yyyy-MM-dd').format(report.dateCreated),
+          style: const TextStyle(fontWeight: FontWeight.w500),
+        ),
         centerTitle: true,
+        elevation: 1,
       ),
       body: BlocBuilder<WorkerReportDetailBloc, WorkerReportDetailState>(
         builder: (context, state) {
           if (state is WorkerReportDetailLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Loading report details...'),
+                ],
+              ),
+            );
           } else if (state is WorkerReportDetailLoaded) {
             return RefreshIndicator(
               onRefresh: () async {
@@ -506,68 +570,141 @@ class WorkerReportDetailScreen extends StatelessWidget {
                     .read<WorkerReportDetailBloc>()
                     .add(FetchWorkerReportDetails(report.reportId));
               },
-              child: ListView(
-                padding: const EdgeInsets.all(16.0),
+              child: Container(
+                color: Colors.grey.shade50,
+                child: ListView(
+                  padding: const EdgeInsets.all(16.0),
+                  children: [
+                    Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        side: BorderSide(
+                          color: _getStatusBorderColor(report.status),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Report Information',
+                              style: TextStyle(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            _buildAttributeRow(
+                              label: 'Type',
+                              value: report.type,
+                            ),
+                            _buildAttributeRow(
+                              label: 'Status',
+                              value: report.status,
+                            ),
+                            _buildAttributeRow(
+                              label: 'User ID',
+                              value: report.userId.toString(),
+                            ),
+                            _buildAttributeRow(
+                              label: 'Date Created',
+                              value: DateFormat('yyyy-MM-dd')
+                                  .format(report.dateCreated),
+                            ),
+                            _buildAttributeRow(
+                              label: 'Last Updated',
+                              value: DateFormat('yyyy-MM-dd HH:mm')
+                                  .format(report.lastUpdated),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16.0),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 8.0, bottom: 8.0),
+                      child: Text(
+                        'Report Details',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                    state.details.isEmpty
+                        ? Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              side: BorderSide(
+                                color: Colors.grey.shade300,
+                                width: 1.0,
+                              ),
+                            ),
+                            child: const Padding(
+                              padding: EdgeInsets.all(24.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(height: 16),
+                                  Text(
+                                    'No report details available',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : Column(
+                            children: state.details
+                                .map((detail) =>
+                                    _buildDetailCard(context, detail))
+                                .toList(),
+                          ),
+                  ],
+                ),
+              ),
+            );
+          } else if (state is WorkerReportDetailError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildAttributeRow(
-                    label: 'User ID:',
-                    value: report.userId.toString(),
+                  Text(
+                    state.message,
+                    style: const TextStyle(fontSize: 16, color: Colors.black),
+                    textAlign: TextAlign.center,
                   ),
-                  _buildAttributeRow(
-                    label: 'Date Created:',
-                    value: DateFormat('yyyy-MM-dd').format(report.dateCreated),
-                  ),
-                  _buildAttributeRow(
-                    label: 'Last Updated:',
-                    value: DateFormat('yyyy-MM-dd HH:mm:ss')
-                        .format(report.lastUpdated),
-                  ),
-                  _buildAttributeRow(
-                    label: 'Type:',
-                    value: report.type,
-                  ),
-                  _buildAttributeRow(
-                    label: 'Status:',
-                    value: report.status,
-                    // Add color to status text based on the status
-                    valueStyle: TextStyle(
-                      fontSize: 16.0,
-                      fontWeight: FontWeight.w500,
-                      color: report.status.toLowerCase() == 'waiting'
-                          ? Colors.blue[700]
-                          : report.status.toLowerCase() == 'approved'
-                              ? Colors.green[700]
-                              : report.status.toLowerCase() == 'disapproved'
-                                  ? Colors.red[700]
-                                  : null,
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      context
+                          .read<WorkerReportDetailBloc>()
+                          .add(FetchWorkerReportDetails(report.reportId));
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16.0),
-                  const Divider(),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text(
-                      'Product List:',
-                      style: TextStyle(
-                          fontSize: 18.0, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 400, // Adjust height as needed.
-                    child:
-                        _buildReportDetailsList(context, report, state.details),
+                    child: const Text('Try Again'),
                   ),
                 ],
               ),
             );
-          } else if (state is WorkerReportDetailError) {
-            return Center(child: Text(state.message));
           }
           return const Center(child: Text('No data.'));
         },
       ),
       // Only show the FAB if the report is editable
-      floatingActionButton: isEditable
+      floatingActionButton: _isReportEditable
           ? FloatingActionButton(
               onPressed: () => _openAddProductOptions(context, report.reportId),
               child: const Icon(Icons.add),
