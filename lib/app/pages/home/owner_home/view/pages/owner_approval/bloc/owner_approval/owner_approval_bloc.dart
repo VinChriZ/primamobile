@@ -13,6 +13,7 @@ class OwnerApprovalBloc extends Bloc<OwnerApprovalEvent, OwnerApprovalState> {
     on<ApproveReport>(_onApproveReport);
     on<DenyReport>(_onDenyReport);
     on<DeleteOwnerApproval>(_onDeleteOwnerApproval);
+    on<UpdateReportNote>(_onUpdateReportNote);
   }
 
   Future<void> _onFetchOwnerApprovals(
@@ -115,6 +116,16 @@ class OwnerApprovalBloc extends Bloc<OwnerApprovalEvent, OwnerApprovalState> {
       }
     } catch (e) {
       emit(OwnerApprovalError('Failed to delete report: ${e.toString()}'));
+    }
+  }
+
+  Future<void> _onUpdateReportNote(
+      UpdateReportNote event, Emitter<OwnerApprovalState> emit) async {
+    try {
+      await reportRepository.updateReportNote(event.reportId, event.note);
+      event.onSuccess();
+    } catch (e) {
+      event.onError(e.toString());
     }
   }
 }

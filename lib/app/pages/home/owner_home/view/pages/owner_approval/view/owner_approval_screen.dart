@@ -169,6 +169,105 @@ class OwnerApprovalScreen extends StatelessWidget {
     );
   }
 
+  /// Show dialog to get notes from owner before approving or denying
+  Future<void> _showNoteDialog(
+      BuildContext context, Report report, bool isApprove) async {
+    final TextEditingController noteController =
+        TextEditingController(text: report.note ?? '');
+
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(isApprove ? 'Approve Report' : 'Deny Report'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(isApprove
+                    ? 'Add any notes before approving this report:'
+                    : 'Please provide a reason for denying this report:'),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: noteController,
+                  maxLines: 5,
+                  decoration: InputDecoration(
+                    hintText: isApprove
+                        ? 'Optional notes...'
+                        : 'Reason for denial...',
+                    border: const OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final note = noteController.text.trim();
+
+                // First update the note, then approve or deny the report
+                context.read<OwnerApprovalBloc>().add(
+                      UpdateReportNote(
+                        reportId: report.reportId,
+                        note: note,
+                        onSuccess: () {
+                          // After note is updated, proceed with approval/denial
+                          if (isApprove) {
+                            context.read<OwnerApprovalBloc>().add(
+                                  ApproveReport(report.reportId),
+                                );
+                          } else {
+                            context.read<OwnerApprovalBloc>().add(
+                                  DenyReport(report.reportId),
+                                );
+                          }
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(isApprove
+                                  ? 'Report approved with note'
+                                  : 'Report denied with reason'),
+                              backgroundColor:
+                                  isApprove ? Colors.green : Colors.orange,
+                            ),
+                          );
+                        },
+                        onError: (error) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Failed to update note: $error'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        },
+                      ),
+                    );
+
+                Navigator.of(dialogContext).pop();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isApprove ? Colors.green : Colors.orange[800],
+                foregroundColor: Colors.white,
+              ),
+              child: Text(isApprove ? 'Approve' : 'Deny'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -545,12 +644,11 @@ class OwnerApprovalScreen extends StatelessWidget {
                                                   Expanded(
                                                     child: ElevatedButton(
                                                       onPressed: () {
-                                                        context
-                                                            .read<
-                                                                OwnerApprovalBloc>()
-                                                            .add(ApproveReport(
-                                                                report
-                                                                    .reportId));
+                                                        _showNoteDialog(
+                                                            context,
+                                                            report,
+                                                            true // isApprove = true
+                                                            );
                                                       },
                                                       style: ElevatedButton
                                                           .styleFrom(
@@ -577,12 +675,11 @@ class OwnerApprovalScreen extends StatelessWidget {
                                                   Expanded(
                                                     child: ElevatedButton(
                                                       onPressed: () {
-                                                        context
-                                                            .read<
-                                                                OwnerApprovalBloc>()
-                                                            .add(DenyReport(
-                                                                report
-                                                                    .reportId));
+                                                        _showNoteDialog(
+                                                            context,
+                                                            report,
+                                                            false // isApprove = false
+                                                            );
                                                       },
                                                       style: ElevatedButton
                                                           .styleFrom(

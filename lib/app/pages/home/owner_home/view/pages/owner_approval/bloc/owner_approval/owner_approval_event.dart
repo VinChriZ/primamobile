@@ -60,3 +60,20 @@ class DeleteOwnerApproval extends OwnerApprovalEvent {
   @override
   List<Object?> get props => [reportId];
 }
+
+class UpdateReportNote extends OwnerApprovalEvent {
+  final int reportId;
+  final String note;
+  final Function onSuccess;
+  final Function(String) onError;
+
+  const UpdateReportNote({
+    required this.reportId,
+    required this.note,
+    required this.onSuccess,
+    required this.onError,
+  });
+
+  @override
+  List<Object?> get props => [reportId, note];
+}

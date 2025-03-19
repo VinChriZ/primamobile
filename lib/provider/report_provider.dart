@@ -183,4 +183,29 @@ class ReportProvider {
       throw Exception('Error denying report: $e');
     }
   }
+
+  // Update report note
+  Future<String> updateReportNote(int reportId, String note) async {
+    try {
+      final RequestParam param = RequestParam(parameters: {"note": note});
+      final RequestObject request = RequestObjectFunction(requestParam: param);
+
+      final response = await dioClient.put(
+        '/reports/$reportId/note',
+        data: await request.toJson(),
+      );
+
+      print('Update Note Response: ${response.data}'); // Debug log
+
+      if (response.statusCode == 200) {
+        return response.data['message'];
+      } else {
+        throw Exception(
+            'Failed to update note. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error updating note: $e'); // Debug log
+      throw Exception('Error updating note: $e');
+    }
+  }
 }

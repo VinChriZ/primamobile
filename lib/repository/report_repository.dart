@@ -52,4 +52,9 @@ class ReportRepository {
   Future<String> denyReport(int reportId) async {
     return await _provider.denyReport(reportId);
   }
+
+  // Update report note
+  Future<String> updateReportNote(int reportId, String note) async {
+    return await _provider.updateReportNote(reportId, note);
+  }
 }
