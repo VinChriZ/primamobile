@@ -245,6 +245,12 @@ class OwnerApprovalDetailScreen extends StatelessWidget {
                               value: DateFormat('yyyy-MM-dd HH:mm')
                                   .format(report.lastUpdated),
                             ),
+                            // Add note field display if it exists
+                            if (report.note != null && report.note!.isNotEmpty)
+                              _buildAttributeRow(
+                                label: 'Note',
+                                value: report.note!,
+                              ),
                           ],
                         ),
                       ),

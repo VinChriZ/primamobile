@@ -3,9 +3,9 @@ class Report {
   final int userId;
   final DateTime dateCreated;
   final DateTime lastUpdated;
-  final String type; // Expected values: 'restock' or 'return'
-  final String
-      status; // Expected values: 'approved', 'disapproved', or 'waiting'
+  final String type;
+  final String status;
+  final String? note; // Added optional note field
 
   Report({
     required this.reportId,
@@ -14,6 +14,7 @@ class Report {
     required this.lastUpdated,
     required this.type,
     required this.status,
+    this.note, // Optional
   });
 
   // Creates a Report instance from a JSON map
@@ -25,16 +26,23 @@ class Report {
       lastUpdated: DateTime.parse(json['last_updated']),
       type: json['type'] as String,
       status: json['status'] as String,
+      note: json['note'] as String?, // Parse optional note field
     );
   }
 
   // Converts the Report instance into a JSON map
   Map<String, dynamic> toJson() {
-    return {
+    final Map<String, dynamic> data = {
       'user_id': userId,
       'date_created': dateCreated.toIso8601String(),
       'type': type,
       'status': status,
     };
+
+    if (note != null) {
+      data['note'] = note;
+    }
+
+    return data;
   }
 }

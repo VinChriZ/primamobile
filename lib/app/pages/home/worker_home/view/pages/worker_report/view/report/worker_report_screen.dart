@@ -435,6 +435,7 @@ class WorkerReportScreen extends StatelessWidget {
                                               DateFormat('dd MMM yyyy HH:mm')
                                                   .format(report.lastUpdated),
                                             ),
+
                                             const SizedBox(height: 12.0),
                                             // Only show edit/delete buttons if the report is editable
                                             if (isEditable) ...[

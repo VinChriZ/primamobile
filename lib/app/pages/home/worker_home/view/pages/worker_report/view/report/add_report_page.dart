@@ -29,6 +29,7 @@ class _AddReportPageState extends State<AddReportPage> {
   final _formKey = GlobalKey<FormState>();
   DateTime _reportDate = DateTime.now();
   String _selectedType = "restock"; // "restock" or "return"
+  final TextEditingController _noteController = TextEditingController();
   // Report status is fixed to "waiting".
   final List<ReportDetailItem> _reportDetails = [];
 
@@ -43,6 +44,12 @@ class _AddReportPageState extends State<AddReportPage> {
     _reportDetailRepository =
         RepositoryProvider.of<ReportDetailRepository>(context);
     _productRepository = RepositoryProvider.of<ProductRepository>(context);
+  }
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -268,12 +275,20 @@ class _AddReportPageState extends State<AddReportPage> {
           content: Text("Please add at least one report detail")));
       return;
     }
+
+    final String note = _noteController.text.trim();
     final reportPayload = {
       'user_id': Globals.userSession.user.userId,
       'date_created': _reportDate.toIso8601String(),
       'type': _selectedType,
       'status': 'waiting', // Always "waiting"
     };
+
+    // Add note to payload if it's not empty
+    if (note.isNotEmpty) {
+      reportPayload['note'] = note;
+    }
+
     try {
       final report = await _reportRepository.addReport(reportPayload);
       for (var detail in _reportDetails) {
@@ -341,6 +356,21 @@ class _AddReportPageState extends State<AddReportPage> {
                         });
                       }
                     },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: TextFormField(
+                    controller: _noteController,
+                    decoration: const InputDecoration(
+                      labelText: "Note (Optional)",
+                      border: OutlineInputBorder(),
+                      hintText: "Add a note about this report",
+                    ),
+                    maxLines: 3,
                   ),
                 ),
               ),

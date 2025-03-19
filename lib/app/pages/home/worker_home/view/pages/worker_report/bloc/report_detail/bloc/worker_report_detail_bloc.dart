@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:primamobile/app/models/report/report_detail.dart';
 import 'package:primamobile/repository/report_detail_repository.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'worker_report_detail_event.dart';
 part 'worker_report_detail_state.dart';
@@ -10,8 +11,9 @@ class WorkerReportDetailBloc
     extends Bloc<WorkerReportDetailEvent, WorkerReportDetailState> {
   final ReportDetailRepository reportDetailRepository;
 
-  WorkerReportDetailBloc({required this.reportDetailRepository})
-      : super(WorkerReportDetailInitial()) {
+  WorkerReportDetailBloc({
+    required this.reportDetailRepository,
+  }) : super(WorkerReportDetailInitial()) {
     on<FetchWorkerReportDetails>(_onFetchWorkerReportDetails);
     on<AddWorkerReportDetail>(_onAddWorkerReportDetail);
     on<UpdateWorkerReportDetail>(_onUpdateWorkerReportDetail);

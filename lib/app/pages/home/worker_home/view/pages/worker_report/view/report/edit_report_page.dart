@@ -18,6 +18,7 @@ class _EditReportPageState extends State<EditReportPage> {
   late String _selectedType;
   final _formKey = GlobalKey<FormState>();
   bool _isSaving = false;
+  late TextEditingController _noteController;
 
   late final ReportRepository _reportRepository;
 
@@ -26,6 +27,13 @@ class _EditReportPageState extends State<EditReportPage> {
     super.initState();
     _reportDate = widget.report.dateCreated;
     _selectedType = widget.report.type;
+    _noteController = TextEditingController(text: widget.report.note ?? '');
+  }
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
   }
 
   @override
@@ -55,10 +63,12 @@ class _EditReportPageState extends State<EditReportPage> {
       _isSaving = true;
     });
 
-    // Build payload with only date_created and type, as status is not editable.
+    // Build payload with date_created, type and note
     final updateFields = {
       'date_created': _reportDate.toIso8601String(),
       'type': _selectedType,
+      'note':
+          _noteController.text.trim().isNotEmpty ? _noteController.text : null,
     };
 
     try {
@@ -134,6 +144,17 @@ class _EditReportPageState extends State<EditReportPage> {
                           });
                         }
                       },
+                    ),
+                    const SizedBox(height: 16),
+                    // Add note text field
+                    TextFormField(
+                      controller: _noteController,
+                      decoration: const InputDecoration(
+                        labelText: 'Note (optional)',
+                        border: OutlineInputBorder(),
+                        hintText: 'Add a note for this report',
+                      ),
+                      maxLines: 3,
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(

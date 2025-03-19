@@ -620,6 +620,12 @@ class WorkerReportDetailScreen extends StatelessWidget {
                               value: DateFormat('yyyy-MM-dd HH:mm')
                                   .format(report.lastUpdated),
                             ),
+                            if (report.note != null && report.note!.isNotEmpty)
+                              _buildAttributeRow(
+                                label: 'Note',
+                                value: report.note!,
+                              ),
+                            // Remove the Edit Note button - users should use the EditReportPage instead
                           ],
                         ),
                       ),
