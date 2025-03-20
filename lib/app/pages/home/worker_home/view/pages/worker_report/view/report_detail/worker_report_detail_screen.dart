@@ -43,7 +43,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
               label,
               style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 15.0,
+                  fontSize: 13.0, // Reduced from 15.0
                   color: Colors.black),
               textAlign: TextAlign.left,
             ),
@@ -52,13 +52,14 @@ class WorkerReportDetailScreen extends StatelessWidget {
             ' : ',
             style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 15.0,
+                fontSize: 13.0, // Reduced from 15.0
                 color: Colors.black),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 15.0, color: Colors.black),
+              style: const TextStyle(
+                  fontSize: 13.0, color: Colors.black), // Reduced from 15.0
             ),
           ),
         ],
@@ -136,7 +137,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                         product?.name ?? detail.upc,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16.0,
+                          fontSize: 14.0, // Reduced from 16.0
                           color: Colors.black,
                         ),
                       ),
@@ -144,7 +145,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                       Text(
                         'UPC: ${detail.upc}',
                         style: const TextStyle(
-                          fontSize: 12.0,
+                          fontSize: 11.0, // Reduced from 12.0
                           color: Colors.black54,
                         ),
                       ),
@@ -155,7 +156,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                     detail.upc,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16.0,
+                      fontSize: 14.0, // Reduced from 16.0
                       color: Colors.black,
                     ),
                   );
@@ -165,7 +166,8 @@ class WorkerReportDetailScreen extends StatelessWidget {
             const Divider(),
             Text(
               'Quantity: ${detail.quantity}',
-              style: const TextStyle(fontSize: 15.0, color: Colors.black),
+              style: const TextStyle(
+                  fontSize: 13.0, color: Colors.black), // Reduced from 15.0
             ),
 
             // Only show edit/delete buttons if the report is editable
@@ -592,7 +594,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                             const Text(
                               'Report Information',
                               style: TextStyle(
-                                fontSize: 18.0,
+                                fontSize: 16.0, // Reduced from 18.0
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black,
                               ),
@@ -636,7 +638,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                       child: Text(
                         'Report Details',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 16, // Reduced from 18
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
@@ -660,7 +662,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                                   Text(
                                     'No report details available',
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 14, // Reduced from 16
                                       color: Colors.black54,
                                     ),
                                   ),
@@ -685,7 +687,8 @@ class WorkerReportDetailScreen extends StatelessWidget {
                 children: [
                   Text(
                     state.message,
-                    style: const TextStyle(fontSize: 16, color: Colors.black),
+                    style: const TextStyle(
+                        fontSize: 14, color: Colors.black), // Reduced from 16
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),

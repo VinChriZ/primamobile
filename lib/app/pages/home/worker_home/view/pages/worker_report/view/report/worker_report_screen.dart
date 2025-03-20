@@ -80,7 +80,7 @@ class WorkerReportScreen extends StatelessWidget {
             baseLabel,
             style: const TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: 14, // Reduced from 16
             ),
             textAlign: TextAlign.left,
           ),
@@ -90,14 +90,14 @@ class WorkerReportScreen extends StatelessWidget {
           ":",
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            fontSize: 16,
+            fontSize: 14, // Reduced from 16
           ),
         ),
         const SizedBox(width: 10), // Space after colon
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(fontSize: 16),
+            style: const TextStyle(fontSize: 14), // Reduced from 16
           ),
         ),
       ],
@@ -258,7 +258,8 @@ class WorkerReportScreen extends StatelessWidget {
                               );
                         },
                         child: ListView.builder(
-                          padding: const EdgeInsets.all(8.0),
+                          // Remove the padding that's making cards appear smaller
+                          // padding: const EdgeInsets.all(8.0),
                           itemCount: state.reports.length,
                           itemBuilder: (context, index) {
                             final report = state.reports[index];
@@ -351,7 +352,7 @@ class WorkerReportScreen extends StatelessWidget {
                                         Text(
                                           'Report: ${DateFormat('yyyy-MM-dd').format(report.dateCreated)}',
                                           style: const TextStyle(
-                                            fontSize: 18,
+                                            fontSize: 16, // Reduced from 18
                                             fontWeight: FontWeight.bold,
                                             color: Colors.black,
                                           ),
@@ -386,7 +387,8 @@ class WorkerReportScreen extends StatelessWidget {
                                                     style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.w600,
-                                                      fontSize: 16,
+                                                      fontSize:
+                                                          14, // Reduced from 16
                                                     ),
                                                     textAlign: TextAlign.left,
                                                   ),
@@ -396,7 +398,8 @@ class WorkerReportScreen extends StatelessWidget {
                                                   ":",
                                                   style: TextStyle(
                                                     fontWeight: FontWeight.w600,
-                                                    fontSize: 16,
+                                                    fontSize:
+                                                        14, // Reduced from 16
                                                   ),
                                                 ),
                                                 const SizedBox(width: 10),
@@ -412,7 +415,8 @@ class WorkerReportScreen extends StatelessWidget {
                                                       Text(
                                                         capitalizedStatus,
                                                         style: TextStyle(
-                                                          fontSize: 16,
+                                                          fontSize:
+                                                              14, // Reduced from 16
                                                           fontWeight:
                                                               FontWeight.w600,
                                                           color: statusColor,

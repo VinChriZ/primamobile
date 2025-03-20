@@ -9,13 +9,14 @@ import 'package:primamobile/repository/product_repository.dart';
 import 'package:primamobile/utils/globals.dart';
 
 class ReportDetailItem {
-  final String upc;
+  final Product
+      product; // Changed from just the UPC to include the full product
   final int quantity;
 
-  ReportDetailItem({required this.upc, required this.quantity});
+  ReportDetailItem({required this.product, required this.quantity});
 
   @override
-  String toString() => 'UPC: $upc, Quantity: $quantity';
+  String toString() => 'Product: ${product.name}, Quantity: $quantity';
 }
 
 class AddReportPage extends StatefulWidget {
@@ -204,7 +205,8 @@ class _AddReportPageState extends State<AddReportPage> {
 
   /// Prompts the user to enter a quantity for the selected product.
   Future<void> _promptAddProductDetail(Product product) async {
-    final quantityController = TextEditingController();
+    final quantityController =
+        TextEditingController(text: "1"); // Set default to 1
     final result = await showDialog<ReportDetailItem>(
       context: context,
       builder: (context) {
@@ -251,7 +253,7 @@ class _AddReportPageState extends State<AddReportPage> {
                 Navigator.pop(
                   context,
                   ReportDetailItem(
-                    upc: product.upc,
+                    product: product,
                     quantity: quantity,
                   ),
                 );
@@ -265,6 +267,77 @@ class _AddReportPageState extends State<AddReportPage> {
     if (result != null) {
       setState(() {
         _reportDetails.add(result);
+      });
+    }
+  }
+
+  /// Edit an existing report detail
+  void _editReportDetail(int index) async {
+    final item = _reportDetails[index];
+    final quantityController =
+        TextEditingController(text: item.quantity.toString());
+
+    final result = await showDialog<ReportDetailItem>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: Text('Edit ${item.product.name}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Available stock: ${item.product.stock}'),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: quantityController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Quantity',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final int? quantity = int.tryParse(quantityController.text);
+                if (quantity == null || quantity <= 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Enter valid quantity')),
+                  );
+                  return;
+                }
+                if (quantity > item.product.stock) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Quantity exceeds available stock')),
+                  );
+                  return;
+                }
+                Navigator.pop(
+                  context,
+                  ReportDetailItem(
+                    product: item.product,
+                    quantity: quantity,
+                  ),
+                );
+              },
+              child: const Text('Update'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != null) {
+      setState(() {
+        _reportDetails[index] = result;
       });
     }
   }
@@ -293,7 +366,7 @@ class _AddReportPageState extends State<AddReportPage> {
       final report = await _reportRepository.addReport(reportPayload);
       for (var detail in _reportDetails) {
         final detailPayload = {
-          'upc': detail.upc,
+          'upc': detail.product.upc,
           'quantity': detail.quantity,
         };
         await _reportDetailRepository.addReportDetail(
@@ -379,28 +452,79 @@ class _AddReportPageState extends State<AddReportPage> {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               _reportDetails.isEmpty
-                  ? const Text("No report details added yet.")
-                  : ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _reportDetails.length,
-                      itemBuilder: (context, index) {
-                        final detail = _reportDetails[index];
+                  ? const Center(child: Text("No report details added yet."))
+                  : Column(
+                      children: _reportDetails.asMap().entries.map((entry) {
+                        int index = entry.key;
+                        ReportDetailItem item = entry.value;
                         return Card(
-                          child: ListTile(
-                            title: Text("UPC: ${detail.upc}"),
-                            subtitle: Text("Quantity: ${detail.quantity}"),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                setState(() {
-                                  _reportDetails.removeAt(index);
-                                });
-                              },
+                          elevation: 2,
+                          margin: const EdgeInsets.symmetric(vertical: 6),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.product.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16.0,
+                                  ),
+                                ),
+                                const Divider(),
+                                Text(
+                                  'Qty: ${item.quantity}',
+                                  style: const TextStyle(fontSize: 14.0),
+                                ),
+                                const SizedBox(height: 12.0),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: () =>
+                                            _editReportDetail(index),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blue,
+                                          foregroundColor: Colors.white,
+                                          elevation: 1,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                        child: const Text('Edit'),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8.0),
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _reportDetails.removeAt(index);
+                                          });
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.red,
+                                          foregroundColor: Colors.white,
+                                          elevation: 1,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                        child: const Text('Delete'),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         );
-                      },
+                      }).toList(),
                     ),
               const SizedBox(height: 16),
               // Submit Report Button

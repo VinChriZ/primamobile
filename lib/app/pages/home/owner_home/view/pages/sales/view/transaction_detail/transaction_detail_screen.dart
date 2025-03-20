@@ -31,7 +31,8 @@ class TransactionDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(8.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey
+                .withAlpha(26), // Changed from withOpacity to withAlpha
             spreadRadius: 1,
             blurRadius: 2,
             offset: const Offset(0, 1),
@@ -213,7 +214,7 @@ class TransactionDetailScreen extends StatelessWidget {
 
   void _showEditDetailDialog(BuildContext context, TransactionDetail detail) {
     final formKey = GlobalKey<FormState>();
-    String upc = detail.upc;
+    String upc = detail.upc; // Keep this variable for backend communication
     int quantity = detail.quantity;
     double agreedPrice = detail.agreedPrice;
     final transactionDetailBloc = context.read<TransactionDetailBloc>();
@@ -230,17 +231,7 @@ class TransactionDetailScreen extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    TextFormField(
-                      initialValue: detail.upc,
-                      decoration: const InputDecoration(labelText: 'UPC'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter UPC';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) => upc = value!,
-                    ),
+                    // UPC field removed as requested
                     TextFormField(
                       initialValue: detail.quantity.toString(),
                       decoration: const InputDecoration(labelText: 'Quantity'),
@@ -293,7 +284,7 @@ class TransactionDetailScreen extends StatelessWidget {
                         transaction.transactionId,
                         detail.detailId,
                         {
-                          'upc': upc,
+                          'upc': upc, // We keep the original UPC
                           'quantity': quantity,
                           'agreed_price': agreedPrice,
                         },

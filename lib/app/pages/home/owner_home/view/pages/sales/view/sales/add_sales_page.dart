@@ -67,6 +67,12 @@ class _AddSalesPageState extends State<AddSalesPage> {
     _productRepository = RepositoryProvider.of<ProductRepository>(context);
   }
 
+  // Add currency formatting helper
+  String _formatCurrency(double value) {
+    return value.toStringAsFixed(0).replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
+  }
+
   /// Called when the user wants to add a product.
   void _openAddProductOptions() {
     showModalBottomSheet(
@@ -210,13 +216,14 @@ class _AddSalesPageState extends State<AddSalesPage> {
 
   /// Prompt the user to enter quantity and agreed price for the selected product.
   Future<void> _promptAddProductDetail(Product product) async {
+    final quantityController =
+        TextEditingController(text: "1"); // Set default to 1
+    final agreedPriceController = TextEditingController(
+      text: product.displayPrice.toString(),
+    );
     final result = await showDialog<SalesProductItem>(
       context: context,
       builder: (context) {
-        final quantityController = TextEditingController();
-        final agreedPriceController = TextEditingController(
-          text: product.displayPrice.toString(),
-        );
         return AlertDialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -292,6 +299,100 @@ class _AddSalesPageState extends State<AddSalesPage> {
     if (result != null) {
       setState(() {
         _salesItems.add(result);
+      });
+    }
+  }
+
+  /// Edit an existing sales item
+  void _editSalesItem(int index) async {
+    final item = _salesItems[index];
+    final quantityController =
+        TextEditingController(text: item.quantity.toString());
+    final agreedPriceController = TextEditingController(
+      text: item.agreedPrice.toString(),
+    );
+
+    final result = await showDialog<SalesProductItem>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: Text('Edit ${item.product.name}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Available stock: ${item.product.stock}'),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: quantityController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Quantity',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: agreedPriceController,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  labelText: 'Agreed Price (Rp)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final int? quantity = int.tryParse(quantityController.text);
+                final double? agreedPrice =
+                    double.tryParse(agreedPriceController.text);
+
+                if (quantity == null ||
+                    quantity <= 0 ||
+                    agreedPrice == null ||
+                    agreedPrice <= 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Enter valid quantity and price')),
+                  );
+                  return;
+                }
+
+                if (quantity > item.product.stock) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Quantity exceeds available stock')),
+                  );
+                  return;
+                }
+
+                Navigator.pop(
+                  context,
+                  SalesProductItem(
+                    product: item.product,
+                    quantity: quantity,
+                    agreedPrice: agreedPrice,
+                  ),
+                );
+              },
+              child: const Text('Update'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != null) {
+      setState(() {
+        _salesItems[index] = result;
       });
     }
   }
@@ -414,15 +515,71 @@ class _AddSalesPageState extends State<AddSalesPage> {
                           margin: const EdgeInsets.symmetric(vertical: 6),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),
-                          child: ListTile(
-                            title: Text(item.product.name,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold)),
-                            subtitle: Text(
-                                'Quantity: ${item.quantity} | Agreed Price: Rp${item.agreedPrice.toStringAsFixed(0)}'),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _removeSalesItem(index),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.product.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16.0,
+                                  ),
+                                ),
+                                const Divider(),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Qty: ${item.quantity}',
+                                      style: const TextStyle(fontSize: 14.0),
+                                    ),
+                                    Text(
+                                      'Agreed Price: Rp${_formatCurrency(item.agreedPrice)}',
+                                      style: const TextStyle(fontSize: 14.0),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12.0),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: () => _editSalesItem(index),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blue,
+                                          foregroundColor: Colors.white,
+                                          elevation: 1,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                        child: const Text('Edit'),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8.0),
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: () =>
+                                            _removeSalesItem(index),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.red,
+                                          foregroundColor: Colors.white,
+                                          elevation: 1,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                        child: const Text('Delete'),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -438,7 +595,7 @@ class _AddSalesPageState extends State<AddSalesPage> {
                   padding:
                       const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
                   child: Text(
-                    'Total Agreed Price: Rp${_totalAgreedPrice.toStringAsFixed(0)}',
+                    'Total Agreed Price: Rp${_formatCurrency(_totalAgreedPrice)}',
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
