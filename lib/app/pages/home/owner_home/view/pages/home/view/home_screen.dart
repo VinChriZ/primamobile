@@ -255,7 +255,8 @@ class HomeScreen extends StatelessWidget {
                                           child: Text(
                                             product.name,
                                             style: const TextStyle(
-                                                fontWeight: FontWeight.bold),
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14),
                                           ),
                                         ),
                                         Container(
@@ -271,6 +272,7 @@ class HomeScreen extends StatelessWidget {
                                             style: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: Colors.red,
+                                              fontSize: 13,
                                             ),
                                           ),
                                         ),
@@ -280,134 +282,59 @@ class HomeScreen extends StatelessWidget {
                                 },
                               ),
                       ),
-                      // Row for Transactions and Items Sold
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              margin:
-                                  const EdgeInsets.only(right: 8, bottom: 16),
-                              child: Card(
-                                elevation: 3,
-                                shadowColor: Colors.black26,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  side: BorderSide(
-                                      color: Colors.blue.shade300, width: 1),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Icon(Icons.receipt,
-                                              color: Colors.blue[800]),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            'Sales',
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.blue[800],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Divider(
-                                          color: Colors.blue.shade300,
-                                          thickness: 1),
-                                      const SizedBox(height: 8),
-                                      buildStatRow(
-                                        'Today',
-                                        formatTodayValue(
-                                            dashboard.transactionsToday),
-                                        useBullet: true,
-                                      ),
-                                      buildStatRow(
-                                        'Month',
-                                        dashboard.transactionsMonth.toString(),
-                                        useBullet: true,
-                                      ),
-                                      buildStatRow(
-                                        'Year',
-                                        dashboard.transactionsYear.toString(),
-                                        useBullet: true,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                      // Sales Card (Now full-width and vertical)
+                      buildCard(
+                        title: 'Total Sales',
+                        titleIcon: Icons.receipt,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            buildStatRow(
+                              'Today',
+                              formatTodayValue(dashboard.transactionsToday),
+                              useBullet: true,
                             ),
-                          ),
-                          Expanded(
-                            child: Container(
-                              margin:
-                                  const EdgeInsets.only(left: 8, bottom: 16),
-                              child: Card(
-                                elevation: 3,
-                                shadowColor: Colors.black26,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  side: BorderSide(
-                                      color: Colors.blue.shade300, width: 1),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Icon(Icons.shopping_cart,
-                                              color: Colors.blue[800]),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            'Items Sold',
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.blue[800],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Divider(
-                                          color: Colors.blue.shade300,
-                                          thickness: 1),
-                                      const SizedBox(height: 8),
-                                      buildStatRow(
-                                        'Today',
-                                        formatTodayValue(
-                                            dashboard.itemsSoldToday),
-                                        useBullet: true,
-                                      ),
-                                      buildStatRow(
-                                        'Month',
-                                        dashboard.itemsSoldMonth.toString(),
-                                        useBullet: true,
-                                      ),
-                                      buildStatRow(
-                                        'Year',
-                                        dashboard.itemsSoldYear.toString(),
-                                        useBullet: true,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                            buildStatRow(
+                              'Month',
+                              dashboard.transactionsMonth.toString(),
+                              useBullet: true,
                             ),
-                          ),
-                        ],
+                            buildStatRow(
+                              'Year',
+                              dashboard.transactionsYear.toString(),
+                              useBullet: true,
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Items Sold Card (Now full-width and vertical)
+                      buildCard(
+                        title: 'Total Items Sold',
+                        titleIcon: Icons.shopping_cart,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            buildStatRow(
+                              'Today',
+                              formatTodayValue(dashboard.itemsSoldToday),
+                              useBullet: true,
+                            ),
+                            buildStatRow(
+                              'Month',
+                              dashboard.itemsSoldMonth.toString(),
+                              useBullet: true,
+                            ),
+                            buildStatRow(
+                              'Year',
+                              dashboard.itemsSoldYear.toString(),
+                              useBullet: true,
+                            ),
+                          ],
+                        ),
                       ),
                       // Card for Profit with formatted values
                       buildCard(
-                        title: 'Profit',
+                        title: 'Total Profit',
                         titleIcon: Icons.trending_up,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

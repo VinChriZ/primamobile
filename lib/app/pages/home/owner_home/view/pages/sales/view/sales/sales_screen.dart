@@ -97,7 +97,7 @@ class SalesScreen extends StatelessWidget {
                     if (titleIcon != null) ...[
                       Icon(
                         titleIcon,
-                        size: 20,
+                        size: 18, // Decreased from 20
                         color: Colors.blue[800],
                       ),
                       const SizedBox(width: 8),
@@ -105,16 +105,16 @@ class SalesScreen extends StatelessWidget {
                     Text(
                       title,
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 16, // Decreased from 18
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10), // Decreased from 12
                 Divider(color: Colors.blue.shade300, thickness: 1),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6), // Decreased from 8
               ],
               child,
             ],
@@ -515,7 +515,7 @@ class SalesScreen extends StatelessWidget {
             baseLabel,
             style: const TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 16, // Increased from 15
+              fontSize: 14, // Decreased from 16
             ),
             textAlign: TextAlign.left,
           ),
@@ -525,14 +525,14 @@ class SalesScreen extends StatelessWidget {
           ":",
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            fontSize: 16, // Increased from 15
+            fontSize: 14, // Decreased from 16
           ),
         ),
         const SizedBox(width: 10), // Space after colon
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(fontSize: 16), // Increased from 15
+            style: const TextStyle(fontSize: 14), // Decreased from 16
           ),
         ),
       ],

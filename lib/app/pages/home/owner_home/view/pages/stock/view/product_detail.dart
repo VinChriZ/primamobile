@@ -34,13 +34,13 @@ class ProductDetailPage extends StatelessWidget {
             ),
           const SizedBox(width: 12),
           Container(
-            width: 120,
+            width: 100,
             padding: const EdgeInsets.only(right: 5),
             child: Text(
               baseLabel,
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
-                fontSize: 18,
+                fontSize: 16, // Reduced from 18
                 color: Color(0xFF2E4057),
               ),
               textAlign: TextAlign.left,
@@ -51,7 +51,7 @@ class ProductDetailPage extends StatelessWidget {
             ":",
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 18,
+              fontSize: 16, // Reduced from 18
               color: Color(0xFF2E4057),
             ),
           ),
@@ -60,7 +60,7 @@ class ProductDetailPage extends StatelessWidget {
             child: Text(
               value,
               style: const TextStyle(
-                fontSize: 18,
+                fontSize: 16, // Reduced from 18
                 color: Colors.black, // Changed from Color(0xFF33658A) to black
               ),
             ),
@@ -73,7 +73,11 @@ class ProductDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Format prices and dates
-    final currencyFormatter = NumberFormat.simpleCurrency(locale: 'id_ID');
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp',
+      decimalDigits: 0, // Set decimal digits to 0 to remove the ,00
+    );
     final dateFormatter = DateFormat.yMMMMd().add_jm();
 
     return Scaffold(
@@ -167,7 +171,7 @@ class ProductDetailPage extends StatelessWidget {
                         const Text(
                           'Product Information',
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 18, // Reduced from 20
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF2E4057),
                           ),
@@ -193,22 +197,7 @@ class ProductDetailPage extends StatelessWidget {
                           icon: Icons.inventory,
                         ),
 
-                        const Divider(),
-
-                        // Price Section
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Text(
-                            'Pricing',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.blue[700],
-                            ),
-                          ),
-                        ),
-
-                        // Net Price
+                        // Net Price - removed divider and pricing title
                         _buildAttributeRow(
                           'Net Price',
                           currencyFormatter.format(product.netPrice),
@@ -222,22 +211,7 @@ class ProductDetailPage extends StatelessWidget {
                           icon: Icons.attach_money,
                         ),
 
-                        const Divider(),
-
-                        // Classification Section
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Text(
-                            'Classification',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.blue[700],
-                            ),
-                          ),
-                        ),
-
-                        // Category
+                        // Category - removed divider and classification title
                         _buildAttributeRow(
                           'Category',
                           product.category,
@@ -288,7 +262,7 @@ class ProductDetailPage extends StatelessWidget {
                       _getStockStatusMessage(product.stock),
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: 14, // Reduced from 16
                         fontWeight: FontWeight.w500,
                       ),
                     ),

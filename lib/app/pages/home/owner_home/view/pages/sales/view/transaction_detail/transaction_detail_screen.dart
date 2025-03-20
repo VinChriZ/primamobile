@@ -41,7 +41,7 @@ class TransactionDetailScreen extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(
-            width: 180.0,
+            width: 130.0,
             child: Text(
               label,
               style:
@@ -80,6 +80,9 @@ class TransactionDetailScreen extends StatelessWidget {
       );
     }
     return ListView.builder(
+      shrinkWrap: true, // Allow ListView to size based on content
+      physics:
+          const NeverScrollableScrollPhysics(), // Disable scrolling of nested ListView
       itemCount: details.length,
       itemBuilder: (context, index) {
         final detail = details[index];
@@ -636,8 +639,9 @@ class TransactionDetailScreen extends StatelessWidget {
             final details = state.details;
             return Container(
               color: Colors.grey.shade50,
-              child: Padding(
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(12.0),
+                physics: const AlwaysScrollableScrollPhysics(),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
@@ -660,17 +664,17 @@ class TransactionDetailScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 12.0),
                             _buildTransactionInfoRow(
-                              label: 'Total Display Price',
+                              label: 'Display Price',
                               value:
                                   'Rp${_formatCurrency(updatedTransaction.totalDisplayPrice)}',
                             ),
                             _buildTransactionInfoRow(
-                              label: 'Total Agreed Price',
+                              label: 'Agreed Price',
                               value:
                                   'Rp${_formatCurrency(updatedTransaction.totalAgreedPrice)}',
                             ),
                             _buildTransactionInfoRow(
-                              label: 'Total Net Price',
+                              label: 'Net Price',
                               value:
                                   'Rp${_formatCurrency(updatedTransaction.totalNetPrice)}',
                             ),
@@ -747,10 +751,10 @@ class TransactionDetailScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8.0),
-                    Expanded(
-                      child: _buildTransactionDetailsList(
-                          context, details, updatedTransaction.transactionId),
-                    ),
+                    _buildTransactionDetailsList(
+                        context, details, updatedTransaction.transactionId),
+                    // Add padding at the bottom to ensure FAB doesn't cover content
+                    const SizedBox(height: 80.0),
                   ],
                 ),
               ),

@@ -109,17 +109,17 @@ class OwnerApprovalScreen extends StatelessWidget {
                     ],
                     Text(
                       title,
-                      style: TextStyle(
-                        fontSize: 18,
+                      style: const TextStyle(
+                        fontSize: 16, // Decreased from 18
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue[800],
+                        color: Colors.black,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10), // Decreased from 12
                 Divider(color: Colors.blue.shade100, thickness: 1),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6), // Decreased from 8
               ],
               child,
             ],
@@ -145,7 +145,7 @@ class OwnerApprovalScreen extends StatelessWidget {
             baseLabel,
             style: const TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: 14, // Decreased from 16
             ),
             textAlign: TextAlign.left,
           ),
@@ -155,14 +155,14 @@ class OwnerApprovalScreen extends StatelessWidget {
           ":",
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            fontSize: 16,
+            fontSize: 14, // Decreased from 16
           ),
         ),
         const SizedBox(width: 10), // Space after colon
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(fontSize: 16),
+            style: const TextStyle(fontSize: 14), // Decreased from 16
           ),
         ),
       ],
@@ -467,7 +467,8 @@ class OwnerApprovalScreen extends StatelessWidget {
                               );
                         },
                         child: ListView.builder(
-                          padding: const EdgeInsets.all(8.0),
+                          // Remove the padding that's making cards appear smaller
+                          // padding: const EdgeInsets.all(8.0),
                           itemCount: reports.length,
                           itemBuilder: (context, index) {
                             final report = reports[index];
@@ -556,13 +557,13 @@ class OwnerApprovalScreen extends StatelessWidget {
                                         Text(
                                           'Report: ${DateFormat('yyyy-MM-dd').format(report.dateCreated)}',
                                           style: const TextStyle(
-                                            fontSize: 18,
+                                            fontSize: 16, // Decreased from 18
                                             fontWeight: FontWeight.bold,
-                                            color: Colors
-                                                .black, // Changed from blue to black
+                                            color: Colors.black,
                                           ),
                                         ),
-                                        const SizedBox(height: 12),
+                                        const SizedBox(
+                                            height: 10), // Decreased from 12
                                         Divider(
                                             color: status == 'waiting'
                                                 ? Colors.blue.shade300
@@ -592,7 +593,8 @@ class OwnerApprovalScreen extends StatelessWidget {
                                                     style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.w600,
-                                                      fontSize: 16,
+                                                      fontSize:
+                                                          14, // Decreased from 16
                                                     ),
                                                     textAlign: TextAlign.left,
                                                   ),
@@ -602,7 +604,8 @@ class OwnerApprovalScreen extends StatelessWidget {
                                                   ":",
                                                   style: TextStyle(
                                                     fontWeight: FontWeight.w600,
-                                                    fontSize: 16,
+                                                    fontSize:
+                                                        14, // Decreased from 16
                                                   ),
                                                 ),
                                                 const SizedBox(width: 10),
@@ -612,13 +615,15 @@ class OwnerApprovalScreen extends StatelessWidget {
                                                       Icon(
                                                         statusIcon,
                                                         color: statusColor,
-                                                        size: 18,
+                                                        size:
+                                                            16, // Decreased from 18
                                                       ),
                                                       const SizedBox(width: 5),
                                                       Text(
                                                         capitalizedStatus,
                                                         style: TextStyle(
-                                                          fontSize: 16,
+                                                          fontSize:
+                                                              14, // Decreased from 16
                                                           fontWeight:
                                                               FontWeight.w600,
                                                           color: statusColor,
