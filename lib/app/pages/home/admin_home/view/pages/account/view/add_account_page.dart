@@ -13,8 +13,7 @@ class AddAccountPage extends StatefulWidget {
 class _AddAccountPageState extends State<AddAccountPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _usernameController = TextEditingController();
-  String _username = '';
-  String _password = '';
+  final TextEditingController _passwordController = TextEditingController();
   int _roleId = 3; // Default to Worker
   String? _usernameError;
 
@@ -36,15 +35,29 @@ class _AddAccountPageState extends State<AddAccountPage> {
     super.initState();
     // Listen for changes to the username field.
     _usernameController.addListener(() {
-      _username = _usernameController.text;
-      _checkUsername(_username);
+      _checkUsername(_usernameController.text);
     });
   }
 
   @override
   void dispose() {
     _usernameController.dispose();
+    _passwordController.dispose();
     super.dispose();
+  }
+
+  /// Returns an InputDecoration with optional error text.
+  InputDecoration _buildInputDecoration(String label, {String? errorText}) {
+    return InputDecoration(
+      labelText: label,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.0),
+        borderSide:
+            BorderSide(color: errorText != null ? Colors.red : Colors.grey),
+      ),
+      errorText: errorText,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+    );
   }
 
   @override
@@ -54,79 +67,109 @@ class _AddAccountPageState extends State<AddAccountPage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Add Account")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                controller: _usernameController,
-                decoration: InputDecoration(
-                  labelText: 'Username',
-                  errorText: _usernameError,
+      body: GestureDetector(
+        onTap: () =>
+            FocusScope.of(context).unfocus(), // Dismiss keyboard on tap
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Card(
+            elevation: 4.0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.0),
+            ),
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Username field
+                    TextFormField(
+                      controller: _usernameController,
+                      decoration: _buildInputDecoration(
+                        'Username',
+                        errorText: _usernameError,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a username';
+                        }
+                        if (_usernameError != null) {
+                          return _usernameError;
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    // Password field
+                    TextFormField(
+                      controller: _passwordController,
+                      decoration: _buildInputDecoration('Password'),
+                      obscureText: true,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a password';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    // Role dropdown
+                    DropdownButtonFormField<int>(
+                      value: _roleId,
+                      decoration: _buildInputDecoration('Role'),
+                      items: const [
+                        DropdownMenuItem(value: 1, child: Text('Admin')),
+                        DropdownMenuItem(value: 2, child: Text('Owner')),
+                        DropdownMenuItem(value: 3, child: Text('Worker')),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          _roleId = value ?? 3;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 30),
+                    // Add account button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        onPressed: () {
+                          if (_formKey.currentState?.validate() ?? false) {
+                            _formKey.currentState?.save();
+                            // Create a temporary User object.
+                            // Note: The password is passed separately since the backend hashes it.
+                            final newUser = User(
+                              userId:
+                                  0, // Dummy id; backend will assign the proper ID
+                              username: _usernameController.text,
+                              passwordHash: '', // Will be set by the backend
+                              roleId: _roleId,
+                              active: true,
+                            );
+                            accountBloc.add(
+                                AddAccount(newUser, _passwordController.text));
+                            Navigator.pop(context);
+                          }
+                        },
+                        child: const Text(
+                          "Add Account",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                onSaved: (value) {
-                  _username = value ?? '';
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a username';
-                  }
-                  if (_usernameError != null) {
-                    return _usernameError;
-                  }
-                  return null;
-                },
               ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Password'),
-                obscureText: true,
-                onSaved: (value) {
-                  _password = value ?? '';
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a password';
-                  }
-                  return null;
-                },
-              ),
-              DropdownButtonFormField<int>(
-                value: _roleId,
-                decoration: const InputDecoration(labelText: 'Role'),
-                items: const [
-                  DropdownMenuItem(value: 1, child: Text('Admin')),
-                  DropdownMenuItem(value: 2, child: Text('Owner')),
-                  DropdownMenuItem(value: 3, child: Text('Worker')),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    _roleId = value ?? 3;
-                  });
-                },
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                child: const Text("Add Account"),
-                onPressed: () {
-                  if (_formKey.currentState?.validate() ?? false) {
-                    _formKey.currentState?.save();
-                    // Create a temporary User object.
-                    // Note: The password is passed separately since the backend hashes it.
-                    final newUser = User(
-                      userId: 0, // Dummy id; backend will assign the proper ID
-                      username: _username,
-                      passwordHash: '', // Will be set by the backend
-                      roleId: _roleId,
-                      active: true,
-                    );
-                    accountBloc.add(AddAccount(newUser, _password));
-                    Navigator.pop(context);
-                  }
-                },
-              ),
-            ],
+            ),
           ),
         ),
       ),
