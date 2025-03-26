@@ -229,11 +229,6 @@ class _ReportScreenState extends State<ReportScreen> {
                 begin: Alignment.bottomCenter,
                 end: Alignment.topCenter,
               ),
-              backDrawRodData: BackgroundBarChartRodData(
-                show: true,
-                toY: value * 1.1, // Slightly higher than the actual value
-                color: Colors.grey.withOpacity(0.1),
-              ),
             ),
           ],
         ),
