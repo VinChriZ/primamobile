@@ -30,6 +30,9 @@ class SalesProductItem {
 class AddSalesPage extends StatefulWidget {
   const AddSalesPage({super.key});
 
+  // Static variable to store the last selected date
+  static DateTime? lastSelectedDate;
+
   @override
   State<AddSalesPage> createState() => _AddSalesPageState();
 }
@@ -38,7 +41,8 @@ class _AddSalesPageState extends State<AddSalesPage> {
   final _formKey = GlobalKey<FormState>();
 
   // Transaction fields
-  DateTime _transactionDate = DateTime.now();
+  // Use the lastSelectedDate if available, otherwise use the current date
+  late DateTime _transactionDate;
   final TextEditingController _notesController = TextEditingController();
 
   // List to store products added to the sale.
@@ -55,6 +59,12 @@ class _AddSalesPageState extends State<AddSalesPage> {
   late final TransactionRepository _transactionRepository;
   late final TransactionDetailRepository _transactionDetailRepository;
   late final ProductRepository _productRepository;
+
+  @override
+  void initState() {
+    super.initState();
+    _transactionDate = AddSalesPage.lastSelectedDate ?? DateTime.now();
+  }
 
   @override
   void didChangeDependencies() {
@@ -479,6 +489,8 @@ class _AddSalesPageState extends State<AddSalesPage> {
                       if (picked != null) {
                         setState(() {
                           _transactionDate = picked;
+                          // Save the selected date to the static variable
+                          AddSalesPage.lastSelectedDate = picked;
                         });
                       }
                     },

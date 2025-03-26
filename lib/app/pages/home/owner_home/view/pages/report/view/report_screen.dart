@@ -841,6 +841,7 @@ class _ReportScreenState extends State<ReportScreen> {
         icon: const Icon(Icons.share),
         label: const Text('Share Report'),
         elevation: 4,
+        backgroundColor: Colors.blue[700],
       ),
     );
   }
