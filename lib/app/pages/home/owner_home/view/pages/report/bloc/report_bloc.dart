@@ -30,8 +30,10 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
       final DateTime startDate =
           event.startDate ?? endDate.subtract(const Duration(days: 7));
 
-      // Group by month if the range is longer than 31 days.
-      final bool groupByMonth = endDate.difference(startDate).inDays > 31;
+      // Determine if we should group by month based on date range and number of days
+      final int daysDifference = endDate.difference(startDate).inDays;
+      final bool groupByMonth =
+          daysDifference > 21; // Reduce threshold to 21 days
 
       // Fetch transactions based on the date range.
       final transactions = await transactionRepository.fetchTransactions(
@@ -92,8 +94,10 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
         emit(const ReportError(
             message: "No transactions on the selected date."));
       } else {
-        emit(const ReportError(
-            message: "Failed to load report data. Please try again later."));
+        emit(ReportError(
+            message: "Failed to load report data: ${e.toString()}",
+            startDate: event.startDate,
+            endDate: event.endDate));
       }
     }
   }

@@ -9,7 +9,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.grey[100],
         body: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (profileContext, profileState) {
             if (profileState is ProfileLoading) {
@@ -22,40 +22,85 @@ class ProfileScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // Header with gradient and logo
+                          // Enhanced Header with gradient and profile picture
                           Container(
                             width: double.infinity,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  Colors.blue.shade700,
-                                  Colors.blue.shade500
+                                  Colors.blue.shade800,
+                                  Colors.blue.shade500,
                                 ],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
+                              borderRadius: const BorderRadius.only(
+                                bottomLeft: Radius.circular(30),
+                                bottomRight: Radius.circular(30),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withAlpha(128),
+                                  spreadRadius: 2,
+                                  blurRadius: 7,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
                             ),
+                            padding: const EdgeInsets.only(bottom: 25),
                             child: Column(
                               children: [
-                                const SizedBox(height: 20),
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.account_circle,
+                                        color: Colors.white,
+                                        size: 30,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Profile',
+                                        style: TextStyle(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                          letterSpacing: 1.2,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
                                 Container(
-                                  width: 140.0,
-                                  height: 140.0,
+                                  width: 120.0,
+                                  height: 120.0,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: Colors.white,
                                     border: Border.all(
-                                      color: Colors.blue.shade700,
-                                      width: 5.0,
+                                      color: Colors.white,
+                                      width: 3.0,
                                     ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withAlpha(51),
+                                        spreadRadius: 2,
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
                                   ),
-                                  child: const Center(
+                                  child: Center(
                                     child: Text(
                                       'PriMo',
                                       style: TextStyle(
                                         fontSize: 25,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.red,
+                                        color: Colors.red.shade700,
+                                        letterSpacing: 1,
                                       ),
                                     ),
                                   ),
@@ -64,32 +109,64 @@ class ProfileScreen extends StatelessWidget {
                                 Text(
                                   profileState.name,
                                   style: const TextStyle(
-                                    fontSize: 24,
+                                    fontSize: 26,
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withAlpha(77),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    profileState.role,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
-                          // Profile Details Section (Role only)
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(14.0),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(14.0),
-                                topRight: Radius.circular(14.0),
-                              ),
-                            ),
+
+                          // App Settings Section - removed Account Information section
+                          Padding(
+                            padding: const EdgeInsets.all(20.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _buildProfileItem('Role', profileState.role),
-                                const SizedBox(height: 14),
+                                const SizedBox(height: 10),
+                                _buildSectionHeader('App Settings'),
+                                const SizedBox(height: 16),
+                                _buildSettingItem(
+                                  'Help & Support',
+                                  Icons.help_outline,
+                                  () {/* Add functionality here */},
+                                ),
+                                _buildSettingItem(
+                                  'About App',
+                                  Icons.info_outline,
+                                  () {/* Add functionality here */},
+                                ),
+                                _buildSettingItem(
+                                  'Privacy Policy',
+                                  Icons.privacy_tip_outlined,
+                                  () {/* Add functionality here */},
+                                ),
+                                _buildSettingItem(
+                                  'Terms & Conditions',
+                                  Icons.description_outlined,
+                                  () {/* Add functionality here */},
+                                ),
+                                const SizedBox(height: 10),
                               ],
                             ),
                           ),
@@ -97,20 +174,48 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Logout Button
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
+                  // Improved Logout Button
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withAlpha(51),
+                          spreadRadius: 1,
+                          blurRadius: 6,
+                          offset: const Offset(0, -3),
+                        ),
+                      ],
+                    ),
                     child: ElevatedButton(
                       onPressed: () {
                         context.read<ProfileBloc>().add(Logout());
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade700,
-                        fixedSize: const Size(200, 50),
+                        backgroundColor: Colors.red.shade600,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 3,
                       ),
-                      child: const Text(
-                        "Logout",
-                        style: TextStyle(color: Colors.white),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.logout, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            "Logout",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -127,19 +232,53 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileItem(String title, String value) {
+  Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.blue.shade800,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  // Removed _buildInfoCard since we no longer need it
+
+  Widget _buildSettingItem(String title, IconData icon, VoidCallback onTap) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withAlpha(26),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(0, 2),
           ),
-          const SizedBox(height: 4),
-          Text(value, style: const TextStyle(fontSize: 12)),
         ],
+      ),
+      child: ListTile(
+        leading: Icon(icon, color: Colors.blue.shade700),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
     );
   }
