@@ -270,7 +270,10 @@ class AccountScreen extends StatelessWidget {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
+        icon: const Icon(Icons.add),
+        label: const Text("Add Account"),
+        backgroundColor: Colors.blue[700],
         onPressed: () {
           Navigator.push(
             context,
@@ -282,7 +285,6 @@ class AccountScreen extends StatelessWidget {
             ),
           );
         },
-        child: const Icon(Icons.add),
       ),
     );
   }

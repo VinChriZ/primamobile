@@ -597,7 +597,10 @@ class WorkerReportScreen extends StatelessWidget {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
+        icon: const Icon(Icons.add),
+        label: const Text("Add Report"),
+        backgroundColor: Colors.blue[700],
         onPressed: () async {
           final result = await Navigator.push(
             context,
@@ -618,7 +621,6 @@ class WorkerReportScreen extends StatelessWidget {
             }
           }
         },
-        child: const Icon(Icons.add),
       ),
     );
   }
