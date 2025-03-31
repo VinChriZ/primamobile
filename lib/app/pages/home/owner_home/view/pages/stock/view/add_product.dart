@@ -26,8 +26,6 @@ class _AddProductPageState extends State<AddProductPage> {
   final TextEditingController _stockController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _brandController = TextEditingController();
-  // Uncomment if you need an image URL field.
-  // final TextEditingController _imageUrlController = TextEditingController();
 
   // Flags and debouncer for UPC checking.
   bool isScanning = false;
@@ -84,7 +82,6 @@ class _AddProductPageState extends State<AddProductPage> {
     _stockController.dispose();
     _categoryController.dispose();
     _brandController.dispose();
-    // _imageUrlController.dispose();
     super.dispose();
   }
 
@@ -156,7 +153,6 @@ class _AddProductPageState extends State<AddProductPage> {
     final stockText = _stockController.text.trim();
     final category = _categoryController.text.trim();
     final brand = _brandController.text.trim();
-    // final imageUrlText = _imageUrlController.text.trim();
 
     // Optionally update controllers to reflect trimmed text.
     _upcController.text = upc;
@@ -166,7 +162,6 @@ class _AddProductPageState extends State<AddProductPage> {
     _stockController.text = stockText;
     _categoryController.text = category;
     _brandController.text = brand;
-    // _imageUrlController.text = imageUrlText;
 
     if (_formKey.currentState?.validate() ?? false) {
       final product = Product(
@@ -177,7 +172,6 @@ class _AddProductPageState extends State<AddProductPage> {
         stock: int.parse(stockText),
         category: category,
         brand: brand,
-        // imageUrl: imageUrlText.isNotEmpty ? imageUrlText : null,
       );
 
       context.read<StockBloc>().add(AddProduct(product));
@@ -341,23 +335,6 @@ class _AddProductPageState extends State<AddProductPage> {
                       },
                     ),
                     const SizedBox(height: 20),
-                    // Uncomment below if using an Image URL field.
-                    // TextFormField(
-                    //   controller: _imageUrlController,
-                    //   decoration: _buildInputDecoration('Image URL (Optional)'),
-                    //   keyboardType: TextInputType.url,
-                    //   validator: (value) {
-                    //     final trimmed = value?.trim() ?? '';
-                    //     if (trimmed.isNotEmpty) {
-                    //       final uri = Uri.tryParse(trimmed);
-                    //       if (uri == null || !uri.isAbsolute) {
-                    //         return 'Please enter a valid URL.';
-                    //       }
-                    //     }
-                    //     return null;
-                    //   },
-                    // ),
-                    // const SizedBox(height: 30),
                     // Add Product Button
                     SizedBox(
                       width: double.infinity,

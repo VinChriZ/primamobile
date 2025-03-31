@@ -6,7 +6,6 @@ class Product {
   final int stock;
   final String category;
   final String brand;
-  final String? imageUrl;
   final DateTime? lastUpdated;
 
   Product({
@@ -17,7 +16,6 @@ class Product {
     required this.stock,
     required this.category,
     required this.brand,
-    this.imageUrl,
     this.lastUpdated,
   });
 
@@ -31,7 +29,6 @@ class Product {
       stock: json['stock'] as int,
       category: json['category'] as String,
       brand: json['brand'] as String,
-      imageUrl: json['image_url'] as String?,
       lastUpdated: json['last_updated'] != null
           ? DateTime.parse(json['last_updated'] as String)
           : null, // Parse date if available
@@ -48,7 +45,6 @@ class Product {
       'stock': stock,
       'category': category,
       'brand': brand,
-      if (imageUrl != null) 'image_url': imageUrl,
       if (lastUpdated != null) 'last_updated': lastUpdated!.toIso8601String(),
     };
   }

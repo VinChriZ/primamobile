@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:primamobile/app/models/models.dart';
 import 'package:primamobile/provider/dio/dio_client.dart';
 import 'package:primamobile/provider/models/request_api/request_api.dart';
@@ -151,29 +150,6 @@ class ProductProvider {
     } catch (e) {
       print('Error updating product stock: $e'); // Debug log
       throw Exception('Error updating product stock: $e');
-    }
-  }
-
-  // Upload product image
-  Future<String> uploadProductImage(String upc, String imagePath) async {
-    try {
-      final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(imagePath),
-      });
-      final response =
-          await dioClient.post('/products/$upc/upload-image', data: formData);
-
-      print('Response received: ${response.data}'); // Debug log
-
-      if (response.statusCode == 200) {
-        return response.data['image_url'];
-      } else {
-        throw Exception(
-            'Failed to upload product image. Status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error uploading product image: $e'); // Debug log
-      throw Exception('Error uploading product image: $e');
     }
   }
 
