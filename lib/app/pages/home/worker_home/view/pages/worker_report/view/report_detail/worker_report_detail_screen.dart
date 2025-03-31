@@ -211,82 +211,123 @@ class WorkerReportDetailScreen extends StatelessWidget {
 
   void _showEditReportDetailDialog(
       BuildContext context, Report report, ReportDetail detail) {
-    final formKey = GlobalKey<FormState>();
-    String upc = detail.upc;
-    int quantity = detail.quantity;
     final workerReportDetailBloc = context.read<WorkerReportDetailBloc>();
+    final quantityController =
+        TextEditingController(text: detail.quantity.toString());
+    String? quantityErrorMessage;
+
+    // Get the product to show available stock
+    final productRepository = RepositoryProvider.of<ProductRepository>(context);
 
     showDialog(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Edit Report Detail'),
-          content: Form(
-            key: formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    initialValue: detail.upc,
-                    decoration: const InputDecoration(labelText: 'UPC'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter UPC';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) => upc = value!,
-                  ),
-                  TextFormField(
-                    initialValue: detail.quantity.toString(),
-                    decoration: const InputDecoration(labelText: 'Quantity'),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter quantity';
-                      }
-                      if (int.tryParse(value) == null ||
-                          int.parse(value) <= 0) {
-                        return 'Enter a valid quantity';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) => quantity = int.parse(value!),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (formKey.currentState!.validate()) {
-                  formKey.currentState!.save();
-                  workerReportDetailBloc.add(
-                    UpdateWorkerReportDetail(
-                      report.reportId,
-                      detail.reportDetailId,
-                      {
-                        'upc': upc,
-                        'quantity': quantity,
-                      },
+        return FutureBuilder(
+          future: productRepository.fetchProduct(detail.upc),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const AlertDialog(
+                content: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+
+            final product = snapshot.data;
+
+            return StatefulBuilder(
+              builder: (context, setState) {
+                return AlertDialog(
+                  title: Text('Edit ${product?.name ?? detail.upc}'),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Display the UPC as text but don't allow editing
+                        Text(
+                          'UPC: ${detail.upc}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        // Display available stock
+                        if (product != null)
+                          Text(
+                            'Available stock: ${product.stock}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: quantityController,
+                          decoration: InputDecoration(
+                            labelText: 'Quantity',
+                            border: const OutlineInputBorder(),
+                            errorText: quantityErrorMessage,
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ],
                     ),
-                  );
-                  Navigator.of(dialogContext).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Report detail updated successfully.')),
-                  );
-                }
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        final quantity =
+                            int.tryParse(quantityController.text.trim());
+
+                        // Validate quantity
+                        if (quantity == null || quantity <= 0) {
+                          setState(() {
+                            quantityErrorMessage = 'Enter valid quantity';
+                          });
+                          return;
+                        }
+
+                        // Only validate stock limit for "return" type reports
+                        if (report.type.toLowerCase() == "return" &&
+                            product != null &&
+                            quantity > product.stock) {
+                          setState(() {
+                            quantityErrorMessage =
+                                'Quantity exceeds available stock';
+                          });
+                          return;
+                        }
+
+                        // All validations passed
+                        workerReportDetailBloc.add(
+                          UpdateWorkerReportDetail(
+                            report.reportId,
+                            detail.reportDetailId,
+                            {
+                              'upc': detail.upc, // Keep the original UPC
+                              'quantity': quantity,
+                            },
+                          ),
+                        );
+                        Navigator.of(dialogContext).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content:
+                                  Text('Report detail updated successfully.')),
+                        );
+                      },
+                      child: const Text('Update'),
+                    ),
+                  ],
+                );
               },
-              child: const Text('Update'),
-            ),
-          ],
+            );
+          },
         );
       },
     );
@@ -475,68 +516,75 @@ class WorkerReportDetailScreen extends StatelessWidget {
 
   Future<void> _promptAddDetailDialog(
       BuildContext context, dynamic product, int reportId) async {
-    final quantityController = TextEditingController();
+    final quantityController = TextEditingController(text: "1");
     final workerReportDetailBloc = context.read<WorkerReportDetailBloc>();
+    String? errorMessage;
 
     await showDialog(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          title: Text('Add ${product.name}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Available stock: ${product.stock}'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: quantityController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Quantity',
-                  border: OutlineInputBorder(),
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            title: Text('Add ${product.name}'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Available stock: ${product.stock}'),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: quantityController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Quantity',
+                    border: const OutlineInputBorder(),
+                    errorText: errorMessage,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel'),
+              ],
             ),
-            ElevatedButton(
-              onPressed: () {
-                final int? quantity = int.tryParse(quantityController.text);
-                if (quantity == null || quantity <= 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Enter valid quantity')),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final int? quantity = int.tryParse(quantityController.text);
+                  if (quantity == null || quantity <= 0) {
+                    setState(() {
+                      errorMessage = 'Enter valid quantity';
+                    });
+                    return;
+                  }
+
+                  // Only validate stock limit for "return" type reports
+                  if (report.type.toLowerCase() == "return" &&
+                      quantity > product.stock) {
+                    setState(() {
+                      errorMessage = 'Quantity exceeds stock';
+                    });
+                    return;
+                  }
+
+                  workerReportDetailBloc.add(
+                    AddWorkerReportDetail(reportId, {
+                      'upc': product.upc,
+                      'quantity': quantity,
+                    }),
                   );
-                  return;
-                }
-                if (quantity > product.stock) {
+                  Navigator.pop(dialogContext);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                        content: Text('Quantity exceeds available stock')),
+                        content: Text('Report detail added successfully')),
                   );
-                  return;
-                }
-                workerReportDetailBloc.add(
-                  AddWorkerReportDetail(reportId, {
-                    'upc': product.upc,
-                    'quantity': quantity,
-                  }),
-                );
-                Navigator.pop(dialogContext);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Report detail added successfully')),
-                );
-              },
-              child: const Text('Add'),
-            ),
-          ],
-        );
+                },
+                child: const Text('Add'),
+              ),
+            ],
+          );
+        });
       },
     );
   }

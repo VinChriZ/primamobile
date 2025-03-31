@@ -9,8 +9,7 @@ import 'package:primamobile/repository/product_repository.dart';
 import 'package:primamobile/utils/globals.dart';
 
 class ReportDetailItem {
-  final Product
-      product; // Changed from just the UPC to include the full product
+  final Product product;
   final int quantity;
 
   ReportDetailItem({required this.product, required this.quantity});
@@ -205,65 +204,72 @@ class _AddReportPageState extends State<AddReportPage> {
 
   /// Prompts the user to enter a quantity for the selected product.
   Future<void> _promptAddProductDetail(Product product) async {
-    final quantityController =
-        TextEditingController(text: "1"); // Set default to 1
+    final quantityController = TextEditingController(text: "1");
+    String? errorMessage;
+
     final result = await showDialog<ReportDetailItem>(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          title: Text('Add ${product.name}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Available stock: ${product.stock}'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: quantityController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Quantity',
-                  border: OutlineInputBorder(),
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            title: Text('Add ${product.name}'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Available stock: ${product.stock}'),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: quantityController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Quantity',
+                    border: const OutlineInputBorder(),
+                    errorText: errorMessage,
+                  ),
                 ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final int? quantity = int.tryParse(quantityController.text);
+                  if (quantity == null || quantity <= 0) {
+                    setState(() {
+                      errorMessage = 'Enter valid quantity';
+                    });
+                    return;
+                  }
+
+                  // Only validate stock limit for "return" type reports
+                  if (_selectedType == "return" && quantity > product.stock) {
+                    setState(() {
+                      errorMessage = 'Quantity exceeds available stock';
+                    });
+                    return;
+                  }
+
+                  Navigator.pop(
+                    context,
+                    ReportDetailItem(
+                      product: product,
+                      quantity: quantity,
+                    ),
+                  );
+                },
+                child: const Text('Add'),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final int? quantity = int.tryParse(quantityController.text);
-                if (quantity == null || quantity <= 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Enter valid quantity')),
-                  );
-                  return;
-                }
-                if (quantity > product.stock) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Quantity exceeds available stock')),
-                  );
-                  return;
-                }
-                Navigator.pop(
-                  context,
-                  ReportDetailItem(
-                    product: product,
-                    quantity: quantity,
-                  ),
-                );
-              },
-              child: const Text('Add'),
-            ),
-          ],
-        );
+          );
+        });
       },
     );
+
     if (result != null) {
       setState(() {
         _reportDetails.add(result);
@@ -276,62 +282,69 @@ class _AddReportPageState extends State<AddReportPage> {
     final item = _reportDetails[index];
     final quantityController =
         TextEditingController(text: item.quantity.toString());
+    String? errorMessage;
 
     final result = await showDialog<ReportDetailItem>(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          title: Text('Edit ${item.product.name}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Available stock: ${item.product.stock}'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: quantityController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Quantity',
-                  border: OutlineInputBorder(),
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            title: Text('Edit ${item.product.name}'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Available stock: ${item.product.stock}'),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: quantityController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Quantity',
+                    border: const OutlineInputBorder(),
+                    errorText: errorMessage,
+                  ),
                 ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final int? quantity = int.tryParse(quantityController.text);
+                  if (quantity == null || quantity <= 0) {
+                    setState(() {
+                      errorMessage = 'Enter valid quantity';
+                    });
+                    return;
+                  }
+
+                  // Only validate stock limit for "return" type reports
+                  if (_selectedType == "return" &&
+                      quantity > item.product.stock) {
+                    setState(() {
+                      errorMessage = 'Quantity exceeds stock';
+                    });
+                    return;
+                  }
+
+                  Navigator.pop(
+                    context,
+                    ReportDetailItem(
+                      product: item.product,
+                      quantity: quantity,
+                    ),
+                  );
+                },
+                child: const Text('Update'),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final int? quantity = int.tryParse(quantityController.text);
-                if (quantity == null || quantity <= 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Enter valid quantity')),
-                  );
-                  return;
-                }
-                if (quantity > item.product.stock) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Quantity exceeds available stock')),
-                  );
-                  return;
-                }
-                Navigator.pop(
-                  context,
-                  ReportDetailItem(
-                    product: item.product,
-                    quantity: quantity,
-                  ),
-                );
-              },
-              child: const Text('Update'),
-            ),
-          ],
-        );
+          );
+        });
       },
     );
 
