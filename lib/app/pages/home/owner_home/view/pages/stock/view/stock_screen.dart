@@ -296,11 +296,26 @@ class StockScreen extends StatelessWidget {
                     child: stockState is StockLoading
                         ? const Center(child: CircularProgressIndicator())
                         : stockState is StockError
-                            ? ListView(
+                            ? SingleChildScrollView(
                                 physics: const AlwaysScrollableScrollPhysics(),
-                                children: [
-                                  Center(child: Text(stockState.message)),
-                                ],
+                                child: SizedBox(
+                                  height: 300,
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.error_outline,
+                                            size: 48, color: Colors.red),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'Error: ${stockState.message}',
+                                          style: const TextStyle(fontSize: 16),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                               )
                             : stockState is StockLoaded
                                 ? stockState.displayedProducts.isEmpty

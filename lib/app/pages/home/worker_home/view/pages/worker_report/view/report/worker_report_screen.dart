@@ -586,7 +586,27 @@ class WorkerReportScreen extends StatelessWidget {
                           ),
                         );
                       } else if (state is WorkerReportError) {
-                        return Center(child: Text(state.message));
+                        return SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: SizedBox(
+                            height: 300,
+                            child: Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.error_outline,
+                                      size: 48, color: Colors.red),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Error: ${state.message}',
+                                    style: const TextStyle(fontSize: 16),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
                       }
                       return const SizedBox.shrink();
                     },
