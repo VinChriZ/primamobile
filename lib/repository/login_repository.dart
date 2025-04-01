@@ -1,5 +1,6 @@
 import 'package:primamobile/provider/login_provider.dart';
 import 'package:primamobile/repository/user_session_repository.dart';
+import 'package:dio/dio.dart';
 
 class LoginRepository {
   final LoginProvider _loginProvider = LoginProvider();
@@ -35,6 +36,21 @@ class LoginRepository {
 
       print(
           'Login successful. Updated session: userId=${updatedUserSession.user.userId}, token=${updatedUserSession.token}');
+    } on DioException catch (e) {
+      // Handle specific HTTP status codes
+      if (e.response != null) {
+        switch (e.response!.statusCode) {
+          case 403:
+            throw Exception('User account is inactive');
+          case 409:
+            throw Exception('User already logged in elsewhere');
+          default:
+            throw Exception(
+                'Login failed: ${e.response?.data['detail'] ?? e.message}');
+        }
+      } else {
+        throw Exception('Login failed: No response from server');
+      }
     } catch (e) {
       throw Exception('Login failed: ${e.toString()}');
     }

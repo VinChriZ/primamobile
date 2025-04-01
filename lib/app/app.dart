@@ -11,6 +11,7 @@ import 'package:primamobile/repository/transaction_repository.dart';
 import 'package:primamobile/repository/transaction_detail_repository.dart';
 import 'package:primamobile/repository/report_repository.dart';
 import 'package:primamobile/repository/report_detail_repository.dart';
+import 'package:primamobile/repository/logout_repository.dart'; // Add this import
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -26,11 +27,13 @@ class App extends StatelessWidget {
     final transactionDetailRepository = TransactionDetailRepository();
     final reportRepository = ReportRepository();
     final reportDetailRepository = ReportDetailRepository();
+    final logoutRepository = LogoutRepository(); // Add this line
 
     // Create an instance of AuthenticationBloc with dependencies
     final authenticationBloc = AuthenticationBloc(
       loginRepository: loginRepository,
       userSessionRepository: userSessionRepository,
+      logoutRepository: logoutRepository, // Add this line
     )..add(AppStarted());
 
     // Pass dependencies to AppRouter
@@ -53,6 +56,7 @@ class App extends StatelessWidget {
         RepositoryProvider.value(value: transactionDetailRepository),
         RepositoryProvider.value(value: reportRepository),
         RepositoryProvider.value(value: reportDetailRepository),
+        RepositoryProvider.value(value: logoutRepository), // Add this line
       ],
       child: BlocProvider.value(
         value: authenticationBloc,

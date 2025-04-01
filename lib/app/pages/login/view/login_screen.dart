@@ -16,6 +16,18 @@ class LoginScreen extends StatelessWidget {
         listener: (context, authState) {
           if (authState is AuthenticationFailure) {
             context.read<LoginBloc>().add(LoginReset());
+
+            // Extract error message for specific error handling
+            String errorMessage = authState.error;
+
+            // Display appropriate error message based on content
+            if (errorMessage.contains('inactive')) {
+              _showErrorSnackbar(context, 'User account is inactive');
+            } else if (errorMessage.contains('logged in elsewhere')) {
+              _showErrorSnackbar(context, 'User already logged in elsewhere');
+            } else {
+              _showErrorSnackbar(context, 'Invalid username or password');
+            }
           }
         },
         child: Scaffold(
@@ -259,6 +271,22 @@ class LoginScreen extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  void _showErrorSnackbar(BuildContext context, String message) {
+    // Remove any existing snackbars to prevent duplicates
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
         ),
       ),
     );
