@@ -68,11 +68,11 @@ class TransactionDetailScreen extends StatelessWidget {
   Widget _buildTransactionDetailsList(BuildContext context,
       List<TransactionDetail> details, int transactionId) {
     if (details.isEmpty) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
+            Text(
               'No transaction details available.',
               style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
@@ -218,90 +218,128 @@ class TransactionDetailScreen extends StatelessWidget {
     int quantity = detail.quantity;
     double agreedPrice = detail.agreedPrice;
     final transactionDetailBloc = context.read<TransactionDetailBloc>();
+    String? errorMessage;
+    final productRepository = RepositoryProvider.of<ProductRepository>(context);
 
     showDialog(
       context: context,
       builder: (dialogContext) {
         return BlocProvider.value(
           value: transactionDetailBloc,
-          child: AlertDialog(
-            title: const Text('Edit Transaction Detail'),
-            content: Form(
-              key: formKey,
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // UPC field removed as requested
-                    TextFormField(
-                      initialValue: detail.quantity.toString(),
-                      decoration: const InputDecoration(labelText: 'Quantity'),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter quantity';
-                        }
-                        if (int.tryParse(value) == null ||
-                            int.parse(value) <= 0) {
-                          return 'Enter a valid quantity';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) => quantity = int.parse(value!),
-                    ),
-                    TextFormField(
-                      initialValue: detail.agreedPrice.toStringAsFixed(2),
-                      decoration:
-                          const InputDecoration(labelText: 'Agreed Price'),
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter agreed price';
-                        }
-                        if (double.tryParse(value) == null ||
-                            double.parse(value) <= 0) {
-                          return 'Enter a valid price';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) => agreedPrice = double.parse(value!),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () {
-                  if (formKey.currentState!.validate()) {
-                    formKey.currentState!.save();
-                    transactionDetailBloc.add(
-                      UpdateTransactionDetail(
-                        transaction.transactionId,
-                        detail.detailId,
-                        {
-                          'upc': upc, // We keep the original UPC
-                          'quantity': quantity,
-                          'agreed_price': agreedPrice,
-                        },
+          child: FutureBuilder(
+              future: productRepository.fetchProduct(upc),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const AlertDialog(
+                    content: Center(child: CircularProgressIndicator()),
+                  );
+                }
+
+                final product = snapshot.data;
+                final availableStock = product?.stock ?? 0;
+
+                return StatefulBuilder(builder: (context, setState) {
+                  return AlertDialog(
+                    title: const Text('Edit Transaction Detail'),
+                    content: Form(
+                      key: formKey,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            if (snapshot.hasData)
+                              Text('Available stock: ${product!.stock}'),
+                            const SizedBox(height: 8),
+                            TextFormField(
+                              initialValue: detail.quantity.toString(),
+                              decoration: InputDecoration(
+                                labelText: 'Quantity',
+                                border: const OutlineInputBorder(),
+                                errorText: errorMessage,
+                              ),
+                              keyboardType: TextInputType.number,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter quantity';
+                                }
+                                if (int.tryParse(value) == null ||
+                                    int.parse(value) <= 0) {
+                                  return 'Enter a valid quantity';
+                                }
+                                return null;
+                              },
+                              onSaved: (value) => quantity = int.parse(value!),
+                            ),
+                            const SizedBox(height: 8),
+                            TextFormField(
+                              initialValue:
+                                  detail.agreedPrice.toStringAsFixed(2),
+                              decoration: const InputDecoration(
+                                labelText: 'Agreed Price',
+                                border: OutlineInputBorder(),
+                              ),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                      decimal: true),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter agreed price';
+                                }
+                                if (double.tryParse(value) == null ||
+                                    double.parse(value) <= 0) {
+                                  return 'Enter a valid price';
+                                }
+                                return null;
+                              },
+                              onSaved: (value) =>
+                                  agreedPrice = double.parse(value!),
+                            ),
+                          ],
+                        ),
                       ),
-                    );
-                    Navigator.of(dialogContext).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content:
-                              Text('Transaction detail updated successfully.')),
-                    );
-                  }
-                },
-                child: const Text('Update'),
-              ),
-            ],
-          ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          if (formKey.currentState!.validate()) {
+                            formKey.currentState!.save();
+
+                            // Check if quantity exceeds stock
+                            if (quantity > availableStock) {
+                              setState(() {
+                                errorMessage = 'Quantity exceeds stock';
+                              });
+                              return;
+                            }
+
+                            transactionDetailBloc.add(
+                              UpdateTransactionDetail(
+                                transaction.transactionId,
+                                detail.detailId,
+                                {
+                                  'upc': upc, // We keep the original UPC
+                                  'quantity': quantity,
+                                  'agreed_price': agreedPrice,
+                                },
+                              ),
+                            );
+                            Navigator.of(dialogContext).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Transaction detail updated successfully.')),
+                            );
+                          }
+                        },
+                        child: const Text('Update'),
+                      ),
+                    ],
+                  );
+                });
+              }),
         );
       },
     );
@@ -501,88 +539,92 @@ class TransactionDetailScreen extends StatelessWidget {
     final agreedPriceController =
         TextEditingController(text: product.displayPrice.toString());
     final transactionDetailBloc = context.read<TransactionDetailBloc>();
+    String? errorMessage;
 
     await showDialog(
       context: context,
       builder: (dialogContext) {
         return BlocProvider.value(
           value: transactionDetailBloc,
-          child: AlertDialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            title: Text('Add ${product.name}'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Available stock: ${product.stock}'),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: quantityController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Quantity',
-                    border: OutlineInputBorder(),
+          child: StatefulBuilder(builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              title: Text('Add ${product.name}'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Available stock: ${product.stock}'),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: quantityController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Quantity',
+                      border: const OutlineInputBorder(),
+                      errorText: errorMessage,
+                    ),
                   ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: agreedPriceController,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      labelText: 'Agreed Price (Rp)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Cancel'),
                 ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: agreedPriceController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
-                    labelText: 'Agreed Price (Rp)',
-                    border: OutlineInputBorder(),
-                  ),
+                ElevatedButton(
+                  onPressed: () {
+                    final int? quantity = int.tryParse(quantityController.text);
+                    final double? agreedPrice =
+                        double.tryParse(agreedPriceController.text);
+                    if (quantity == null ||
+                        quantity <= 0 ||
+                        agreedPrice == null ||
+                        agreedPrice <= 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Enter valid quantity and price')),
+                      );
+                      return;
+                    }
+                    if (quantity > product.stock) {
+                      setState(() {
+                        errorMessage = 'Quantity exceeds stock';
+                      });
+                      return;
+                    }
+                    transactionDetailBloc.add(
+                      AddTransactionDetail(
+                        transactionId,
+                        {
+                          'upc': product.upc,
+                          'quantity': quantity,
+                          'agreed_price': agreedPrice,
+                        },
+                      ),
+                    );
+                    Navigator.pop(dialogContext);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content:
+                              Text('Transaction detail added successfully')),
+                    );
+                  },
+                  child: const Text('Add'),
                 ),
               ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  final int? quantity = int.tryParse(quantityController.text);
-                  final double? agreedPrice =
-                      double.tryParse(agreedPriceController.text);
-                  if (quantity == null ||
-                      quantity <= 0 ||
-                      agreedPrice == null ||
-                      agreedPrice <= 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Enter valid quantity and price')),
-                    );
-                    return;
-                  }
-                  if (quantity > product.stock) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Quantity exceeds available stock')),
-                    );
-                    return;
-                  }
-                  transactionDetailBloc.add(
-                    AddTransactionDetail(
-                      transactionId,
-                      {
-                        'upc': product.upc,
-                        'quantity': quantity,
-                        'agreed_price': agreedPrice,
-                      },
-                    ),
-                  );
-                  Navigator.pop(dialogContext);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Transaction detail added successfully')),
-                  );
-                },
-                child: const Text('Add'),
-              ),
-            ],
-          ),
+            );
+          }),
         );
       },
     );

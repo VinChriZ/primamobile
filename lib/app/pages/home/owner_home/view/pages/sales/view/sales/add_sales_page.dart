@@ -231,79 +231,84 @@ class _AddSalesPageState extends State<AddSalesPage> {
     final agreedPriceController = TextEditingController(
       text: product.displayPrice.toString(),
     );
+    String? errorMessage;
+
     final result = await showDialog<SalesProductItem>(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          title: Text('Add ${product.name}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Available stock: ${product.stock}'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: quantityController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Quantity',
-                  border: OutlineInputBorder(),
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            title: Text('Add ${product.name}'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Available stock: ${product.stock}'),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: quantityController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Quantity',
+                    border: OutlineInputBorder(),
+                    errorText: errorMessage,
+                  ),
                 ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: agreedPriceController,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: 'Agreed Price (Rp)',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
               ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: agreedPriceController,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'Agreed Price (Rp)',
-                  border: OutlineInputBorder(),
-                ),
+              ElevatedButton(
+                onPressed: () {
+                  final int? quantity = int.tryParse(quantityController.text);
+                  final double? agreedPrice =
+                      double.tryParse(agreedPriceController.text);
+                  if (quantity == null || quantity <= 0) {
+                    setState(() {
+                      errorMessage = 'Enter valid quantity';
+                    });
+                    return;
+                  }
+                  if (agreedPrice == null || agreedPrice <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Enter valid price')),
+                    );
+                    return;
+                  }
+                  if (quantity > product.stock) {
+                    setState(() {
+                      errorMessage = 'Quantity exceeds stock';
+                    });
+                    return;
+                  }
+                  Navigator.pop(
+                    context,
+                    SalesProductItem(
+                      product: product,
+                      quantity: quantity,
+                      agreedPrice: agreedPrice,
+                    ),
+                  );
+                },
+                child: const Text('Add'),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final int? quantity = int.tryParse(quantityController.text);
-                final double? agreedPrice =
-                    double.tryParse(agreedPriceController.text);
-                if (quantity == null ||
-                    quantity <= 0 ||
-                    agreedPrice == null ||
-                    agreedPrice <= 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Enter valid quantity and price')),
-                  );
-                  return;
-                }
-                if (quantity > product.stock) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text(
-                            'Quantity exceeds available stock for this product')),
-                  );
-                  return;
-                }
-                Navigator.pop(
-                  context,
-                  SalesProductItem(
-                    product: product,
-                    quantity: quantity,
-                    agreedPrice: agreedPrice,
-                  ),
-                );
-              },
-              child: const Text('Add'),
-            ),
-          ],
-        );
+          );
+        });
       },
     );
     if (result != null) {
@@ -321,82 +326,88 @@ class _AddSalesPageState extends State<AddSalesPage> {
     final agreedPriceController = TextEditingController(
       text: item.agreedPrice.toString(),
     );
+    String? errorMessage;
 
     final result = await showDialog<SalesProductItem>(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          title: Text('Edit ${item.product.name}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Available stock: ${item.product.stock}'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: quantityController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Quantity',
-                  border: OutlineInputBorder(),
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            title: Text('Edit ${item.product.name}'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Available stock: ${item.product.stock}'),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: quantityController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Quantity',
+                    border: OutlineInputBorder(),
+                    errorText: errorMessage,
+                  ),
                 ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: agreedPriceController,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: 'Agreed Price (Rp)',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
               ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: agreedPriceController,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'Agreed Price (Rp)',
-                  border: OutlineInputBorder(),
-                ),
+              ElevatedButton(
+                onPressed: () {
+                  final int? quantity = int.tryParse(quantityController.text);
+                  final double? agreedPrice =
+                      double.tryParse(agreedPriceController.text);
+
+                  if (quantity == null || quantity <= 0) {
+                    setState(() {
+                      errorMessage = 'Enter valid quantity';
+                    });
+                    return;
+                  }
+
+                  if (agreedPrice == null || agreedPrice <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Enter valid price')),
+                    );
+                    return;
+                  }
+
+                  if (quantity > item.product.stock) {
+                    setState(() {
+                      errorMessage = 'Quantity exceeds stock';
+                    });
+                    return;
+                  }
+
+                  Navigator.pop(
+                    context,
+                    SalesProductItem(
+                      product: item.product,
+                      quantity: quantity,
+                      agreedPrice: agreedPrice,
+                    ),
+                  );
+                },
+                child: const Text('Update'),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final int? quantity = int.tryParse(quantityController.text);
-                final double? agreedPrice =
-                    double.tryParse(agreedPriceController.text);
-
-                if (quantity == null ||
-                    quantity <= 0 ||
-                    agreedPrice == null ||
-                    agreedPrice <= 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Enter valid quantity and price')),
-                  );
-                  return;
-                }
-
-                if (quantity > item.product.stock) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Quantity exceeds available stock')),
-                  );
-                  return;
-                }
-
-                Navigator.pop(
-                  context,
-                  SalesProductItem(
-                    product: item.product,
-                    quantity: quantity,
-                    agreedPrice: agreedPrice,
-                  ),
-                );
-              },
-              child: const Text('Update'),
-            ),
-          ],
-        );
+          );
+        });
       },
     );
 
