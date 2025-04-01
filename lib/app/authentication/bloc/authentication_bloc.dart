@@ -1,8 +1,9 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:primamobile/repository/login_repository.dart';
-import 'package:primamobile/repository/logout_repository.dart'; // New import
+import 'package:primamobile/repository/logout_repository.dart';
 import 'package:primamobile/repository/user_session_repository.dart';
+import 'package:primamobile/repository/token_validator_repository.dart'; // New import
 
 part 'authentication_event.dart';
 part 'authentication_state.dart';
@@ -11,12 +12,14 @@ class AuthenticationBloc
     extends Bloc<AuthenticationEvent, AuthenticationState> {
   final LoginRepository loginRepository;
   final UserSessionRepository userSessionRepository;
-  final LogoutRepository logoutRepository; // New repository
+  final LogoutRepository logoutRepository;
+  final TokenValidatorRepository tokenValidatorRepository; // New repository
 
   AuthenticationBloc({
     required this.loginRepository,
     required this.userSessionRepository,
-    required this.logoutRepository, // Add parameter
+    required this.logoutRepository,
+    required this.tokenValidatorRepository, // Add parameter
   }) : super(AuthenticationInitial()) {
     on<AppStarted>(_onAppStarted);
     on<LoginButtonPressed>(_onLoginButtonPressed);
@@ -27,8 +30,20 @@ class AuthenticationBloc
       AppStarted event, Emitter<AuthenticationState> emit) async {
     try {
       final userSession = await userSessionRepository.getUserSession();
+
+      // Check if user is logged in and has a token
       if (userSession.isLogin && userSession.token != null) {
-        emit(AuthenticationAuthenticated());
+        // Validate the token with the backend
+        final isTokenValid = await tokenValidatorRepository.validateToken();
+
+        if (isTokenValid) {
+          emit(AuthenticationAuthenticated());
+        } else {
+          // If token is invalid, clear session and emit unauthenticated
+          await userSessionRepository.saveUserSession(
+              userSession.copyWith(isLogin: false, token: null));
+          emit(AuthenticationUnauthenticated());
+        }
       } else {
         emit(AuthenticationUnauthenticated());
       }
