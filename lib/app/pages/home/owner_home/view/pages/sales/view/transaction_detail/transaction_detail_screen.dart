@@ -236,7 +236,8 @@ class TransactionDetailScreen extends StatelessWidget {
                 }
 
                 final product = snapshot.data;
-                final availableStock = product?.stock ?? 0;
+                // Calculate the maximum quantity allowed (current stock + current quantity in this transaction)
+                final availableStock = (product?.stock ?? 0) + detail.quantity;
 
                 return StatefulBuilder(builder: (context, setState) {
                   return AlertDialog(
@@ -269,7 +270,8 @@ class TransactionDetailScreen extends StatelessWidget {
                               },
                               onSaved: (value) => quantity = int.parse(value!),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(
+                                height: 16), // Increased spacing here
                             TextFormField(
                               initialValue:
                                   detail.agreedPrice.toStringAsFixed(2),
@@ -307,10 +309,11 @@ class TransactionDetailScreen extends StatelessWidget {
                           if (formKey.currentState!.validate()) {
                             formKey.currentState!.save();
 
-                            // Check if quantity exceeds stock
+                            // Check if quantity exceeds the total available stock (current stock + current quantity)
                             if (quantity > availableStock) {
                               setState(() {
-                                errorMessage = 'Quantity exceeds stock';
+                                errorMessage =
+                                    'Maximum allowed quantity is ${availableStock}';
                               });
                               return;
                             }
