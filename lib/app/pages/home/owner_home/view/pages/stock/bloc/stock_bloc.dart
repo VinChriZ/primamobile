@@ -57,7 +57,13 @@ class StockBloc extends Bloc<StockEvent, StockState> {
         sortOption: 'Last Updated',
       ));
     } catch (e) {
-      emit(const StockError('Failed to load products, categories, or brands.'));
+      if (e.toString().contains("401")) {
+        emit(const StockError(
+            'Login expired, please restart the app and login again'));
+      } else {
+        emit(const StockError(
+            'Failed to load products, categories, or brands.'));
+      }
     }
   }
 
@@ -69,7 +75,12 @@ class StockBloc extends Bloc<StockEvent, StockState> {
         // Reload products after adding
         add(LoadProducts());
       } catch (e) {
-        emit(const StockError('Failed to add product.'));
+        if (e.toString().contains("401")) {
+          emit(const StockError(
+              'Login expired, please restart the app and login again'));
+        } else {
+          emit(const StockError('Failed to add product.'));
+        }
       }
     }
   }
@@ -85,7 +96,12 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       // Reload after updating
       add(LoadProducts());
     } catch (e) {
-      emit(StockError('Failed to update product: $e'));
+      if (e.toString().contains("401")) {
+        emit(const StockError(
+            'Login expired, please restart the app and login again'));
+      } else {
+        emit(StockError('Failed to update product: $e'));
+      }
     }
   }
 
@@ -98,7 +114,12 @@ class StockBloc extends Bloc<StockEvent, StockState> {
         // Reload products after deletion
         add(LoadProducts());
       } catch (e) {
-        emit(const StockError('Failed to delete product.'));
+        if (e.toString().contains("401")) {
+          emit(const StockError(
+              'Login expired, please restart the app and login again'));
+        } else {
+          emit(const StockError('Failed to delete product.'));
+        }
       }
     }
   }

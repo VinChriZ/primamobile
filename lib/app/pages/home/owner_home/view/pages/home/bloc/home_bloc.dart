@@ -130,7 +130,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
       emit(HomeLoaded(user: user, dashboardData: dashboardData));
     } catch (e) {
-      emit(const HomeError("Failed to load dashboard data."));
+      if (e.toString().contains("401")) {
+        emit(const HomeError(
+            "Login expired, please restart the app and login again"));
+      } else {
+        emit(const HomeError("Failed to load dashboard data."));
+      }
     }
   }
 }

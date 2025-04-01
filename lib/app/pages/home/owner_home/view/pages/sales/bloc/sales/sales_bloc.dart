@@ -37,7 +37,12 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
         endDate: event.endDate,
       ));
     } catch (e) {
-      emit(SalesError('Failed to fetch transactions: ${e.toString()}'));
+      if (e.toString().contains("401")) {
+        emit(SalesError(
+            'Login expired, please restart the app and login again'));
+      } else {
+        emit(SalesError('Failed to fetch transactions'));
+      }
     }
   }
 
@@ -101,7 +106,12 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
           endDate: currentState.endDate,
         ));
       } catch (e) {
-        emit(SalesError('Failed to delete transaction: ${e.toString()}'));
+        if (e.toString().contains("401")) {
+          emit(SalesError(
+              'Login expired, please restart the app and login again'));
+        } else {
+          emit(SalesError('Failed to delete transaction: ${e.toString()}'));
+        }
       }
     }
   }

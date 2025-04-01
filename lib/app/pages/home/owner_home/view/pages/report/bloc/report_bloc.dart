@@ -90,12 +90,15 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
         endDate: endDate,
       ));
     } catch (e) {
-      if (e.toString().contains("404")) {
+      if (e.toString().contains("401")) {
+        emit(const ReportError(
+            message: "Login expired, please restart the app and login again"));
+      } else if (e.toString().contains("404")) {
         emit(const ReportError(
             message: "No transactions on the selected date."));
       } else {
         emit(ReportError(
-            message: "Failed to load report data: ${e.toString()}",
+            message: "Failed to load report data",
             startDate: event.startDate,
             endDate: event.endDate));
       }

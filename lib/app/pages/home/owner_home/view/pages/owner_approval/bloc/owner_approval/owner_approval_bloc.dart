@@ -40,7 +40,12 @@ class OwnerApprovalBloc extends Bloc<OwnerApprovalEvent, OwnerApprovalState> {
         selectedReportType: event.reportType,
       ));
     } catch (e) {
-      emit(OwnerApprovalError('Failed to fetch reports: ${e.toString()}'));
+      if (e.toString().contains("401")) {
+        emit(const OwnerApprovalError(
+            'Login expired, please restart the app and login again'));
+      } else {
+        emit(const OwnerApprovalError('Failed to fetch reports'));
+      }
     }
   }
 
@@ -65,7 +70,12 @@ class OwnerApprovalBloc extends Bloc<OwnerApprovalEvent, OwnerApprovalState> {
         add(const FetchOwnerApprovals());
       }
     } catch (e) {
-      emit(OwnerApprovalError('Failed to approve report: ${e.toString()}'));
+      if (e.toString().contains("401")) {
+        emit(const OwnerApprovalError(
+            'Login expired, please restart the app and login again'));
+      } else {
+        emit(OwnerApprovalError('Failed to approve report: ${e.toString()}'));
+      }
     }
   }
 
@@ -90,7 +100,12 @@ class OwnerApprovalBloc extends Bloc<OwnerApprovalEvent, OwnerApprovalState> {
         add(const FetchOwnerApprovals());
       }
     } catch (e) {
-      emit(OwnerApprovalError('Failed to deny report: ${e.toString()}'));
+      if (e.toString().contains("401")) {
+        emit(const OwnerApprovalError(
+            'Login expired, please restart the app and login again'));
+      } else {
+        emit(OwnerApprovalError('Failed to deny report: ${e.toString()}'));
+      }
     }
   }
 
@@ -115,7 +130,12 @@ class OwnerApprovalBloc extends Bloc<OwnerApprovalEvent, OwnerApprovalState> {
         add(const FetchOwnerApprovals());
       }
     } catch (e) {
-      emit(OwnerApprovalError('Failed to delete report: ${e.toString()}'));
+      if (e.toString().contains("401")) {
+        emit(const OwnerApprovalError(
+            'Login expired, please restart the app and login again'));
+      } else {
+        emit(OwnerApprovalError('Failed to delete report: ${e.toString()}'));
+      }
     }
   }
 
@@ -125,7 +145,11 @@ class OwnerApprovalBloc extends Bloc<OwnerApprovalEvent, OwnerApprovalState> {
       await reportRepository.updateReportNote(event.reportId, event.note);
       event.onSuccess();
     } catch (e) {
-      event.onError(e.toString());
+      if (e.toString().contains("401")) {
+        event.onError('Login expired, please restart the app and login again');
+      } else {
+        event.onError(e.toString());
+      }
     }
   }
 }

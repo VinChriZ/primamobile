@@ -36,7 +36,12 @@ class WorkerReportBloc extends Bloc<WorkerReportEvent, WorkerReportState> {
         endDate: event.endDate,
       ));
     } catch (e) {
-      emit(WorkerReportError('Failed to fetch reports: ${e.toString()}'));
+      if (e.toString().contains("401")) {
+        emit(const WorkerReportError(
+            'Login expired, please restart the app and login again'));
+      } else {
+        emit(const WorkerReportError('Failed to fetch reports'));
+      }
     }
   }
 
@@ -58,7 +63,12 @@ class WorkerReportBloc extends Bloc<WorkerReportEvent, WorkerReportState> {
           endDate: currentState.endDate,
         ));
       } catch (e) {
-        emit(WorkerReportError('Failed to delete report: ${e.toString()}'));
+        if (e.toString().contains("401")) {
+          emit(WorkerReportError(
+              'Login expired, please restart the app and login again'));
+        } else {
+          emit(WorkerReportError('Failed to delete report: ${e.toString()}'));
+        }
       }
     }
   }
