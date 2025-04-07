@@ -6,6 +6,7 @@ import 'package:primamobile/app/models/report/report.dart';
 import 'package:primamobile/app/models/report/report_detail.dart';
 import 'package:primamobile/app/pages/home/worker_home/view/pages/worker_report/bloc/report_detail/bloc/worker_report_detail_bloc.dart';
 import 'package:primamobile/repository/product_repository.dart';
+import 'package:primamobile/repository/report_repository.dart';
 
 class WorkerReportDetailScreen extends StatelessWidget {
   final Report report;
@@ -15,7 +16,14 @@ class WorkerReportDetailScreen extends StatelessWidget {
   // Helper to check if the report is editable
   bool get _isReportEditable {
     final status = report.status.toLowerCase();
-    return status != 'approved' && status != 'disapproved';
+    // Allow editing of disapproved reports, but not approved ones
+    return status != 'approved';
+  }
+
+  // Helper to check if the report is disapproved (for showing resubmit button)
+  bool get _isReportDisapproved {
+    final status = report.status.toLowerCase();
+    return status == 'disapproved';
   }
 
   Widget _buildAttributeRow({required String label, required String value}) {
@@ -675,7 +683,6 @@ class WorkerReportDetailScreen extends StatelessWidget {
                                 label: 'Note',
                                 value: report.note!,
                               ),
-                            // Remove the Edit Note button - users should use the EditReportPage instead
                           ],
                         ),
                       ),
@@ -724,6 +731,32 @@ class WorkerReportDetailScreen extends StatelessWidget {
                                     _buildDetailCard(context, detail))
                                 .toList(),
                           ),
+
+                    // Add resubmit button below report details
+                    if (_isReportDisapproved) ...[
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14.0),
+                          ),
+                          onPressed: () {
+                            _showResubmitConfirmation(context);
+                          },
+                          child: const Text(
+                            'Resubmit Report',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                   ],
                 ),
               ),
@@ -767,6 +800,85 @@ class WorkerReportDetailScreen extends StatelessWidget {
               child: const Icon(Icons.add),
             )
           : null,
+    );
+  }
+
+  // Method to show the confirmation dialog for resubmitting the report
+  void _showResubmitConfirmation(BuildContext context) {
+    final reportRepository = RepositoryProvider.of<ReportRepository>(context);
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Resubmit Report'),
+        content: const Text(
+            'Are you sure you want to resubmit this report? This will change the status to "waiting" for approval again.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              Navigator.pop(dialogContext); // Close dialog first
+
+              // Show loading indicator
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Resubmitting report...'),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+
+              try {
+                // Use the repository directly for more reliable resubmission
+                final updatedReport =
+                    await reportRepository.resubmitReport(report.reportId);
+
+                if (!context.mounted) return;
+
+                // Update the local report object with the new status
+                if (updatedReport.status.toLowerCase() == "waiting") {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content:
+                          Text('Report successfully resubmitted for approval'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+
+                  // Navigate back after a short delay
+                  Future.delayed(const Duration(seconds: 1), () {
+                    Navigator.pop(context, updatedReport);
+                  });
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          'Error: Report status was not updated to waiting'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (!context.mounted) return;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error: ${e.toString()}'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: const Text('Resubmit'),
+          ),
+        ],
+      ),
     );
   }
 }

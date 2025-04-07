@@ -267,9 +267,8 @@ class WorkerReportScreen extends StatelessWidget {
                               final report = state.reports[index];
                               final status = report.status.toLowerCase();
 
-                              // Check if the report is editable (not approved/disapproved)
-                              final bool isEditable = status != 'approved' &&
-                                  status != 'disapproved';
+                              // Check if the report is editable (not approved)
+                              final bool isEditable = status != 'approved';
 
                               // Determine border color based on status
                               BorderSide borderSide;

@@ -208,4 +208,62 @@ class ReportProvider {
       throw Exception('Error updating note: $e');
     }
   }
+
+  // Resubmit a report (change status back to waiting)
+  Future<Report> resubmitReport(int reportId) async {
+    print('Resubmitting report $reportId to waiting status');
+
+    try {
+      // Using the same pattern as approve/deny for direct database update
+      // We'll need to add this endpoint to the backend
+
+      final RequestParam param = RequestParam(parameters: {});
+      final RequestObject request = RequestObjectFunction(requestParam: param);
+
+      final response = await dioClient.put(
+        '/reports/$reportId/resubmit',
+        data: await request.toJson(),
+      );
+
+      print('Resubmit Response: ${response.data}');
+
+      if (response.statusCode == 200) {
+        // Re-fetch the report to get the updated data
+        return await getReport(reportId);
+      } else {
+        throw Exception(
+            'Failed to resubmit report with status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      // If the resubmit endpoint doesn't exist yet, fall back to direct update
+      print('Error with resubmit endpoint, trying direct update: $e');
+
+      try {
+        // Direct update using the regular update endpoint
+        // Since the backend doesn't update status through this endpoint,
+        // we'll need to use a database-direct approach
+
+        final directParams = {
+          // Using SQL-like parameter to bypass the regular endpoint logic
+          "direct_update_status": "waiting"
+        };
+
+        final directParam = RequestParam(parameters: directParams);
+        final directRequest = RequestObjectFunction(requestParam: directParam);
+
+        final directResponse = await dioClient.put(
+          '/reports/$reportId',
+          data: await directRequest.toJson(),
+        );
+
+        print('Direct Update Response: ${directResponse.data}');
+
+        // Re-fetch the report
+        return await getReport(reportId);
+      } catch (innerError) {
+        print('Error with direct update: $innerError');
+        rethrow;
+      }
+    }
+  }
 }

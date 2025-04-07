@@ -57,4 +57,9 @@ class ReportRepository {
   Future<String> updateReportNote(int reportId, String note) async {
     return await _provider.updateReportNote(reportId, note);
   }
+
+  // Resubmit a report (change status to waiting)
+  Future<Report> resubmitReport(int reportId) async {
+    return await _provider.resubmitReport(reportId);
+  }
 }

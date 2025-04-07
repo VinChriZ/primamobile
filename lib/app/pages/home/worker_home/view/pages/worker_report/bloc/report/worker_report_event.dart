@@ -46,3 +46,12 @@ class DeleteWorkerReport extends WorkerReportEvent {
   @override
   List<Object> get props => [reportId];
 }
+
+class ResubmitWorkerReport extends WorkerReportEvent {
+  final int reportId;
+
+  const ResubmitWorkerReport(this.reportId);
+
+  @override
+  List<Object> get props => [reportId];
+}
