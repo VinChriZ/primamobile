@@ -36,7 +36,8 @@ class WorkerReportDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(8.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withAlpha(
+                26), // Changed from withOpacity(0.1) to withAlpha(26)
             spreadRadius: 1,
             blurRadius: 2,
             offset: const Offset(0, 1),
