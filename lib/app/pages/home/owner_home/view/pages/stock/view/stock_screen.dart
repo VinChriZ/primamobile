@@ -5,6 +5,7 @@ import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/bloc/stoc
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/add_product.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/edit_product.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/product_detail.dart';
+import 'package:primamobile/utils/globals.dart';
 
 class StockScreen extends StatelessWidget {
   const StockScreen({super.key});
@@ -376,124 +377,131 @@ class StockScreen extends StatelessWidget {
                                                     ],
                                                   ),
                                                   const SizedBox(height: 16.0),
-                                                  Row(
-                                                    children: [
-                                                      Expanded(
-                                                        child: ElevatedButton(
-                                                          style: ElevatedButton
-                                                              .styleFrom(
-                                                            backgroundColor:
-                                                                Colors.blue,
-                                                            foregroundColor:
-                                                                Colors.white,
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .symmetric(
-                                                                    vertical:
-                                                                        10.0), // Reduced padding
-                                                          ),
-                                                          onPressed: () {
-                                                            Navigator.push(
-                                                              context,
-                                                              MaterialPageRoute(
-                                                                builder: (_) =>
-                                                                    BlocProvider
-                                                                        .value(
-                                                                  value: context
-                                                                      .read<
-                                                                          StockBloc>(),
-                                                                  child: EditProductPage(
-                                                                      product:
-                                                                          product),
+                                                  // Only show Edit and Delete buttons if user role is 1 or 2
+                                                  if (Globals.userSession.user
+                                                              .roleId ==
+                                                          1 ||
+                                                      Globals.userSession.user
+                                                              .roleId ==
+                                                          2)
+                                                    Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: ElevatedButton(
+                                                            style:
+                                                                ElevatedButton
+                                                                    .styleFrom(
+                                                              backgroundColor:
+                                                                  Colors.blue,
+                                                              foregroundColor:
+                                                                  Colors.white,
+                                                              padding: const EdgeInsets
+                                                                  .symmetric(
+                                                                  vertical:
+                                                                      10.0), // Reduced padding
+                                                            ),
+                                                            onPressed: () {
+                                                              Navigator.push(
+                                                                context,
+                                                                MaterialPageRoute(
+                                                                  builder: (_) =>
+                                                                      BlocProvider
+                                                                          .value(
+                                                                    value: context
+                                                                        .read<
+                                                                            StockBloc>(),
+                                                                    child: EditProductPage(
+                                                                        product:
+                                                                            product),
+                                                                  ),
                                                                 ),
+                                                              );
+                                                            },
+                                                            child: const Text(
+                                                              'Edit',
+                                                              style: TextStyle(
+                                                                fontSize:
+                                                                    14, // Reduced from 16
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
                                                               ),
-                                                            );
-                                                          },
-                                                          child: const Text(
-                                                            'Edit',
-                                                            style: TextStyle(
-                                                              fontSize:
-                                                                  14, // Reduced from 16
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
                                                             ),
                                                           ),
                                                         ),
-                                                      ),
-                                                      const SizedBox(
-                                                          width: 8.0),
-                                                      Expanded(
-                                                        child: ElevatedButton(
-                                                          style: ElevatedButton
-                                                              .styleFrom(
-                                                            backgroundColor:
-                                                                Colors.red,
-                                                            foregroundColor:
-                                                                Colors.white,
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .symmetric(
-                                                                    vertical:
-                                                                        10.0), // Reduced padding
-                                                          ),
-                                                          onPressed: () {
-                                                            final stockBloc =
-                                                                context.read<
-                                                                    StockBloc>();
-                                                            showDialog(
-                                                              context: context,
-                                                              builder:
-                                                                  (dialogContext) =>
-                                                                      AlertDialog(
-                                                                title: const Text(
-                                                                    'Delete Product'),
-                                                                content: const Text(
-                                                                    'Are you sure you want to delete this product?'),
-                                                                actions: [
-                                                                  TextButton(
-                                                                    onPressed: () =>
-                                                                        Navigator.of(dialogContext)
-                                                                            .pop(),
-                                                                    child: const Text(
-                                                                        'Cancel'),
-                                                                  ),
-                                                                  TextButton(
-                                                                    onPressed:
-                                                                        () {
-                                                                      stockBloc.add(
-                                                                          DeleteProduct(
-                                                                              product.upc));
-                                                                      Navigator.of(
-                                                                              dialogContext)
-                                                                          .pop();
-                                                                    },
-                                                                    child:
-                                                                        const Text(
-                                                                      'Delete',
-                                                                      style: TextStyle(
-                                                                          fontWeight:
-                                                                              FontWeight.bold),
+                                                        const SizedBox(
+                                                            width: 8.0),
+                                                        Expanded(
+                                                          child: ElevatedButton(
+                                                            style:
+                                                                ElevatedButton
+                                                                    .styleFrom(
+                                                              backgroundColor:
+                                                                  Colors.red,
+                                                              foregroundColor:
+                                                                  Colors.white,
+                                                              padding: const EdgeInsets
+                                                                  .symmetric(
+                                                                  vertical:
+                                                                      10.0), // Reduced padding
+                                                            ),
+                                                            onPressed: () {
+                                                              final stockBloc =
+                                                                  context.read<
+                                                                      StockBloc>();
+                                                              showDialog(
+                                                                context:
+                                                                    context,
+                                                                builder:
+                                                                    (dialogContext) =>
+                                                                        AlertDialog(
+                                                                  title: const Text(
+                                                                      'Delete Product'),
+                                                                  content:
+                                                                      const Text(
+                                                                          'Are you sure you want to delete this product?'),
+                                                                  actions: [
+                                                                    TextButton(
+                                                                      onPressed:
+                                                                          () =>
+                                                                              Navigator.of(dialogContext).pop(),
+                                                                      child: const Text(
+                                                                          'Cancel'),
                                                                     ),
-                                                                  ),
-                                                                ],
+                                                                    TextButton(
+                                                                      onPressed:
+                                                                          () {
+                                                                        stockBloc
+                                                                            .add(DeleteProduct(product.upc));
+                                                                        Navigator.of(dialogContext)
+                                                                            .pop();
+                                                                      },
+                                                                      child:
+                                                                          const Text(
+                                                                        'Delete',
+                                                                        style: TextStyle(
+                                                                            fontWeight:
+                                                                                FontWeight.bold),
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              );
+                                                            },
+                                                            child: const Text(
+                                                              'Delete',
+                                                              style: TextStyle(
+                                                                fontSize:
+                                                                    14, // Reduced from 16
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
                                                               ),
-                                                            );
-                                                          },
-                                                          child: const Text(
-                                                            'Delete',
-                                                            style: TextStyle(
-                                                              fontSize:
-                                                                  14, // Reduced from 16
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
                                                             ),
                                                           ),
                                                         ),
-                                                      ),
-                                                    ],
-                                                  ),
+                                                      ],
+                                                    ),
                                                 ],
                                               ),
                                             ),

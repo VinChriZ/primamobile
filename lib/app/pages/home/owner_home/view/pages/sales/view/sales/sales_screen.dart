@@ -5,6 +5,7 @@ import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/bloc/sale
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/sales/add_sales_page.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/sales/sales_edit.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/view/transaction_detail/transaction_detail_page.dart';
+import 'package:primamobile/utils/globals.dart';
 
 class SalesScreen extends StatelessWidget {
   const SalesScreen({super.key});
@@ -391,73 +392,78 @@ class SalesScreen extends StatelessWidget {
                                             ),
                                           ),
                                           const SizedBox(width: 8.0),
-                                          Expanded(
-                                            child: ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.red,
-                                                foregroundColor: Colors.white,
-                                                padding: const EdgeInsets
-                                                    .symmetric(
-                                                    vertical:
-                                                        10.0), // Reduced padding
-                                              ),
-                                              onPressed: () {
-                                                showDialog(
-                                                  context: context,
-                                                  builder: (dialogContext) {
-                                                    return AlertDialog(
-                                                      title: const Text(
-                                                          'Delete Transaction'),
-                                                      content: const Text(
-                                                          'Are you sure you want to delete this transaction?'),
-                                                      actions: [
-                                                        TextButton(
-                                                          onPressed: () =>
+                                          // Only show Delete button if user role is 1 or 2
+                                          if (Globals.userSession.user.roleId ==
+                                                  1 ||
+                                              Globals.userSession.user.roleId ==
+                                                  2)
+                                            Expanded(
+                                              child: ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.red,
+                                                  foregroundColor: Colors.white,
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      vertical:
+                                                          10.0), // Reduced padding
+                                                ),
+                                                onPressed: () {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (dialogContext) {
+                                                      return AlertDialog(
+                                                        title: const Text(
+                                                            'Delete Transaction'),
+                                                        content: const Text(
+                                                            'Are you sure you want to delete this transaction?'),
+                                                        actions: [
+                                                          TextButton(
+                                                            onPressed: () =>
+                                                                Navigator.pop(
+                                                                    dialogContext),
+                                                            child: const Text(
+                                                                'Cancel'),
+                                                          ),
+                                                          TextButton(
+                                                            onPressed: () {
+                                                              context
+                                                                  .read<
+                                                                      SalesBloc>()
+                                                                  .add(DeleteTransaction(
+                                                                      transaction
+                                                                          .transactionId));
                                                               Navigator.pop(
-                                                                  dialogContext),
-                                                          child: const Text(
-                                                              'Cancel'),
-                                                        ),
-                                                        TextButton(
-                                                          onPressed: () {
-                                                            context
-                                                                .read<
-                                                                    SalesBloc>()
-                                                                .add(DeleteTransaction(
-                                                                    transaction
-                                                                        .transactionId));
-                                                            Navigator.pop(
-                                                                dialogContext);
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(
-                                                              const SnackBar(
-                                                                  content: Text(
-                                                                      'Transaction deleted successfully.')),
-                                                            );
-                                                          },
-                                                          child: const Text(
-                                                              'Delete',
-                                                              style: TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold)),
-                                                        ),
-                                                      ],
-                                                    );
-                                                  },
-                                                );
-                                              },
-                                              child: const Text(
-                                                'Delete',
-                                                style: TextStyle(
-                                                  fontSize:
-                                                      14, // Reduced from 16
-                                                  fontWeight: FontWeight.bold,
+                                                                  dialogContext);
+                                                              ScaffoldMessenger
+                                                                      .of(context)
+                                                                  .showSnackBar(
+                                                                const SnackBar(
+                                                                    content: Text(
+                                                                        'Transaction deleted successfully.')),
+                                                              );
+                                                            },
+                                                            child: const Text(
+                                                                'Delete',
+                                                                style: TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold)),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                                child: const Text(
+                                                  'Delete',
+                                                  style: TextStyle(
+                                                    fontSize:
+                                                        14, // Reduced from 16
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
                                         ],
                                       ),
                                     ],
