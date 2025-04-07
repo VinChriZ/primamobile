@@ -328,11 +328,17 @@ class SalesScreen extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      _buildAttributeRow(
-                                        "Profit",
-                                        formatCurrency(profit),
-                                      ),
-                                      const SizedBox(height: 6.0),
+                                      // Only show profit if user role is 1 or 2
+                                      if (Globals.userSession.user.roleId ==
+                                              1 ||
+                                          Globals.userSession.user.roleId ==
+                                              2) ...[
+                                        _buildAttributeRow(
+                                          "Profit",
+                                          formatCurrency(profit),
+                                        ),
+                                        const SizedBox(height: 6.0),
+                                      ],
                                       _buildAttributeRow("Quantity",
                                           transaction.quantity.toString()),
                                       const SizedBox(height: 6.0),
