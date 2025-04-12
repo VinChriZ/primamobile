@@ -452,62 +452,173 @@ class WorkerReportDetailScreen extends StatelessWidget {
           List<dynamic> filteredProducts = allProducts;
           return StatefulBuilder(
             builder: (context, setState) {
-              return AlertDialog(
+              return Dialog(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                title: const Text('Search Product'),
-                content: SingleChildScrollView(
+                child: Container(
+                  width: double.maxFinite,
+                  constraints:
+                      const BoxConstraints(maxWidth: 500, maxHeight: 600),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      TextField(
-                        controller: searchController,
-                        decoration: const InputDecoration(
-                          labelText: 'Enter product name',
-                          border: OutlineInputBorder(),
+                      // Header
+                      const Text(
+                        'Search Product',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
-                        onChanged: (query) {
-                          setState(() {
-                            filteredProducts = allProducts
-                                .where((p) => p.name
-                                    .toLowerCase()
-                                    .contains(query.toLowerCase()))
-                                .toList();
-                          });
-                        },
+                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 16.0),
-                      SizedBox(
-                        height: 300,
-                        width: double.maxFinite,
+                      const SizedBox(height: 16),
+
+                      // Search box with icon
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: TextField(
+                          controller: searchController,
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            hintText: 'Enter product name',
+                            prefixIcon:
+                                const Icon(Icons.search, color: Colors.blue),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding:
+                                const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          onChanged: (query) {
+                            setState(() {
+                              filteredProducts = allProducts
+                                  .where((p) => p.name
+                                      .toLowerCase()
+                                      .contains(query.toLowerCase()))
+                                  .toList();
+                            });
+                          },
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // Product count
+                      Text(
+                        '${filteredProducts.length} products found',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // Products list
+                      Expanded(
                         child: filteredProducts.isEmpty
-                            ? const Center(child: Text('No products found'))
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.search_off,
+                                      size: 48,
+                                      color: Colors.grey.shade400,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'No products found',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
                             : ListView.builder(
                                 itemCount: filteredProducts.length,
                                 itemBuilder: (context, index) {
                                   final product = filteredProducts[index];
-                                  return ListTile(
-                                    title: Text(product.name),
-                                    subtitle: Text(
-                                      'Available Stock: ${product.stock}',
+                                  return Card(
+                                    elevation: 1,
+                                    margin:
+                                        const EdgeInsets.symmetric(vertical: 6),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
-                                    onTap: () {
-                                      Navigator.pop(context, product);
-                                    },
+                                    child: ListTile(
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 6,
+                                      ),
+                                      title: Text(
+                                        product.name,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      subtitle: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const SizedBox(height: 4),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 2,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.green.shade50,
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              'Available Stock: ${product.stock}',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.green.shade800,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      onTap: () {
+                                        Navigator.pop(context, product);
+                                      },
+                                    ),
                                   );
                                 },
                               ),
                       ),
+
+                      const SizedBox(height: 8),
+
+                      // Cancel button
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel'),
+                      ),
                     ],
                   ),
                 ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
-                  ),
-                ],
               );
             },
           );
