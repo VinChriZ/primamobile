@@ -399,7 +399,7 @@ class _AddSalesPageState extends State<AddSalesPage> {
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     labelText: 'Quantity',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                     errorText: errorMessage,
                   ),
                 ),
@@ -494,7 +494,7 @@ class _AddSalesPageState extends State<AddSalesPage> {
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     labelText: 'Quantity',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                     errorText: errorMessage,
                   ),
                 ),
@@ -702,7 +702,9 @@ class _AddSalesPageState extends State<AddSalesPage> {
                               colorScheme: ColorScheme.light(
                                 primary: Colors.blue.shade700,
                               ),
-                              dialogBackgroundColor: Colors.white,
+                              dialogTheme: const DialogTheme(
+                                backgroundColor: Colors.white,
+                              ),
                             ),
                             child: child!,
                           );

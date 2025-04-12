@@ -58,6 +58,19 @@ class _AddReportPageState extends State<AddReportPage> {
       initialDate: _reportDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Colors.blue.shade700,
+            ),
+            dialogTheme: const DialogTheme(
+              backgroundColor: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null && picked != _reportDate) {
       setState(() {
@@ -514,161 +527,531 @@ class _AddReportPageState extends State<AddReportPage> {
   Widget build(BuildContext context) {
     final formattedDate = DateFormat('yyyy-MM-dd').format(_reportDate);
     return Scaffold(
-      appBar: AppBar(title: const Text("Add Report"), centerTitle: true),
+      appBar: AppBar(
+        title: const Text("Add Report"),
+        centerTitle: true,
+        elevation: 2,
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Card(
+              // Report Date Card - Blue outline
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.blue.shade400, width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.shade100.withAlpha(128),
+                      spreadRadius: 2,
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                margin: const EdgeInsets.only(bottom: 16),
                 child: ListTile(
-                  leading: const Icon(Icons.calendar_today),
-                  title: Text("Report Date: $formattedDate"),
+                  contentPadding: const EdgeInsets.all(16),
+                  leading: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.calendar_today,
+                      color: Colors.blue.shade700,
+                    ),
+                  ),
+                  title: const Text(
+                    'Report Date',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      formattedDate,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
                   trailing: IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () => _selectDate(context)),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: "Report Type",
-                      border: OutlineInputBorder(),
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.edit,
+                        color: Colors.blue.shade700,
+                        size: 20,
+                      ),
                     ),
-                    value: _selectedType,
-                    items: const [
-                      DropdownMenuItem(
-                          value: "restock", child: Text("Restock")),
-                      DropdownMenuItem(value: "return", child: Text("Return")),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedType = value;
-                        });
-                      }
-                    },
+                    onPressed: () => _selectDate(context),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: TextFormField(
-                    controller: _noteController,
-                    decoration: const InputDecoration(
-                      labelText: "Note (Optional)",
-                      border: OutlineInputBorder(),
-                      hintText: "Add a note about this report",
+
+              // Report Type Card - Purple outline
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.purple.shade400, width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.purple.shade100.withAlpha(128),
+                      spreadRadius: 2,
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
                     ),
-                    maxLines: 3,
-                  ),
+                  ],
+                ),
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: Colors.purple.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.description,
+                            color: Colors.purple.shade700,
+                            size: 18,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Report Type',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 16),
+                      ),
+                      value: _selectedType,
+                      items: const [
+                        DropdownMenuItem(
+                            value: "restock", child: Text("Restock")),
+                        DropdownMenuItem(
+                            value: "return", child: Text("Return")),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _selectedType = value;
+                          });
+                        }
+                      },
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 16),
-              const Text("Report Details",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              _reportDetails.isEmpty
-                  ? const Center(child: Text("No report details added yet."))
-                  : Column(
-                      children: _reportDetails.asMap().entries.map((entry) {
-                        int index = entry.key;
-                        ReportDetailItem item = entry.value;
-                        return Card(
-                          elevation: 2,
-                          margin: const EdgeInsets.symmetric(vertical: 6),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
+
+              // Notes Field - Yellow outline
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.amber.shade400, width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.amber.shade100.withAlpha(128),
+                      spreadRadius: 2,
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                margin: const EdgeInsets.only(bottom: 24),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: Colors.amber.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.note_alt,
+                            color: Colors.amber.shade700,
+                            size: 18,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Notes (Optional)',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _noteController,
+                      decoration: InputDecoration(
+                        hintText: 'Add any notes about this report...',
+                        hintStyle: TextStyle(color: Colors.grey.shade400),
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 16),
+                      ),
+                      maxLines: 3,
+                    ),
+                  ],
+                ),
+              ),
+
+              // Products Section with green outline for entire container
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.green.shade400, width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.green.shade100.withAlpha(128),
+                      spreadRadius: 2,
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                margin: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Products Header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade50,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.inventory_2,
+                                color: Colors.green.shade700,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            const Text(
+                              'Report Details',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          '${_reportDetails.length} items',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // List of Added Products or centered text if empty
+                    _reportDetails.isEmpty
+                        ? SizedBox(
+                            height: 180,
+                            width: double.infinity,
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
+                                Icon(
+                                  Icons.inventory_2_outlined,
+                                  size: 48,
+                                  color: Colors.grey.shade400,
+                                ),
+                                const SizedBox(height: 12),
                                 Text(
-                                  item.product.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16.0,
+                                  'No products added yet',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey.shade600,
                                   ),
                                 ),
-                                const Divider(),
+                                const SizedBox(height: 8),
                                 Text(
-                                  'Qty: ${item.quantity}',
-                                  style: const TextStyle(fontSize: 14.0),
-                                ),
-                                const SizedBox(height: 12.0),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: ElevatedButton(
-                                        onPressed: () =>
-                                            _editReportDetail(index),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.blue,
-                                          foregroundColor: Colors.white,
-                                          elevation: 1,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
-                                        ),
-                                        child: const Text('Edit'),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8.0),
-                                    Expanded(
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            _reportDetails.removeAt(index);
-                                          });
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.red,
-                                          foregroundColor: Colors.white,
-                                          elevation: 1,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
-                                        ),
-                                        child: const Text('Delete'),
-                                      ),
-                                    ),
-                                  ],
+                                  'Tap the + button to add products',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade500,
+                                  ),
                                 ),
                               ],
                             ),
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: _reportDetails.length,
+                            itemBuilder: (context, index) {
+                              final item = _reportDetails[index];
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                      color: const Color.fromARGB(255, 0, 0, 0),
+                                      width: 1),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          Colors.grey.shade300.withAlpha(128),
+                                      spreadRadius: 1,
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              item.product.name,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 10, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: Colors.blue.shade50,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              'Qty: ${item.quantity}',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.blue.shade700,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: OutlinedButton.icon(
+                                              onPressed: () =>
+                                                  _editReportDetail(index),
+                                              icon: Icon(
+                                                Icons.edit,
+                                                size: 16,
+                                                color: Colors.blue.shade700,
+                                              ),
+                                              label: Text(
+                                                'Edit',
+                                                style: TextStyle(
+                                                    color:
+                                                        Colors.blue.shade700),
+                                              ),
+                                              style: OutlinedButton.styleFrom(
+                                                side: BorderSide(
+                                                    color:
+                                                        Colors.blue.shade200),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 12),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: OutlinedButton.icon(
+                                              onPressed: () {
+                                                setState(() {
+                                                  _reportDetails
+                                                      .removeAt(index);
+                                                });
+                                              },
+                                              icon: Icon(
+                                                Icons.delete_outline,
+                                                size: 16,
+                                                color: Colors.red.shade700,
+                                              ),
+                                              label: Text(
+                                                'Delete',
+                                                style: TextStyle(
+                                                    color: Colors.red.shade700),
+                                              ),
+                                              style: OutlinedButton.styleFrom(
+                                                side: BorderSide(
+                                                    color: Colors.red.shade200),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 12),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      }).toList(),
+                  ],
+                ),
+              ),
+
+              // Total Quantity Section (if there are items)
+              if (_reportDetails.isNotEmpty) ...[
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.blue.shade700, Colors.blue.shade800],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-              const SizedBox(height: 16),
-              // Submit Report Button
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue.shade200.withAlpha(128),
+                        spreadRadius: 1,
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Total Items:',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        _reportDetails
+                            .fold(0, (sum, item) => sum + item.quantity)
+                            .toString(),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+
+              // Submit Button
               ElevatedButton.icon(
-                onPressed: _submitReport,
-                icon: const Icon(Icons.save),
-                label: const Text("Submit Report"),
+                onPressed: _reportDetails.isEmpty ? null : _submitReport,
+                icon: const Icon(Icons.check_circle_outline),
+                label: const Text('Submit Report'),
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green.shade600,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.grey.shade300,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  elevation: 2,
                 ),
               ),
+
+              // Extra space at bottom for FAB
+              const SizedBox(height: 80),
             ],
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddProductOptions,
+        backgroundColor: Colors.blue.shade700,
+        elevation: 4,
         child: const Icon(Icons.add),
       ),
     );
