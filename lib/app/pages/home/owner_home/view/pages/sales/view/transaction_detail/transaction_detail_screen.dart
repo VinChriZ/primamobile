@@ -538,7 +538,7 @@ class TransactionDetailScreen extends StatelessWidget {
   /// Prompts the user to enter quantity and agreed price for the selected product.
   Future<void> _promptAddDetailDialog(
       BuildContext context, dynamic product, int transactionId) async {
-    final quantityController = TextEditingController();
+    final quantityController = TextEditingController(text: '1');
     final agreedPriceController =
         TextEditingController(text: product.displayPrice.toString());
     final transactionDetailBloc = context.read<TransactionDetailBloc>();

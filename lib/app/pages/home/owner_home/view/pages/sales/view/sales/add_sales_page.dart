@@ -193,7 +193,7 @@ class _AddSalesPageState extends State<AddSalesPage> {
                                   return ListTile(
                                     title: Text(product.name),
                                     subtitle: Text(
-                                      'Display Price: Rp${product.displayPrice.toStringAsFixed(0)}\nNet Price: Rp${product.netPrice.toStringAsFixed(0)}',
+                                      'Display Price: Rp${_formatCurrency(product.displayPrice)}\nNet Price: Rp${_formatCurrency(product.netPrice)}',
                                     ),
                                     onTap: () {
                                       Navigator.pop(context, product);

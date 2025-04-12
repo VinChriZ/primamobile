@@ -490,7 +490,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                                   return ListTile(
                                     title: Text(product.name),
                                     subtitle: Text(
-                                      'Display Price: Rp${product.displayPrice.toStringAsFixed(0)}\nNet Price: Rp${product.netPrice.toStringAsFixed(0)}',
+                                      'Available Stock: ${product.stock}',
                                     ),
                                     onTap: () {
                                       Navigator.pop(context, product);
