@@ -137,3 +137,60 @@ class CameraPermissionHelper {
     return (await status).isEqual(targetStatus);
   }
 }
+
+class BluetoothPermissionHelper {
+  static Future<List<Permission>> _getBluetoothPermissions() async {
+    List<Permission> permissions = [];
+
+    if (Platform.isAndroid) {
+      // For Android 12+ (API 31+), we need BLUETOOTH_CONNECT and BLUETOOTH_SCAN
+      permissions.add(Permission.bluetoothConnect);
+      permissions.add(Permission.bluetoothScan);
+      // Location is often needed for Bluetooth discovery
+      permissions.add(Permission.location);
+    } else if (Platform.isIOS) {
+      permissions.add(Permission.bluetooth);
+    }
+
+    return permissions;
+  }
+
+  static Future<Map<Permission, PermissionStatus>> getStatus() async {
+    final permissions = await _getBluetoothPermissions();
+    Map<Permission, PermissionStatus> statuses = {};
+
+    for (var permission in permissions) {
+      statuses[permission] = await permission.status;
+    }
+
+    return statuses;
+  }
+
+  static Future<bool> get isGranted async {
+    final statuses = await getStatus();
+    return !statuses.values
+        .any((status) => status.isDenied || status.isPermanentlyDenied);
+  }
+
+  static Future<bool> get isDenied async {
+    final statuses = await getStatus();
+    return statuses.values.any((status) => status.isDenied);
+  }
+
+  static Future<bool> get isPermanentlyDenied async {
+    final statuses = await getStatus();
+    return statuses.values.any((status) => status.isPermanentlyDenied);
+  }
+
+  static Future<bool> request() async {
+    final permissions = await _getBluetoothPermissions();
+
+    // Request all needed permissions
+    for (var permission in permissions) {
+      await permission.request();
+    }
+
+    // Check if all permissions are granted
+    return await isGranted;
+  }
+}
