@@ -165,13 +165,13 @@ class _AddSalesPageState extends State<AddSalesPage> {
             builder: (context, setState) {
               return Dialog(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Container(
                   width: double.maxFinite,
                   constraints:
-                      const BoxConstraints(maxWidth: 500, maxHeight: 600),
-                  padding: const EdgeInsets.all(16),
+                      const BoxConstraints(maxWidth: 500, maxHeight: 500),
+                  padding: const EdgeInsets.all(14),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -180,33 +180,35 @@ class _AddSalesPageState extends State<AddSalesPage> {
                       const Text(
                         'Search Product',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
 
                       // Search box with icon
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: TextField(
                           controller: searchController,
                           autofocus: true,
                           decoration: InputDecoration(
                             hintText: 'Enter product name',
-                            prefixIcon:
-                                const Icon(Icons.search, color: Colors.blue),
+                            hintStyle: const TextStyle(fontSize: 13),
+                            prefixIcon: const Icon(Icons.search,
+                                color: Colors.blue, size: 18),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(10),
                               borderSide: BorderSide.none,
                             ),
                             contentPadding:
-                                const EdgeInsets.symmetric(vertical: 12),
+                                const EdgeInsets.symmetric(vertical: 10),
                           ),
+                          style: const TextStyle(fontSize: 13),
                           onChanged: (query) {
                             setState(() {
                               filteredProducts = allProducts
@@ -219,19 +221,19 @@ class _AddSalesPageState extends State<AddSalesPage> {
                         ),
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
 
                       // Product count
                       Text(
                         '${filteredProducts.length} products found',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 12,
                           color: Colors.grey.shade600,
                         ),
                         textAlign: TextAlign.center,
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
 
                       // Products list
                       Expanded(
@@ -242,14 +244,14 @@ class _AddSalesPageState extends State<AddSalesPage> {
                                   children: [
                                     Icon(
                                       Icons.search_off,
-                                      size: 48,
+                                      size: 36,
                                       color: Colors.grey.shade400,
                                     ),
-                                    const SizedBox(height: 16),
+                                    const SizedBox(height: 12),
                                     Text(
                                       'No products found',
                                       style: TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 14,
                                         color: Colors.grey.shade600,
                                       ),
                                     ),
@@ -263,27 +265,28 @@ class _AddSalesPageState extends State<AddSalesPage> {
                                   return Card(
                                     elevation: 1,
                                     margin:
-                                        const EdgeInsets.symmetric(vertical: 6),
+                                        const EdgeInsets.symmetric(vertical: 4),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: ListTile(
                                       contentPadding:
                                           const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 6,
+                                        horizontal: 12,
+                                        vertical: 4,
                                       ),
                                       title: Text(
                                         product.name,
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
+                                          fontSize: 13,
                                         ),
                                       ),
                                       subtitle: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          const SizedBox(height: 4),
+                                          const SizedBox(height: 3),
                                           Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
@@ -291,39 +294,39 @@ class _AddSalesPageState extends State<AddSalesPage> {
                                               Container(
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                  horizontal: 6,
-                                                  vertical: 2,
+                                                  horizontal: 5,
+                                                  vertical: 1,
                                                 ),
                                                 decoration: BoxDecoration(
                                                   color: Colors.blue.shade50,
                                                   borderRadius:
-                                                      BorderRadius.circular(4),
+                                                      BorderRadius.circular(3),
                                                 ),
                                                 child: Text(
                                                   'Display: Rp${_formatCurrency(product.displayPrice)}',
                                                   style: TextStyle(
-                                                    fontSize: 12,
+                                                    fontSize: 11,
                                                     color: Colors.blue.shade800,
                                                     fontWeight: FontWeight.w600,
                                                   ),
                                                 ),
                                               ),
-                                              const SizedBox(height: 4),
+                                              const SizedBox(height: 3),
                                               Container(
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                  horizontal: 6,
-                                                  vertical: 2,
+                                                  horizontal: 5,
+                                                  vertical: 1,
                                                 ),
                                                 decoration: BoxDecoration(
                                                   color: Colors.green.shade50,
                                                   borderRadius:
-                                                      BorderRadius.circular(4),
+                                                      BorderRadius.circular(3),
                                                 ),
                                                 child: Text(
                                                   'Net: Rp${_formatCurrency(product.netPrice)}',
                                                   style: TextStyle(
-                                                    fontSize: 12,
+                                                    fontSize: 11,
                                                     color:
                                                         Colors.green.shade800,
                                                     fontWeight: FontWeight.w600,
@@ -343,18 +346,17 @@ class _AddSalesPageState extends State<AddSalesPage> {
                               ),
                       ),
 
-                      const SizedBox(height: 8),
-
                       // Cancel button
                       TextButton(
                         style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                         ),
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
+                        child: const Text('Cancel',
+                            style: TextStyle(fontSize: 13)),
                       ),
                     ],
                   ),
@@ -617,12 +619,12 @@ class _AddSalesPageState extends State<AddSalesPage> {
     final String dateStr = DateFormat('yyyy-MM-dd').format(_transactionDate);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Sale'),
+        title: const Text('Add Sale', style: TextStyle(fontSize: 16)),
         centerTitle: true,
         elevation: 2,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
         child: Form(
           key: _formKey,
           child: Column(
@@ -632,46 +634,47 @@ class _AddSalesPageState extends State<AddSalesPage> {
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.blue.shade400, width: 1),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.blue.shade100.withAlpha(128),
-                      spreadRadius: 2,
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
+                      color: Colors.blue.shade100.withAlpha(100),
+                      spreadRadius: 1,
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                margin: const EdgeInsets.only(bottom: 16),
+                margin: const EdgeInsets.only(bottom: 12),
                 child: ListTile(
-                  contentPadding: const EdgeInsets.all(16),
+                  contentPadding: const EdgeInsets.all(12),
                   leading: Container(
-                    width: 48,
-                    height: 48,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
                       Icons.calendar_today,
                       color: Colors.blue.shade700,
+                      size: 18,
                     ),
                   ),
                   title: const Text(
                     'Transaction Date',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: Colors.grey,
                     ),
                   ),
                   subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 6),
+                    padding: const EdgeInsets.only(top: 4),
                     child: Text(
                       dateStr,
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
@@ -679,7 +682,7 @@ class _AddSalesPageState extends State<AddSalesPage> {
                   ),
                   trailing: IconButton(
                     icon: Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
                         color: Colors.blue.shade50,
                         shape: BoxShape.circle,
@@ -687,7 +690,7 @@ class _AddSalesPageState extends State<AddSalesPage> {
                       child: Icon(
                         Icons.edit,
                         color: Colors.blue.shade700,
-                        size: 20,
+                        size: 16,
                       ),
                     ),
                     onPressed: () async {
@@ -725,63 +728,65 @@ class _AddSalesPageState extends State<AddSalesPage> {
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.amber.shade400, width: 1),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.amber.shade100.withAlpha(128),
-                      spreadRadius: 2,
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
+                      color: Colors.amber.shade100.withAlpha(100),
+                      spreadRadius: 1,
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                margin: const EdgeInsets.only(bottom: 24),
-                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
                         Container(
-                          width: 32,
-                          height: 32,
+                          width: 28,
+                          height: 28,
                           decoration: BoxDecoration(
                             color: Colors.amber.shade50,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(7),
                           ),
                           child: Icon(
                             Icons.note_alt,
                             color: Colors.amber.shade700,
-                            size: 18,
+                            size: 16,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         const Text(
                           'Notes (Optional)',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     TextFormField(
                       controller: _notesController,
                       decoration: InputDecoration(
                         hintText: 'Add any notes about this sale...',
-                        hintStyle: TextStyle(color: Colors.grey.shade400),
+                        hintStyle: TextStyle(
+                            color: Colors.grey.shade400, fontSize: 13),
                         filled: true,
                         fillColor: Colors.grey.shade50,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide.none,
                         ),
                         contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 16),
+                            horizontal: 14, vertical: 14),
                       ),
-                      maxLines: 3,
+                      style: const TextStyle(fontSize: 13),
+                      maxLines: 2,
                     ),
                   ],
                 ),
@@ -791,19 +796,19 @@ class _AddSalesPageState extends State<AddSalesPage> {
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.green.shade400, width: 1),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.green.shade100.withAlpha(128),
-                      spreadRadius: 2,
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
+                      color: Colors.green.shade100.withAlpha(100),
+                      spreadRadius: 1,
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                margin: const EdgeInsets.only(bottom: 20),
-                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -814,22 +819,22 @@ class _AddSalesPageState extends State<AddSalesPage> {
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
                                 color: Colors.green.shade50,
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(
                                 Icons.shopping_cart,
                                 color: Colors.green.shade700,
-                                size: 20,
+                                size: 18,
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 10),
                             const Text(
                               'Products',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -838,7 +843,7 @@ class _AddSalesPageState extends State<AddSalesPage> {
                         Text(
                           '${_salesItems.length} items',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 12,
                             fontWeight: FontWeight.w500,
                             color: Colors.grey.shade600,
                           ),
@@ -846,34 +851,34 @@ class _AddSalesPageState extends State<AddSalesPage> {
                       ],
                     ),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
 
                     // List of Added Products or centered text if empty
                     _salesItems.isEmpty
                         ? SizedBox(
-                            height: 180,
+                            height: 150,
                             width: double.infinity,
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
                                   Icons.shopping_bag_outlined,
-                                  size: 48,
+                                  size: 36,
                                   color: Colors.grey.shade400,
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 10),
                                 Text(
                                   'No products added yet',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 14,
                                     color: Colors.grey.shade600,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 6),
                                 Text(
                                   'Tap the + button to add products',
                                   style: TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 12,
                                     color: Colors.grey.shade500,
                                   ),
                                 ),
@@ -888,25 +893,26 @@ class _AddSalesPageState extends State<AddSalesPage> {
                               final item = _salesItems[index];
 
                               return Container(
-                                margin: const EdgeInsets.only(bottom: 12),
+                                margin: const EdgeInsets.only(bottom: 8),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
                                       color: const Color.fromARGB(255, 0, 0, 0),
                                       width: 1),
                                   boxShadow: [
                                     BoxShadow(
                                       color:
-                                          Colors.grey.shade300.withAlpha(128),
+                                          Colors.grey.shade300.withAlpha(100),
                                       spreadRadius: 1,
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 3),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
                                     ),
                                   ],
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.all(16),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 8),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -918,22 +924,22 @@ class _AddSalesPageState extends State<AddSalesPage> {
                                               item.product.name,
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
-                                                fontSize: 16,
+                                                fontSize: 13,
                                               ),
                                             ),
                                           ),
                                           Container(
                                             padding: const EdgeInsets.symmetric(
-                                                horizontal: 10, vertical: 4),
+                                                horizontal: 6, vertical: 2),
                                             decoration: BoxDecoration(
                                               color: Colors.blue.shade50,
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                                  BorderRadius.circular(8),
                                             ),
                                             child: Text(
                                               'Qty: ${item.quantity}',
                                               style: TextStyle(
-                                                fontSize: 14,
+                                                fontSize: 11,
                                                 fontWeight: FontWeight.w600,
                                                 color: Colors.blue.shade700,
                                               ),
@@ -941,7 +947,7 @@ class _AddSalesPageState extends State<AddSalesPage> {
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 12),
+                                      const SizedBox(height: 6),
                                       Row(
                                         children: [
                                           Column(
@@ -951,15 +957,15 @@ class _AddSalesPageState extends State<AddSalesPage> {
                                               Text(
                                                 'Agreed Price',
                                                 style: TextStyle(
-                                                  fontSize: 12,
+                                                  fontSize: 10,
                                                   color: Colors.grey.shade600,
                                                 ),
                                               ),
-                                              const SizedBox(height: 4),
+                                              const SizedBox(height: 1),
                                               Text(
                                                 'Rp${_formatCurrency(item.agreedPrice)}',
                                                 style: const TextStyle(
-                                                  fontSize: 14,
+                                                  fontSize: 12,
                                                   fontWeight: FontWeight.w500,
                                                 ),
                                               ),
@@ -969,13 +975,13 @@ class _AddSalesPageState extends State<AddSalesPage> {
                                           Text(
                                             'Rp${_formatCurrency(item.agreedPrice * item.quantity)}',
                                             style: const TextStyle(
-                                              fontSize: 16,
+                                              fontSize: 13,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 16),
+                                      const SizedBox(height: 6),
                                       Row(
                                         children: [
                                           Expanded(
@@ -984,14 +990,15 @@ class _AddSalesPageState extends State<AddSalesPage> {
                                                   _editSalesItem(index),
                                               icon: Icon(
                                                 Icons.edit,
-                                                size: 16,
+                                                size: 12,
                                                 color: Colors.blue.shade700,
                                               ),
                                               label: Text(
                                                 'Edit',
                                                 style: TextStyle(
-                                                    color:
-                                                        Colors.blue.shade700),
+                                                  fontSize: 11,
+                                                  color: Colors.blue.shade700,
+                                                ),
                                               ),
                                               style: OutlinedButton.styleFrom(
                                                 side: BorderSide(
@@ -999,10 +1006,11 @@ class _AddSalesPageState extends State<AddSalesPage> {
                                                         Colors.blue.shade200),
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                        vertical: 12),
+                                                        vertical: 4),
+                                                minimumSize: const Size(0, 28),
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
-                                                      BorderRadius.circular(8),
+                                                      BorderRadius.circular(6),
                                                 ),
                                               ),
                                             ),
@@ -1014,23 +1022,26 @@ class _AddSalesPageState extends State<AddSalesPage> {
                                                   _removeSalesItem(index),
                                               icon: Icon(
                                                 Icons.delete_outline,
-                                                size: 16,
+                                                size: 12,
                                                 color: Colors.red.shade700,
                                               ),
                                               label: Text(
                                                 'Delete',
                                                 style: TextStyle(
-                                                    color: Colors.red.shade700),
+                                                  fontSize: 11,
+                                                  color: Colors.red.shade700,
+                                                ),
                                               ),
                                               style: OutlinedButton.styleFrom(
                                                 side: BorderSide(
                                                     color: Colors.red.shade200),
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                        vertical: 12),
+                                                        vertical: 4),
+                                                minimumSize: const Size(0, 28),
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
-                                                      BorderRadius.circular(8),
+                                                      BorderRadius.circular(6),
                                                 ),
                                               ),
                                             ),
@@ -1047,25 +1058,24 @@ class _AddSalesPageState extends State<AddSalesPage> {
                 ),
               ),
 
-              const SizedBox(
-                  height: 4), // Reduced margin after products container
+              const SizedBox(height: 4),
 
               // Total Section
               if (_salesItems.isNotEmpty) ...[
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [Colors.blue.shade700, Colors.blue.shade800],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue.shade200.withAlpha(128),
+                        color: Colors.blue.shade200.withAlpha(100),
                         spreadRadius: 1,
-                        blurRadius: 8,
+                        blurRadius: 6,
                         offset: const Offset(0, 2),
                       ),
                     ],
@@ -1078,7 +1088,7 @@ class _AddSalesPageState extends State<AddSalesPage> {
                           const Text(
                             'Total Quantity:',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: Colors.white,
                             ),
@@ -1086,23 +1096,23 @@ class _AddSalesPageState extends State<AddSalesPage> {
                           Text(
                             _totalQuantity.toString(),
                             style: const TextStyle(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       const Divider(color: Colors.white30),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
                             'Total Amount:',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: Colors.white,
                             ),
@@ -1110,7 +1120,7 @@ class _AddSalesPageState extends State<AddSalesPage> {
                           Text(
                             'Rp${_formatCurrency(_totalAgreedPrice)}',
                             style: const TextStyle(
-                              fontSize: 22,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -1120,28 +1130,29 @@ class _AddSalesPageState extends State<AddSalesPage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
               ],
 
               // Submit Button
               ElevatedButton.icon(
                 onPressed: _salesItems.isEmpty ? null : _submitTransaction,
-                icon: const Icon(Icons.check_circle_outline),
-                label: const Text('Submit Sale'),
+                icon: const Icon(Icons.check_circle_outline, size: 18),
+                label:
+                    const Text('Submit Sale', style: TextStyle(fontSize: 14)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green.shade600,
                   foregroundColor: Colors.white,
                   disabledBackgroundColor: Colors.grey.shade300,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   elevation: 2,
                 ),
               ),
 
               // Extra space at bottom for FAB
-              const SizedBox(height: 80),
+              const SizedBox(height: 70),
             ],
           ),
         ),
@@ -1149,7 +1160,7 @@ class _AddSalesPageState extends State<AddSalesPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddProductOptions,
         backgroundColor: Colors.blue.shade700,
-        elevation: 4,
+        elevation: 3,
         child: const Icon(Icons.add),
       ),
     );

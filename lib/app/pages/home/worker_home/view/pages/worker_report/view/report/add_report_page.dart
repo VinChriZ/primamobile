@@ -148,13 +148,13 @@ class _AddReportPageState extends State<AddReportPage> {
             builder: (context, setState) {
               return Dialog(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Container(
                   width: double.maxFinite,
                   constraints:
-                      const BoxConstraints(maxWidth: 500, maxHeight: 600),
-                  padding: const EdgeInsets.all(16),
+                      const BoxConstraints(maxWidth: 500, maxHeight: 500),
+                  padding: const EdgeInsets.all(14),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -163,33 +163,35 @@ class _AddReportPageState extends State<AddReportPage> {
                       const Text(
                         'Search Product',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
 
                       // Search box with icon
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: TextField(
                           controller: searchController,
                           autofocus: true,
                           decoration: InputDecoration(
                             hintText: 'Enter product name',
-                            prefixIcon:
-                                const Icon(Icons.search, color: Colors.blue),
+                            hintStyle: const TextStyle(fontSize: 13),
+                            prefixIcon: const Icon(Icons.search,
+                                color: Colors.blue, size: 18),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(10),
                               borderSide: BorderSide.none,
                             ),
                             contentPadding:
-                                const EdgeInsets.symmetric(vertical: 12),
+                                const EdgeInsets.symmetric(vertical: 10),
                           ),
+                          style: const TextStyle(fontSize: 13),
                           onChanged: (query) {
                             setState(() {
                               filteredProducts = allProducts
@@ -202,19 +204,19 @@ class _AddReportPageState extends State<AddReportPage> {
                         ),
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
 
                       // Product count
                       Text(
                         '${filteredProducts.length} products found',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 12,
                           color: Colors.grey.shade600,
                         ),
                         textAlign: TextAlign.center,
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
 
                       // Products list
                       Expanded(
@@ -225,14 +227,14 @@ class _AddReportPageState extends State<AddReportPage> {
                                   children: [
                                     Icon(
                                       Icons.search_off,
-                                      size: 48,
+                                      size: 36,
                                       color: Colors.grey.shade400,
                                     ),
-                                    const SizedBox(height: 16),
+                                    const SizedBox(height: 12),
                                     Text(
                                       'No products found',
                                       style: TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 14,
                                         color: Colors.grey.shade600,
                                       ),
                                     ),
@@ -246,41 +248,42 @@ class _AddReportPageState extends State<AddReportPage> {
                                   return Card(
                                     elevation: 1,
                                     margin:
-                                        const EdgeInsets.symmetric(vertical: 6),
+                                        const EdgeInsets.symmetric(vertical: 4),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: ListTile(
                                       contentPadding:
                                           const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 6,
+                                        horizontal: 12,
+                                        vertical: 4,
                                       ),
                                       title: Text(
                                         product.name,
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
+                                          fontSize: 13,
                                         ),
                                       ),
                                       subtitle: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          const SizedBox(height: 4),
+                                          const SizedBox(height: 3),
                                           Container(
                                             padding: const EdgeInsets.symmetric(
-                                              horizontal: 6,
-                                              vertical: 2,
+                                              horizontal: 5,
+                                              vertical: 1,
                                             ),
                                             decoration: BoxDecoration(
                                               color: Colors.green.shade50,
                                               borderRadius:
-                                                  BorderRadius.circular(4),
+                                                  BorderRadius.circular(3),
                                             ),
                                             child: Text(
                                               'Available Stock: ${product.stock}',
                                               style: TextStyle(
-                                                fontSize: 12,
+                                                fontSize: 11,
                                                 color: Colors.green.shade800,
                                                 fontWeight: FontWeight.w600,
                                               ),
@@ -297,18 +300,17 @@ class _AddReportPageState extends State<AddReportPage> {
                               ),
                       ),
 
-                      const SizedBox(height: 8),
-
                       // Cancel button
                       TextButton(
                         style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                         ),
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
+                        child: const Text('Cancel',
+                            style: TextStyle(fontSize: 13)),
                       ),
                     ],
                   ),
@@ -415,29 +417,46 @@ class _AddReportPageState extends State<AddReportPage> {
           return AlertDialog(
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            title: Text('Edit ${item.product.name}'),
+            title: Text('Edit ${item.product.name}',
+                style: const TextStyle(fontSize: 14)),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Available stock: ${item.product.stock}'),
-                const SizedBox(height: 8),
+                Text('Available stock: ${item.product.stock}',
+                    style: const TextStyle(fontSize: 12)),
+                const SizedBox(height: 6),
                 TextFormField(
                   controller: quantityController,
                   keyboardType: TextInputType.number,
+                  style: const TextStyle(fontSize: 13),
                   decoration: InputDecoration(
                     labelText: 'Quantity',
+                    labelStyle: const TextStyle(fontSize: 12),
                     border: const OutlineInputBorder(),
                     errorText: errorMessage,
+                    errorStyle: const TextStyle(fontSize: 11),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 10),
                   ),
                 ),
               ],
             ),
             actions: [
               TextButton(
+                style: TextButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+                child: const Text('Cancel', style: TextStyle(fontSize: 12)),
               ),
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                ),
                 onPressed: () {
                   final int? quantity = int.tryParse(quantityController.text);
                   if (quantity == null || quantity <= 0) {
@@ -464,7 +483,7 @@ class _AddReportPageState extends State<AddReportPage> {
                     ),
                   );
                 },
-                child: const Text('Update'),
+                child: const Text('Update', style: TextStyle(fontSize: 12)),
               ),
             ],
           );
@@ -528,12 +547,12 @@ class _AddReportPageState extends State<AddReportPage> {
     final formattedDate = DateFormat('yyyy-MM-dd').format(_reportDate);
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Add Report"),
+        title: const Text("Add Report", style: TextStyle(fontSize: 16)),
         centerTitle: true,
         elevation: 2,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
         child: Form(
           key: _formKey,
           child: Column(
@@ -543,46 +562,47 @@ class _AddReportPageState extends State<AddReportPage> {
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.blue.shade400, width: 1),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.blue.shade100.withAlpha(128),
-                      spreadRadius: 2,
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
+                      color: Colors.blue.shade100.withAlpha(100),
+                      spreadRadius: 1,
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                margin: const EdgeInsets.only(bottom: 16),
+                margin: const EdgeInsets.only(bottom: 12),
                 child: ListTile(
-                  contentPadding: const EdgeInsets.all(16),
+                  contentPadding: const EdgeInsets.all(12),
                   leading: Container(
-                    width: 48,
-                    height: 48,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
                       Icons.calendar_today,
                       color: Colors.blue.shade700,
+                      size: 18,
                     ),
                   ),
                   title: const Text(
                     'Report Date',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: Colors.grey,
                     ),
                   ),
                   subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 6),
+                    padding: const EdgeInsets.only(top: 4),
                     child: Text(
                       formattedDate,
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
@@ -590,7 +610,7 @@ class _AddReportPageState extends State<AddReportPage> {
                   ),
                   trailing: IconButton(
                     icon: Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
                         color: Colors.blue.shade50,
                         shape: BoxShape.circle,
@@ -598,7 +618,7 @@ class _AddReportPageState extends State<AddReportPage> {
                       child: Icon(
                         Icons.edit,
                         color: Colors.blue.shade700,
-                        size: 20,
+                        size: 16,
                       ),
                     ),
                     onPressed: () => _selectDate(context),
@@ -610,27 +630,27 @@ class _AddReportPageState extends State<AddReportPage> {
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.purple.shade400, width: 1),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.purple.shade100.withAlpha(128),
-                      spreadRadius: 2,
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
+                      color: Colors.purple.shade100.withAlpha(100),
+                      spreadRadius: 1,
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
                         Container(
-                          width: 32,
-                          height: 32,
+                          width: 28,
+                          height: 28,
                           decoration: BoxDecoration(
                             color: Colors.purple.shade50,
                             borderRadius: BorderRadius.circular(8),
@@ -638,37 +658,41 @@ class _AddReportPageState extends State<AddReportPage> {
                           child: Icon(
                             Icons.description,
                             color: Colors.purple.shade700,
-                            size: 18,
+                            size: 16,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         const Text(
                           'Report Type',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.grey.shade50,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide.none,
                         ),
                         contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 16),
+                            horizontal: 14, vertical: 14),
                       ),
                       value: _selectedType,
                       items: const [
                         DropdownMenuItem(
-                            value: "restock", child: Text("Restock")),
+                            value: "restock",
+                            child: Text("Restock",
+                                style: TextStyle(fontSize: 13))),
                         DropdownMenuItem(
-                            value: "return", child: Text("Return")),
+                            value: "return",
+                            child:
+                                Text("Return", style: TextStyle(fontSize: 13))),
                       ],
                       onChanged: (value) {
                         if (value != null) {
@@ -686,63 +710,65 @@ class _AddReportPageState extends State<AddReportPage> {
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.amber.shade400, width: 1),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.amber.shade100.withAlpha(128),
-                      spreadRadius: 2,
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
+                      color: Colors.amber.shade100.withAlpha(100),
+                      spreadRadius: 1,
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                margin: const EdgeInsets.only(bottom: 24),
-                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
                         Container(
-                          width: 32,
-                          height: 32,
+                          width: 28,
+                          height: 28,
                           decoration: BoxDecoration(
                             color: Colors.amber.shade50,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(7),
                           ),
                           child: Icon(
                             Icons.note_alt,
                             color: Colors.amber.shade700,
-                            size: 18,
+                            size: 16,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         const Text(
                           'Notes (Optional)',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     TextFormField(
                       controller: _noteController,
                       decoration: InputDecoration(
                         hintText: 'Add any notes about this report...',
-                        hintStyle: TextStyle(color: Colors.grey.shade400),
+                        hintStyle: TextStyle(
+                            color: Colors.grey.shade400, fontSize: 13),
                         filled: true,
                         fillColor: Colors.grey.shade50,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide.none,
                         ),
                         contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 16),
+                            horizontal: 14, vertical: 14),
                       ),
-                      maxLines: 3,
+                      style: const TextStyle(fontSize: 13),
+                      maxLines: 2,
                     ),
                   ],
                 ),
@@ -752,19 +778,19 @@ class _AddReportPageState extends State<AddReportPage> {
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.green.shade400, width: 1),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.green.shade100.withAlpha(128),
-                      spreadRadius: 2,
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
+                      color: Colors.green.shade100.withAlpha(100),
+                      spreadRadius: 1,
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                margin: const EdgeInsets.only(bottom: 20),
-                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -775,22 +801,22 @@ class _AddReportPageState extends State<AddReportPage> {
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
                                 color: Colors.green.shade50,
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(
                                 Icons.inventory_2,
                                 color: Colors.green.shade700,
-                                size: 20,
+                                size: 18,
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 10),
                             const Text(
                               'Report Details',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -799,7 +825,7 @@ class _AddReportPageState extends State<AddReportPage> {
                         Text(
                           '${_reportDetails.length} items',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 12,
                             fontWeight: FontWeight.w500,
                             color: Colors.grey.shade600,
                           ),
@@ -807,34 +833,34 @@ class _AddReportPageState extends State<AddReportPage> {
                       ],
                     ),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
 
                     // List of Added Products or centered text if empty
                     _reportDetails.isEmpty
                         ? SizedBox(
-                            height: 180,
+                            height: 150,
                             width: double.infinity,
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
                                   Icons.inventory_2_outlined,
-                                  size: 48,
+                                  size: 36,
                                   color: Colors.grey.shade400,
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 10),
                                 Text(
                                   'No products added yet',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 14,
                                     color: Colors.grey.shade600,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 6),
                                 Text(
                                   'Tap the + button to add products',
                                   style: TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 12,
                                     color: Colors.grey.shade500,
                                   ),
                                 ),
@@ -849,25 +875,26 @@ class _AddReportPageState extends State<AddReportPage> {
                               final item = _reportDetails[index];
 
                               return Container(
-                                margin: const EdgeInsets.only(bottom: 12),
+                                margin: const EdgeInsets.only(bottom: 8),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
                                       color: const Color.fromARGB(255, 0, 0, 0),
                                       width: 1),
                                   boxShadow: [
                                     BoxShadow(
                                       color:
-                                          Colors.grey.shade300.withAlpha(128),
+                                          Colors.grey.shade300.withAlpha(100),
                                       spreadRadius: 1,
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 3),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
                                     ),
                                   ],
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.all(16),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 8),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -879,22 +906,22 @@ class _AddReportPageState extends State<AddReportPage> {
                                               item.product.name,
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
-                                                fontSize: 16,
+                                                fontSize: 13,
                                               ),
                                             ),
                                           ),
                                           Container(
                                             padding: const EdgeInsets.symmetric(
-                                                horizontal: 10, vertical: 4),
+                                                horizontal: 6, vertical: 2),
                                             decoration: BoxDecoration(
                                               color: Colors.blue.shade50,
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                                  BorderRadius.circular(8),
                                             ),
                                             child: Text(
                                               'Qty: ${item.quantity}',
                                               style: TextStyle(
-                                                fontSize: 14,
+                                                fontSize: 11,
                                                 fontWeight: FontWeight.w600,
                                                 color: Colors.blue.shade700,
                                               ),
@@ -902,7 +929,7 @@ class _AddReportPageState extends State<AddReportPage> {
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 16),
+                                      const SizedBox(height: 6),
                                       Row(
                                         children: [
                                           Expanded(
@@ -911,14 +938,15 @@ class _AddReportPageState extends State<AddReportPage> {
                                                   _editReportDetail(index),
                                               icon: Icon(
                                                 Icons.edit,
-                                                size: 16,
+                                                size: 12,
                                                 color: Colors.blue.shade700,
                                               ),
                                               label: Text(
                                                 'Edit',
                                                 style: TextStyle(
-                                                    color:
-                                                        Colors.blue.shade700),
+                                                  fontSize: 11,
+                                                  color: Colors.blue.shade700,
+                                                ),
                                               ),
                                               style: OutlinedButton.styleFrom(
                                                 side: BorderSide(
@@ -926,10 +954,11 @@ class _AddReportPageState extends State<AddReportPage> {
                                                         Colors.blue.shade200),
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                        vertical: 12),
+                                                        vertical: 4),
+                                                minimumSize: const Size(0, 28),
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
-                                                      BorderRadius.circular(8),
+                                                      BorderRadius.circular(6),
                                                 ),
                                               ),
                                             ),
@@ -945,23 +974,26 @@ class _AddReportPageState extends State<AddReportPage> {
                                               },
                                               icon: Icon(
                                                 Icons.delete_outline,
-                                                size: 16,
+                                                size: 12,
                                                 color: Colors.red.shade700,
                                               ),
                                               label: Text(
                                                 'Delete',
                                                 style: TextStyle(
-                                                    color: Colors.red.shade700),
+                                                  fontSize: 11,
+                                                  color: Colors.red.shade700,
+                                                ),
                                               ),
                                               style: OutlinedButton.styleFrom(
                                                 side: BorderSide(
                                                     color: Colors.red.shade200),
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                        vertical: 12),
+                                                        vertical: 4),
+                                                minimumSize: const Size(0, 28),
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
-                                                      BorderRadius.circular(8),
+                                                      BorderRadius.circular(6),
                                                 ),
                                               ),
                                             ),
@@ -981,19 +1013,19 @@ class _AddReportPageState extends State<AddReportPage> {
               // Total Quantity Section (if there are items)
               if (_reportDetails.isNotEmpty) ...[
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [Colors.blue.shade700, Colors.blue.shade800],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue.shade200.withAlpha(128),
+                        color: Colors.blue.shade200.withAlpha(100),
                         spreadRadius: 1,
-                        blurRadius: 8,
+                        blurRadius: 6,
                         offset: const Offset(0, 2),
                       ),
                     ],
@@ -1004,7 +1036,7 @@ class _AddReportPageState extends State<AddReportPage> {
                       const Text(
                         'Total Items:',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: Colors.white,
                         ),
@@ -1014,7 +1046,7 @@ class _AddReportPageState extends State<AddReportPage> {
                             .fold(0, (sum, item) => sum + item.quantity)
                             .toString(),
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
@@ -1022,28 +1054,29 @@ class _AddReportPageState extends State<AddReportPage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
               ],
 
               // Submit Button
               ElevatedButton.icon(
                 onPressed: _reportDetails.isEmpty ? null : _submitReport,
-                icon: const Icon(Icons.check_circle_outline),
-                label: const Text('Submit Report'),
+                icon: const Icon(Icons.check_circle_outline, size: 18),
+                label:
+                    const Text('Submit Report', style: TextStyle(fontSize: 14)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green.shade600,
                   foregroundColor: Colors.white,
                   disabledBackgroundColor: Colors.grey.shade300,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   elevation: 2,
                 ),
               ),
 
               // Extra space at bottom for FAB
-              const SizedBox(height: 80),
+              const SizedBox(height: 70),
             ],
           ),
         ),
@@ -1051,7 +1084,7 @@ class _AddReportPageState extends State<AddReportPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddProductOptions,
         backgroundColor: Colors.blue.shade700,
-        elevation: 4,
+        elevation: 3,
         child: const Icon(Icons.add),
       ),
     );

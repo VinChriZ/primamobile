@@ -86,16 +86,39 @@ class _AddProductPageState extends State<AddProductPage> {
   }
 
   /// Returns an InputDecoration with optional error text.
-  InputDecoration _buildInputDecoration(String label, {String? errorText}) {
+  InputDecoration _buildInputDecoration(String label,
+      {String? errorText, IconData? prefixIcon}) {
     return InputDecoration(
       labelText: label,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide:
-            BorderSide(color: errorText != null ? Colors.red : Colors.grey),
+      labelStyle: TextStyle(
+        color: Colors.grey.shade700,
+        fontWeight: FontWeight.w500,
+        fontSize: 14,
       ),
+      prefixIcon: prefixIcon != null
+          ? Icon(prefixIcon, size: 18, color: Colors.blue.shade700)
+          : null,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10.0),
+        borderSide: BorderSide(
+            color: errorText != null ? Colors.red : Colors.grey.shade300),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10.0),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10.0),
+        borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10.0),
+        borderSide: BorderSide(color: Colors.red.shade400, width: 1.5),
+      ),
+      filled: true,
+      fillColor: Colors.grey.shade50,
       errorText: errorText,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     );
   }
 
@@ -175,8 +198,22 @@ class _AddProductPageState extends State<AddProductPage> {
       );
 
       context.read<StockBloc>().add(AddProduct(product));
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Product added successfully!')),
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green[100]),
+              const SizedBox(width: 12),
+              const Text('Product added successfully!'),
+            ],
+          ),
+          backgroundColor: Colors.green.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
       );
 
       Navigator.pop(context);
@@ -187,178 +224,291 @@ class _AddProductPageState extends State<AddProductPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Product'),
+        title: const Text(
+          'Add Product',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
+        ),
         centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
       ),
+      backgroundColor: Colors.grey.shade100,
       body: GestureDetector(
         onTap: () =>
             FocusScope.of(context).unfocus(), // Dismiss keyboard on tap
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Card(
-            elevation: 4.0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.0),
-            ),
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // UPC Field with Scan Button
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _upcController,
-                            decoration: _buildInputDecoration(
-                              'UPC',
-                              errorText:
-                                  _upcExists ? 'UPC already exists.' : null,
-                            ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Form Card
+                Card(
+                  elevation: 2.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.0),
+                  ),
+                  color: Colors.white,
+                  surfaceTintColor: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Section: Identification
+                          _buildSectionHeader(
+                            title: 'Product Identification',
+                            icon: Icons.qr_code,
+                          ),
+                          const SizedBox(height: 16),
+
+                          // UPC Field with Scan Button
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 6,
+                                child: TextFormField(
+                                  controller: _upcController,
+                                  decoration: _buildInputDecoration(
+                                    'UPC',
+                                    errorText: _upcExists
+                                        ? 'UPC already exists.'
+                                        : null,
+                                    prefixIcon: Icons.qr_code,
+                                  ),
+                                  style: const TextStyle(fontSize: 15),
+                                  validator: (value) {
+                                    final trimmed = value?.trim() ?? '';
+                                    if (trimmed.isEmpty) {
+                                      return 'UPC is required.';
+                                    }
+                                    if (_upcExists) {
+                                      return 'UPC already exists.';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                height: 48,
+                                width: 48,
+                                margin: const EdgeInsets.only(top: 2),
+                                child: ElevatedButton(
+                                  onPressed: _scanBarcode,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue.shade600,
+                                    foregroundColor: Colors.white,
+                                    padding: EdgeInsets.zero,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                    elevation: 0,
+                                  ),
+                                  child: const Icon(Icons.camera_alt,
+                                      size: 18, color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Product Name Field
+                          TextFormField(
+                            controller: _nameController,
+                            decoration: _buildInputDecoration('Product Name',
+                                prefixIcon: Icons.label),
+                            style: const TextStyle(fontSize: 15),
                             validator: (value) {
-                              final trimmed = value?.trim() ?? '';
-                              if (trimmed.isEmpty) {
-                                return 'UPC is required.';
-                              }
-                              if (_upcExists) {
-                                return 'UPC already exists.';
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Product name is required.';
                               }
                               return null;
                             },
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        ElevatedButton(
-                          onPressed: _scanBarcode,
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0, vertical: 20.0),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
+                          const SizedBox(height: 24),
+
+                          // Section: Pricing
+                          _buildSectionHeader(
+                            title: 'Product Pricing',
+                            icon: Icons.attach_money,
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Net Price Field
+                          TextFormField(
+                            controller: _netPriceController,
+                            decoration: _buildInputDecoration(
+                              'Net Price (Rp)',
+                              prefixIcon: Icons.trending_down,
+                            ),
+                            style: const TextStyle(fontSize: 15),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            validator: (value) {
+                              final trimmed = value?.trim() ?? '';
+                              if (trimmed.isEmpty) {
+                                return 'Net price is required.';
+                              }
+                              if (double.tryParse(trimmed) == null) {
+                                return 'Please enter a valid number.';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Display Price Field
+                          TextFormField(
+                            controller: _displayPriceController,
+                            decoration: _buildInputDecoration(
+                              'Display Price (Rp)',
+                              prefixIcon: Icons.trending_up,
+                            ),
+                            style: const TextStyle(fontSize: 15),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            validator: (value) {
+                              final trimmed = value?.trim() ?? '';
+                              if (trimmed.isEmpty) {
+                                return 'Display price is required.';
+                              }
+                              if (double.tryParse(trimmed) == null) {
+                                return 'Please enter a valid number.';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Section: Inventory
+                          _buildSectionHeader(
+                            title: 'Inventory Information',
+                            icon: Icons.inventory,
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Stock Field
+                          TextFormField(
+                            controller: _stockController,
+                            decoration: _buildInputDecoration('Initial Stock',
+                                prefixIcon: Icons.inventory_2),
+                            style: const TextStyle(fontSize: 15),
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              final trimmed = value?.trim() ?? '';
+                              if (trimmed.isEmpty) {
+                                return 'Stock is required.';
+                              }
+                              if (int.tryParse(trimmed) == null) {
+                                return 'Please enter a valid integer.';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Category Field
+                          TextFormField(
+                            controller: _categoryController,
+                            decoration: _buildInputDecoration('Category',
+                                prefixIcon: Icons.category),
+                            style: const TextStyle(fontSize: 15),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Category is required.';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Brand Field
+                          TextFormField(
+                            controller: _brandController,
+                            decoration: _buildInputDecoration('Brand',
+                                prefixIcon: Icons.business),
+                            style: const TextStyle(fontSize: 15),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Brand is required.';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 32),
+
+                          // Add Product Button
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _addProduct,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green.shade600,
+                                foregroundColor: Colors.white,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: const Text(
+                                'Add Product',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                           ),
-                          child: const Text('Scan'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    // Product Name Field
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: _buildInputDecoration('Product Name'),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Product name is required.';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    // Net Price Field
-                    TextFormField(
-                      controller: _netPriceController,
-                      decoration: _buildInputDecoration('Net Price'),
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      validator: (value) {
-                        final trimmed = value?.trim() ?? '';
-                        if (trimmed.isEmpty) {
-                          return 'Net price is required.';
-                        }
-                        if (double.tryParse(trimmed) == null) {
-                          return 'Please enter a valid number.';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    // Display Price Field
-                    TextFormField(
-                      controller: _displayPriceController,
-                      decoration: _buildInputDecoration('Display Price'),
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      validator: (value) {
-                        final trimmed = value?.trim() ?? '';
-                        if (trimmed.isEmpty) {
-                          return 'Display price is required.';
-                        }
-                        if (double.tryParse(trimmed) == null) {
-                          return 'Please enter a valid number.';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    // Stock Field
-                    TextFormField(
-                      controller: _stockController,
-                      decoration: _buildInputDecoration('Stock'),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        final trimmed = value?.trim() ?? '';
-                        if (trimmed.isEmpty) {
-                          return 'Stock is required.';
-                        }
-                        if (int.tryParse(trimmed) == null) {
-                          return 'Please enter a valid integer.';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    // Category Field
-                    TextFormField(
-                      controller: _categoryController,
-                      decoration: _buildInputDecoration('Category'),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Category is required.';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    // Brand Field
-                    TextFormField(
-                      controller: _brandController,
-                      decoration: _buildInputDecoration('Brand'),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Brand is required.';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    // Add Product Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _addProduct,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                        child: const Text(
-                          'Add Product',
-                          style: TextStyle(fontSize: 18),
-                        ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  // Helper method to build section headers
+  Widget _buildSectionHeader({required String title, required IconData icon}) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.blue.shade50,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: Colors.blue.shade700,
+            size: 16,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: Colors.blue.shade800,
+          ),
+        ),
+      ],
     );
   }
 }
