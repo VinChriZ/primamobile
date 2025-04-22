@@ -20,7 +20,6 @@ void main() async {
 
   runApp(const App());
 
-  //Device Preview Run
   // runApp(
   //   DevicePreview(
   //     enabled: !kReleaseMode,
