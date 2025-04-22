@@ -132,19 +132,18 @@ class InvoicePrintPreviewPage extends StatelessWidget {
       ],
     );
 
-    List<pw.Widget> detailWidgets = [];
-    detailWidgets.add(
+    List<pw.Widget> detailWidgets = [
       pw.Text('Transaction Details:',
           style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-    );
-    detailWidgets.add(pw.SizedBox(height: 8));
+      pw.SizedBox(height: 8),
+    ];
 
     for (var detail in details) {
       String productName;
       try {
         final product = await productRepository.fetchProduct(detail.upc);
         productName = product.name;
-      } catch (e) {
+      } catch (_) {
         productName = detail.upc;
       }
 
@@ -176,13 +175,7 @@ class InvoicePrintPreviewPage extends StatelessWidget {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(16),
-        build: (pw.Context context) {
-          return <pw.Widget>[
-            header,
-            pw.SizedBox(height: 16),
-            ...detailWidgets,
-          ];
-        },
+        build: (_) => [header, pw.SizedBox(height: 16), ...detailWidgets],
       ),
     );
 
@@ -196,9 +189,11 @@ class InvoicePrintPreviewPage extends StatelessWidget {
             await _generateInvoicePdf(context),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error printing invoice: $e')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error printing invoice: $e')),
+        );
+      }
     }
   }
 
@@ -210,28 +205,26 @@ class InvoicePrintPreviewPage extends StatelessWidget {
       await file.writeAsBytes(pdfData);
       await Share.shareXFiles([XFile(file.path)], text: 'Invoice PDF');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error exporting PDF: $e')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error exporting PDF: $e')),
+        );
+      }
     }
   }
 
   void _printThermal(BuildContext context) async {
     try {
-      // First show a loading indicator
+      // Show loading indicator
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        builder: (_) => const Center(child: CircularProgressIndicator()),
       );
 
       // Request Bluetooth permissions
       bool permissionsGranted = await BluetoothPermissionHelper.request();
-
-      // Close the loading indicator
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(); // hide loader
 
       if (!permissionsGranted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -241,14 +234,14 @@ class InvoicePrintPreviewPage extends StatelessWidget {
             duration: const Duration(seconds: 5),
             action: SnackBarAction(
               label: 'Settings',
-              onPressed: () => openAppSettings(),
+              onPressed: openAppSettings,
             ),
           ),
         );
         return;
       }
 
-      // Explicitly check Bluetooth status
+      // Check Bluetooth
       bool isBluetoothEnabled = await PrintBluetoothThermal.bluetoothEnabled;
       if (!isBluetoothEnabled) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -258,125 +251,80 @@ class InvoicePrintPreviewPage extends StatelessWidget {
         return;
       }
 
-      // Check if already connected to a printer
+      // Check connection
       bool isConnected = await PrintBluetoothThermal.connectionStatus;
       if (!isConnected) {
-        // Get paired devices
-        List<BluetoothInfo> pairedDevices =
-            await PrintBluetoothThermal.pairedBluetooths;
-
-        if (pairedDevices.isEmpty) {
+        final paired = await PrintBluetoothThermal.pairedBluetooths;
+        if (paired.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('No paired Bluetooth printers found')),
           );
           return;
         }
 
-        // Show device selection dialog with improved design
-        showDialog(
+        // Show list of paired devices
+        await showDialog(
           context: context,
-          builder: (context) => Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+          builder: (ctx) => Dialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
-                    'Select Printer',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
+                  const Text('Select Printer',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                   const Divider(),
-                  const SizedBox(height: 8),
                   ConstrainedBox(
                     constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * 0.5,
-                    ),
+                        maxHeight: MediaQuery.of(ctx).size.height * 0.5),
                     child: ListView.builder(
                       shrinkWrap: true,
-                      itemCount: pairedDevices.length,
-                      itemBuilder: (context, index) {
-                        final device = pairedDevices[index];
+                      itemCount: paired.length,
+                      itemBuilder: (_, i) {
+                        final device = paired[i];
                         return ListTile(
                           leading: const Icon(Icons.print, color: Colors.blue),
-                          title: Text(
-                            device.name,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
+                          title: Text(device.name,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold)),
                           subtitle: Text(device.macAdress),
                           onTap: () async {
-                            Navigator.of(context).pop();
-
-                            // Show connecting indicator
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (context) => AlertDialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                content: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 16.0),
-                                  child: Row(
-                                    children: const [
-                                      CircularProgressIndicator(),
-                                      SizedBox(width: 24),
-                                      Text(
-                                        'Connecting...',
-                                        style: TextStyle(fontSize: 16),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-
+                            Navigator.of(ctx).pop(); // close selection
                             try {
-                              bool result = await PrintBluetoothThermal.connect(
+                              // Show loader
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (_) => const Center(
+                                    child: CircularProgressIndicator()),
+                              );
+
+                              final ok = await PrintBluetoothThermal.connect(
                                   macPrinterAddress: device.macAdress);
+                              if (!ok) throw Exception('Connect failed');
 
-                              // Close the connecting dialog
-                              Navigator.of(context).pop();
+                              final bytes = await _generateThermalBytes();
+                              final wrote =
+                                  await PrintBluetoothThermal.writeBytes(bytes);
+                              if (!wrote) throw Exception('Write failed');
 
-                              if (result) {
-                                List<int> bytes = await _generateThermalBytes();
-                                await PrintBluetoothThermal.writeBytes(bytes);
-
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content:
-                                        Text('Print completed successfully'),
-                                    backgroundColor: Colors.green,
-                                  ),
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content:
-                                        Text('Failed to connect to printer'),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                              }
+                              Navigator.of(context).pop(); // hide loader
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Print completed successfully'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
                             } catch (e) {
-                              // Close the connecting dialog if still showing
-                              if (Navigator.of(context).canPop()) {
-                                Navigator.of(context).pop();
-                              }
-
+                              Navigator.of(context).pop(); // hide loader
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('Error: ${e.toString()}'),
+                                  content: Text('Printer Error: $e'),
                                   backgroundColor: Colors.red,
+                                  duration: const Duration(seconds: 5),
                                 ),
                               );
                             }
@@ -388,13 +336,7 @@ class InvoicePrintPreviewPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () => Navigator.of(ctx).pop(),
                     child: const Text('Cancel'),
                   ),
                 ],
@@ -403,16 +345,15 @@ class InvoicePrintPreviewPage extends StatelessWidget {
           ),
         );
       } else {
-        // Already connected to a printer, directly print
-        List<int> bytes = await _generateThermalBytes();
+        // Already connected → print directly
+        final bytes = await _generateThermalBytes();
         await PrintBluetoothThermal.writeBytes(bytes);
-
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Print completed')),
         );
       }
     } catch (e) {
-      // Show the error
+      // Catch any unexpected errors
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error connecting to printer: $e')),
       );
@@ -421,33 +362,129 @@ class InvoicePrintPreviewPage extends StatelessWidget {
 
   Future<List<int>> _generateThermalBytes() async {
     final profile = await CapabilityProfile.load();
-    final generator = Generator(PaperSize.mm58, profile);
+    final gen = Generator(PaperSize.mm58, profile);
+    final productRepo = ProductRepository();
     List<int> bytes = [];
 
-    bytes += generator.text('Invoice',
-        styles: const PosStyles(
-            align: PosAlign.center, bold: true, height: PosTextSize.size2));
-    bytes += generator.text('------------------------');
+    // ASCII-only helper
+    String _toAscii(String s) {
+      final cleaned = s.replaceAll('…', '...');
+      return String.fromCharCodes(
+        cleaned.codeUnits.where((c) => c >= 0x20 && c <= 0x7E),
+      );
+    }
 
+    // ——— Header ——————————————————————————————
+    bytes += gen.text(
+      _toAscii('Prima Elektronik'),
+      styles: const PosStyles(
+        align: PosAlign.center,
+        bold: true,
+        height: PosTextSize.size2,
+      ),
+    );
+    bytes += gen.text(
+      _toAscii('Jl. Raya Pasirian 45'),
+      styles: const PosStyles(align: PosAlign.center),
+    );
+    bytes += gen.text('--------------------------------');
+    bytes += gen.text(
+      _toAscii('INVOICE'),
+      styles: const PosStyles(
+        align: PosAlign.center,
+        bold: true,
+        height: PosTextSize.size1,
+      ),
+    );
+    bytes += gen.text('--------------------------------');
+
+    // ——— Date & Note ——————————————————————————————
     final dateStr = transaction.dateCreated.toLocal().toString().split(' ')[0];
-    bytes += generator.text('Date: $dateStr');
-    bytes += generator
-        .text('Total: Rp${transaction.totalAgreedPrice.toStringAsFixed(0)}');
-    bytes += generator.text('Qty: ${transaction.quantity}');
-    if (transaction.note != null && transaction.note!.isNotEmpty) {
-      bytes += generator.text('Note: ${transaction.note}');
+    bytes += gen.text(_toAscii('Tanggal : $dateStr'));
+    if ((transaction.note ?? '').isNotEmpty) {
+      bytes += gen.text(_toAscii('Catatan : ${transaction.note}'));
+    }
+    bytes += gen.text('--------------------------------');
+
+    // ——— Column headers ——————————————————————————
+    bytes += gen.row([
+      PosColumn(text: 'Item', width: 6, styles: const PosStyles(bold: true)),
+      PosColumn(
+        text: 'Qty',
+        width: 2,
+        styles: const PosStyles(align: PosAlign.center, bold: true),
+      ),
+      PosColumn(
+        text: 'Price',
+        width: 4,
+        styles: const PosStyles(align: PosAlign.right, bold: true),
+      ),
+    ]);
+    bytes += gen.text('--------------------------------');
+
+    // ——— Items with max two lines (words-based wrap) ——————————————————
+    const int nameLimit = 16;
+
+    for (var d in details) {
+      // fetch & sanitize name
+      String rawName;
+      try {
+        rawName = (await productRepo.fetchProduct(d.upc)).name;
+      } catch (_) {
+        rawName = d.upc;
+      }
+      final name = _toAscii(rawName);
+
+      // split into words & build up to two lines
+      final words = name.split(' ');
+      String line1 = '';
+      String line2 = '';
+      for (var w in words) {
+        if ((line1.length + (line1.isEmpty ? 0 : 1) + w.length) <= nameLimit) {
+          line1 = line1.isEmpty ? w : '$line1 $w';
+        } else if ((line2.length + (line2.isEmpty ? 0 : 1) + w.length) <=
+            nameLimit) {
+          line2 = line2.isEmpty ? w : '$line2 $w';
+        } else {
+          break; // drop any overflow beyond two lines
+        }
+      }
+
+      final qty = d.quantity.toString();
+      final price = _toAscii('Rp${d.agreedPrice.toStringAsFixed(0)}');
+
+      // first line with qty & price
+      bytes += gen.row([
+        PosColumn(text: line1, width: 6),
+        PosColumn(
+            text: qty,
+            width: 2,
+            styles: const PosStyles(align: PosAlign.center)),
+        PosColumn(
+            text: price,
+            width: 4,
+            styles: const PosStyles(align: PosAlign.right)),
+      ]);
+
+      // optional second line (no indent)
+      if (line2.isNotEmpty) {
+        bytes += gen.text(line2);
+      }
     }
 
-    bytes += generator.text('------------------------');
-    for (var detail in details) {
-      bytes += generator.text('${detail.upc}');
-      bytes += generator.text('Qty: ${detail.quantity} '
-          'Rp${detail.agreedPrice.toStringAsFixed(0)}');
-    }
-
-    bytes += generator.text('------------------------');
-    bytes += generator.feed(2);
-    bytes += generator.cut();
+    // ——— Footer with totals ——————————————————————————
+    bytes += gen.text('--------------------------------');
+    // Moved totals here
+    bytes += gen.text(_toAscii(
+        'Total           : Rp${transaction.totalAgreedPrice.toStringAsFixed(0)}'));
+    bytes += gen.text(_toAscii('Total Qty       : ${transaction.quantity}'));
+    bytes += gen.text('--------------------------------');
+    bytes += gen.text(
+      _toAscii('Terima kasih telah berbelanja!'),
+      styles: const PosStyles(align: PosAlign.center),
+    );
+    bytes += gen.feed(2);
+    bytes += gen.cut();
 
     return bytes;
   }
@@ -455,9 +492,7 @@ class InvoicePrintPreviewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Invoice Preview'),
-      ),
+      appBar: AppBar(title: const Text('Invoice Preview')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
