@@ -91,7 +91,6 @@ class _SalesEditState extends State<SalesEdit> {
 
   @override
   Widget build(BuildContext context) {
-    // Format the selected date for display.
     final formattedDate =
         "${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}";
 
@@ -99,56 +98,86 @@ class _SalesEditState extends State<SalesEdit> {
       appBar: AppBar(
         centerTitle: true,
         title: Text(formattedDate),
+        elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: _isSaving
             ? const Center(child: CircularProgressIndicator())
-            : Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    // Date Created field with a calendar picker.
-                    GestureDetector(
-                      onTap: () => _selectDate(context),
-                      child: InputDecorator(
-                        decoration: const InputDecoration(
-                          labelText: 'Date Created',
-                          border: OutlineInputBorder(),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              formattedDate,
-                              style: const TextStyle(fontSize: 16.0),
+            : Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        GestureDetector(
+                          onTap: () => _selectDate(context),
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              labelText: 'Date Created',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey[50],
                             ),
-                            const Icon(Icons.calendar_today),
-                          ],
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  formattedDate,
+                                  style: const TextStyle(fontSize: 16.0),
+                                ),
+                                Icon(Icons.calendar_today,
+                                    color: Theme.of(context).primaryColor),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 20.0),
+                        TextFormField(
+                          controller: _noteController,
+                          decoration: InputDecoration(
+                            labelText: 'Note',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                            hintText: 'Enter any additional notes here...',
+                          ),
+                          maxLines: 3,
+                        ),
+                        const SizedBox(height: 24.0),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: _saveChanges,
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              elevation: 2,
+                            ),
+                            child: const Text(
+                              'Save Changes',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16.0),
-                    // Note field.
-                    TextFormField(
-                      controller: _noteController,
-                      decoration: const InputDecoration(
-                        labelText: 'Note',
-                        border: OutlineInputBorder(),
-                      ),
-                      maxLines: 3,
-                      // Note is optional; add validation if needed.
-                      validator: (value) {
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 24.0),
-                    // Save button.
-                    ElevatedButton(
-                      onPressed: _saveChanges,
-                      child: const Text('Save'),
-                    ),
-                  ],
+                  ),
                 ),
               ),
       ),
