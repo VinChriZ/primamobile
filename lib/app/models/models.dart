@@ -4,3 +4,4 @@ export 'user_session/user_session.dart';
 export 'transaction/transaction.dart';
 export 'transaction/transaction_detail.dart';
 export 'product/product.dart';
+export 'cluster/product_cluster.dart';

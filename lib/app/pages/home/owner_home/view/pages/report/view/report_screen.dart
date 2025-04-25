@@ -11,6 +11,7 @@ import 'package:primamobile/app/pages/home/owner_home/view/pages/report/bloc/rep
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/report/view/clustering_page.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -673,6 +674,9 @@ class _ReportScreenState extends State<ReportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // appBar: AppBar(
+      //   title: const Text('Sales Report'),
+      // ),
       body: SafeArea(
         child: Column(
           children: [
@@ -693,50 +697,89 @@ class _ReportScreenState extends State<ReportScreen> {
                 ],
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  labelText: 'Date Range',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(
-                        color: Colors.black), // Changed to black
+              child: Column(
+                children: [
+                  DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      labelText: 'Date Range',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Colors.black),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Colors.black),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide:
+                            BorderSide(color: Theme.of(context).primaryColor),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 16),
+                      prefixIcon: const Icon(Icons.date_range),
+                    ),
+                    value: _selectedFilter,
+                    items: const [
+                      DropdownMenuItem(
+                          value: 'Last 7 Days', child: Text('Last 7 Days')),
+                      DropdownMenuItem(
+                          value: 'Last Month', child: Text('Last Month')),
+                      DropdownMenuItem(
+                          value: 'Last Year', child: Text('Last Year')),
+                      DropdownMenuItem(value: 'Custom', child: Text('Custom')),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedFilter = value;
+                        });
+                        if (value == 'Custom') {
+                          _selectCustomDateRange();
+                        } else {
+                          _applyFilter();
+                        }
+                      }
+                    },
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(
-                        color: Colors.black), // Changed to black
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const ClusteringPage()),
+                            );
+                          },
+                          icon:
+                              const Icon(Icons.analytics, color: Colors.white),
+                          label: const Text('Yearly Report',
+                              style: TextStyle(color: Colors.white)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green[700],
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _sharePdf,
+                          icon: const Icon(Icons.share, color: Colors.white),
+                          label: const Text('Share Report',
+                              style: TextStyle(color: Colors.white)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue[700],
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide:
-                        BorderSide(color: Theme.of(context).primaryColor),
-                  ),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  prefixIcon: const Icon(Icons.date_range),
-                ),
-                value: _selectedFilter,
-                items: const [
-                  DropdownMenuItem(
-                      value: 'Last 7 Days', child: Text('Last 7 Days')),
-                  DropdownMenuItem(
-                      value: 'Last Month', child: Text('Last Month')),
-                  DropdownMenuItem(
-                      value: 'Last Year', child: Text('Last Year')),
-                  DropdownMenuItem(value: 'Custom', child: Text('Custom')),
                 ],
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _selectedFilter = value;
-                    });
-                    if (value == 'Custom') {
-                      _selectCustomDateRange();
-                    } else {
-                      _applyFilter();
-                    }
-                  }
-                },
               ),
             ),
             Expanded(
@@ -833,15 +876,6 @@ class _ReportScreenState extends State<ReportScreen> {
             ),
           ],
         ),
-      ),
-      // Add FloatingActionButton for sharing
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _sharePdf,
-        tooltip: 'Share Report',
-        icon: const Icon(Icons.share),
-        label: const Text('Share Report'),
-        elevation: 4,
-        backgroundColor: Colors.blue[700],
       ),
     );
   }
