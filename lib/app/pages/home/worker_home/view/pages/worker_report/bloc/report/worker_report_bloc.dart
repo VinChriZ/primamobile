@@ -65,7 +65,7 @@ class WorkerReportBloc extends Bloc<WorkerReportEvent, WorkerReportState> {
         ));
       } catch (e) {
         if (e.toString().contains("401")) {
-          emit(WorkerReportError(
+          emit(const WorkerReportError(
               'Login expired, please restart the app and login again'));
         } else {
           emit(WorkerReportError('Failed to delete report: ${e.toString()}'));

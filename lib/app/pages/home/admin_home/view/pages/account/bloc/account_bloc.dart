@@ -24,7 +24,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
       emit(AccountLoaded(accounts: accounts));
     } catch (e) {
       if (e.toString().contains("401")) {
-        emit(AccountError(
+        emit(const AccountError(
             message: "Login expired, please restart the app and login again"));
       } else {
         emit(AccountError(message: e.toString()));
@@ -45,7 +45,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
       }
     } catch (e) {
       if (e.toString().contains("401")) {
-        emit(AccountError(
+        emit(const AccountError(
             message: "Login expired, please restart the app and login again"));
       } else {
         emit(AccountError(message: e.toString()));
@@ -66,10 +66,10 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
       }
     } catch (e) {
       if (e.toString().contains("401")) {
-        emit(AccountError(
+        emit(const AccountError(
             message: "Login expired, please restart the app and login again"));
       } else {
-        emit(AccountError(message: "Failed to load account data"));
+        emit(const AccountError(message: "Failed to load account data"));
       }
     }
   }
@@ -87,7 +87,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
       }
     } catch (e) {
       if (e.toString().contains("401")) {
-        emit(AccountError(
+        emit(const AccountError(
             message: "Login expired, please restart the app and login again"));
       } else {
         emit(AccountError(message: e.toString()));

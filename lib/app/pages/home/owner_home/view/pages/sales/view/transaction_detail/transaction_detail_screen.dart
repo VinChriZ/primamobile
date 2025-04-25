@@ -313,7 +313,7 @@ class TransactionDetailScreen extends StatelessWidget {
                             if (quantity > availableStock) {
                               setState(() {
                                 errorMessage =
-                                    'Maximum allowed quantity is ${availableStock}';
+                                    'Maximum allowed quantity is $availableStock';
                               });
                               return;
                             }

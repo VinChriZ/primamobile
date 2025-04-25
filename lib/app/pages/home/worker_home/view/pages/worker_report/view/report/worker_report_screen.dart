@@ -593,7 +593,7 @@ class WorkerReportScreen extends StatelessWidget {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.error_outline,
+                                  const Icon(Icons.error_outline,
                                       size: 48, color: Colors.red),
                                   const SizedBox(height: 16),
                                   Text(

@@ -103,7 +103,7 @@ class InvoicePrintPreviewPage extends StatelessWidget {
     final productRepository =
         RepositoryProvider.of<ProductRepository>(context, listen: false);
 
-    pw.Widget _buildPdfRow({required String label, required String value}) {
+    pw.Widget buildPdfRow({required String label, required String value}) {
       return pw.Row(
         children: [
           pw.Text(label, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
@@ -124,10 +124,10 @@ class InvoicePrintPreviewPage extends StatelessWidget {
         pw.Text('Invoice',
             style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
         pw.SizedBox(height: 8),
-        _buildPdfRow(label: 'Date:', value: dateStr),
-        _buildPdfRow(label: 'Total Agreed Price:', value: totalPrice),
-        _buildPdfRow(label: 'Quantity:', value: quantity),
-        if (note.isNotEmpty) _buildPdfRow(label: 'Note:', value: note),
+        buildPdfRow(label: 'Date:', value: dateStr),
+        buildPdfRow(label: 'Total Agreed Price:', value: totalPrice),
+        buildPdfRow(label: 'Quantity:', value: quantity),
+        if (note.isNotEmpty) buildPdfRow(label: 'Note:', value: note),
         pw.Divider(),
       ],
     );
@@ -228,10 +228,10 @@ class InvoicePrintPreviewPage extends StatelessWidget {
 
       if (!permissionsGranted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text(
+          const SnackBar(
+            content: Text(
                 'Nearby devices permission required. Please enable in settings.'),
-            duration: const Duration(seconds: 5),
+            duration: Duration(seconds: 5),
             action: SnackBarAction(
               label: 'Settings',
               onPressed: openAppSettings,
@@ -367,7 +367,7 @@ class InvoicePrintPreviewPage extends StatelessWidget {
     List<int> bytes = [];
 
     // ASCII-only helper
-    String _toAscii(String s) {
+    String toAscii(String s) {
       final cleaned = s.replaceAll('…', '...');
       return String.fromCharCodes(
         cleaned.codeUnits.where((c) => c >= 0x20 && c <= 0x7E),
@@ -376,7 +376,7 @@ class InvoicePrintPreviewPage extends StatelessWidget {
 
     // ——— Header ——————————————————————————————
     bytes += gen.text(
-      _toAscii('Prima Elektronik'),
+      toAscii('Prima Elektronik'),
       styles: const PosStyles(
         align: PosAlign.center,
         bold: true,
@@ -384,12 +384,12 @@ class InvoicePrintPreviewPage extends StatelessWidget {
       ),
     );
     bytes += gen.text(
-      _toAscii('Jl. Raya Pasirian 45'),
+      toAscii('Jl. Raya Pasirian 45'),
       styles: const PosStyles(align: PosAlign.center),
     );
     bytes += gen.text('--------------------------------');
     bytes += gen.text(
-      _toAscii('INVOICE'),
+      toAscii('INVOICE'),
       styles: const PosStyles(
         align: PosAlign.center,
         bold: true,
@@ -400,9 +400,9 @@ class InvoicePrintPreviewPage extends StatelessWidget {
 
     // ——— Date & Note ——————————————————————————————
     final dateStr = transaction.dateCreated.toLocal().toString().split(' ')[0];
-    bytes += gen.text(_toAscii('Tanggal : $dateStr'));
+    bytes += gen.text(toAscii('Tanggal : $dateStr'));
     if ((transaction.note ?? '').isNotEmpty) {
-      bytes += gen.text(_toAscii('Catatan : ${transaction.note}'));
+      bytes += gen.text(toAscii('Catatan : ${transaction.note}'));
     }
     bytes += gen.text('--------------------------------');
 
@@ -433,7 +433,7 @@ class InvoicePrintPreviewPage extends StatelessWidget {
       } catch (_) {
         rawName = d.upc;
       }
-      final name = _toAscii(rawName);
+      final name = toAscii(rawName);
 
       // split into words & build up to two lines
       final words = name.split(' ');
@@ -451,7 +451,7 @@ class InvoicePrintPreviewPage extends StatelessWidget {
       }
 
       final qty = d.quantity.toString();
-      final price = _toAscii('Rp${d.agreedPrice.toStringAsFixed(0)}');
+      final price = toAscii('Rp${d.agreedPrice.toStringAsFixed(0)}');
 
       // first line with qty & price
       bytes += gen.row([
@@ -475,12 +475,12 @@ class InvoicePrintPreviewPage extends StatelessWidget {
     // ——— Footer with totals ——————————————————————————
     bytes += gen.text('--------------------------------');
     // Moved totals here
-    bytes += gen.text(_toAscii(
+    bytes += gen.text(toAscii(
         'Total           : Rp${transaction.totalAgreedPrice.toStringAsFixed(0)}'));
-    bytes += gen.text(_toAscii('Total Qty       : ${transaction.quantity}'));
+    bytes += gen.text(toAscii('Total Qty       : ${transaction.quantity}'));
     bytes += gen.text('--------------------------------');
     bytes += gen.text(
-      _toAscii('Terima kasih telah berbelanja!'),
+      toAscii('Terima kasih telah berbelanja!'),
       styles: const PosStyles(align: PosAlign.center),
     );
     bytes += gen.feed(2);

@@ -38,10 +38,10 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
       ));
     } catch (e) {
       if (e.toString().contains("401")) {
-        emit(SalesError(
+        emit(const SalesError(
             'Login expired, please restart the app and login again'));
       } else {
-        emit(SalesError('Failed to fetch transactions'));
+        emit(const SalesError('Failed to fetch transactions'));
       }
     }
   }
@@ -107,7 +107,7 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
         ));
       } catch (e) {
         if (e.toString().contains("401")) {
-          emit(SalesError(
+          emit(const SalesError(
               'Login expired, please restart the app and login again'));
         } else {
           emit(SalesError('Failed to delete transaction: ${e.toString()}'));

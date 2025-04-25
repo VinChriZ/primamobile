@@ -265,7 +265,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                         if (product != null)
                           Text(
                             'Available stock: ${product.stock}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),

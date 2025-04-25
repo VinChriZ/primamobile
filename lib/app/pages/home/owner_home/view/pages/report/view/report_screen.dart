@@ -142,7 +142,7 @@ class _ReportScreenState extends State<ReportScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              Divider(),
+              const Divider(),
               const SizedBox(height: 8),
               Text(
                 'Date Range: ${DateFormat('MMM dd, yyyy').format(state.startDate!)} - ${DateFormat('MMM dd, yyyy').format(state.endDate!)}',
@@ -807,7 +807,7 @@ class _ReportScreenState extends State<ReportScreen> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.error_outline,
+                                const Icon(Icons.error_outline,
                                     size: 48, color: Colors.red),
                                 const SizedBox(height: 16),
                                 Text(

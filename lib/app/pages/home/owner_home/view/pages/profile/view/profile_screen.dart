@@ -50,17 +50,17 @@ class ProfileScreen extends StatelessWidget {
                             padding: const EdgeInsets.only(bottom: 25),
                             child: Column(
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(16.0),
+                                const Padding(
+                                  padding: EdgeInsets.all(16.0),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const Icon(
+                                      Icon(
                                         Icons.account_circle,
                                         color: Colors.white,
                                         size: 30,
                                       ),
-                                      const SizedBox(width: 8),
+                                      SizedBox(width: 8),
                                       Text(
                                         'Profile',
                                         style: TextStyle(
@@ -203,9 +203,9 @@ class ProfileScreen extends StatelessWidget {
                         ),
                         elevation: 3,
                       ),
-                      child: Row(
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
+                        children: [
                           Icon(Icons.logout, size: 20),
                           SizedBox(width: 8),
                           Text(
