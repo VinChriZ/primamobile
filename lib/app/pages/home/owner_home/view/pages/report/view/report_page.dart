@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:primamobile/app/pages/home/owner_home/view/pages/report/bloc/report_bloc.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/report/bloc/report/report_bloc.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/report/view/report_screen.dart';
 import 'package:primamobile/repository/transaction_detail_repository.dart';
 import 'package:primamobile/repository/transaction_repository.dart';

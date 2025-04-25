@@ -7,7 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
-import 'package:primamobile/app/pages/home/owner_home/view/pages/report/bloc/report_bloc.dart';
+import 'package:primamobile/app/pages/home/owner_home/view/pages/report/bloc/report/report_bloc.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
