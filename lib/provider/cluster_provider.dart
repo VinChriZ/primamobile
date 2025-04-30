@@ -34,6 +34,26 @@ class ClusterProvider {
             'Failed to fetch product clusters with status code: ${response.statusCode}');
       }
     } catch (e) {
+      // Handle the specific ValueError for n_samples < n_clusters
+      if (e.toString().contains('n_samples=') &&
+          e.toString().contains('should be >= n_clusters=')) {
+        // Retry with fewer clusters - try with 2 clusters
+        print(
+            'Too few samples for requested clusters. Retrying with 2 clusters.');
+        if (clusters > 2) {
+          return getProductClusters(
+            startDate: startDate,
+            endDate: endDate,
+            clusters: 2, // Try with minimum valid clusters
+          );
+        }
+      }
+      // If no data at all, throw a more specific error
+      if (e.toString().contains('n_samples=0') ||
+          e.toString().contains('Empty dataset')) {
+        throw Exception('No sales data available for the selected date range.');
+      }
+
       print('Error fetching product clusters: $e');
       rethrow;
     }

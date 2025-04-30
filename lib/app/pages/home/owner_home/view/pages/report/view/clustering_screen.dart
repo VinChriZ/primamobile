@@ -11,8 +11,7 @@ class ClusteringScreen extends StatefulWidget {
 }
 
 class _ClusteringScreenState extends State<ClusteringScreen> {
-  int? _selectedStartYear;
-  int? _selectedEndYear;
+  int _selectedYear = DateTime.now().year;
   int _numberOfClusters = 3;
   final int _currentYear = DateTime.now().year;
 
@@ -86,8 +85,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
 
   Widget _buildClusteringContent(ClusteringLoaded state) {
     // Format to show only the year
-    String dateRangeText =
-        'Year Range: ${state.startDate!.year} - ${state.endDate!.year}';
+    String yearText = 'Year: ${state.startDate!.year}';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -116,7 +114,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                   const Icon(Icons.insights, color: Colors.blue),
                   const SizedBox(width: 8),
                   const Text(
-                    'Product Clustering Analysis',
+                    'Product Category',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const Spacer(),
@@ -128,7 +126,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      dateRangeText,
+                      yearText,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -353,10 +351,11 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
 
   void _showFilterDialog() async {
     final currentState = context.read<ClusteringBloc>().state;
+    // Store the bloc reference before showing dialog
+    final clusteringBloc = context.read<ClusteringBloc>();
 
     setState(() {
-      _selectedStartYear = currentState.startDate?.year ?? (_currentYear - 1);
-      _selectedEndYear = currentState.endDate?.year ?? _currentYear;
+      _selectedYear = currentState.startDate?.year ?? _currentYear;
       _numberOfClusters = currentState.numberOfClusters;
     });
 
@@ -383,71 +382,32 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                           size: 20, color: Colors.blue),
                       const SizedBox(width: 8),
                       const Text(
-                        'Select Years:',
+                        'Select Year:',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<int>(
-                          decoration: const InputDecoration(
-                            labelText: 'Start Year',
-                            border: OutlineInputBorder(),
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 12),
-                          ),
-                          value: _selectedStartYear,
-                          items: List.generate(
-                                  10, (index) => _currentYear - 9 + index)
-                              .map((year) => DropdownMenuItem<int>(
-                                    value: year,
-                                    child: Text('$year'),
-                                  ))
-                              .toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedStartYear = value;
-                              // Make sure end year is not before start year
-                              if (_selectedEndYear! < _selectedStartYear!) {
-                                _selectedEndYear = _selectedStartYear;
-                              }
-                            });
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: DropdownButtonFormField<int>(
-                          decoration: const InputDecoration(
-                            labelText: 'End Year',
-                            border: OutlineInputBorder(),
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 12),
-                          ),
-                          value: _selectedEndYear,
-                          items: List.generate(
-                                  10, (index) => _currentYear - 9 + index)
-                              .map((year) => DropdownMenuItem<int>(
-                                    value: year,
-                                    child: Text('$year'),
-                                  ))
-                              .toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedEndYear = value;
-                              // Make sure start year is not after end year
-                              if (_selectedStartYear! > _selectedEndYear!) {
-                                _selectedStartYear = _selectedEndYear;
-                              }
-                            });
-                          },
-                        ),
-                      ),
-                    ],
+                  DropdownButtonFormField<int>(
+                    decoration: const InputDecoration(
+                      labelText: 'Year',
+                      border: OutlineInputBorder(),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    value: _selectedYear,
+                    items:
+                        List.generate(10, (index) => _currentYear - 9 + index)
+                            .map((year) => DropdownMenuItem<int>(
+                                  value: year,
+                                  child: Text('$year'),
+                                ))
+                            .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedYear = value!;
+                      });
+                    },
                   ),
                   const SizedBox(height: 24),
                   Row(
@@ -509,17 +469,18 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                   onPressed: () {
                     Navigator.pop(context);
 
-                    // Convert years to DateTime objects (January 1st of selected years)
-                    final startDate = DateTime(_selectedStartYear!, 1, 1);
-                    final endDate = DateTime(_selectedEndYear!, 12, 31);
+                    // Set date range for the entire selected year
+                    final startDate = DateTime(_selectedYear, 1, 1);
+                    final endDate = DateTime(_selectedYear, 12, 31);
 
-                    context.read<ClusteringBloc>().add(
-                          ChangeClusteringFilterEvent(
-                            startDate: startDate,
-                            endDate: endDate,
-                            numberOfClusters: _numberOfClusters,
-                          ),
-                        );
+                    // Use the stored bloc reference instead of context.read
+                    clusteringBloc.add(
+                      ChangeClusteringFilterEvent(
+                        startDate: startDate,
+                        endDate: endDate,
+                        numberOfClusters: _numberOfClusters,
+                      ),
+                    );
                   },
                   icon: const Icon(Icons.check),
                   label: const Text('Apply'),
