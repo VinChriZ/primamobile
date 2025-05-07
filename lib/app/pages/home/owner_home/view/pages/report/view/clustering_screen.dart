@@ -99,7 +99,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
+                color: Colors.grey.withAlpha(51), // 0.2 * 255 = 51
                 spreadRadius: 1,
                 blurRadius: 3,
                 offset: const Offset(0, 1),
@@ -122,7 +122,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
+                      color: Colors.blue.withAlpha(26), // 0.1 * 255 = 26
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -267,8 +267,8 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
             ),
           ],
         ),
-        collapsedBackgroundColor: clusterColor.withOpacity(0.05),
-        backgroundColor: clusterColor.withOpacity(0.05),
+        collapsedBackgroundColor: clusterColor.withAlpha(13), // 0.05 * 255 = 13
+        backgroundColor: clusterColor.withAlpha(13), // 0.05 * 255 = 13
         children: [
           Container(
             padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
@@ -365,23 +365,22 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Row(
+              title: const Row(
                 children: [
-                  const Icon(Icons.filter_alt, size: 24),
-                  const SizedBox(width: 8),
-                  const Text('Filter Options'),
+                  Icon(Icons.filter_alt, size: 24),
+                  SizedBox(width: 8),
+                  Text('Filter Options'),
                 ],
               ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(height: 8),
-                  Row(
+                  const Row(
                     children: [
-                      const Icon(Icons.calendar_today,
-                          size: 20, color: Colors.blue),
-                      const SizedBox(width: 8),
-                      const Text(
+                      Icon(Icons.calendar_today, size: 20, color: Colors.blue),
+                      SizedBox(width: 8),
+                      Text(
                         'Select Year:',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
@@ -410,11 +409,11 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                     },
                   ),
                   const SizedBox(height: 24),
-                  Row(
+                  const Row(
                     children: [
-                      const Icon(Icons.category, size: 20, color: Colors.blue),
-                      const SizedBox(width: 8),
-                      const Text(
+                      Icon(Icons.category, size: 20, color: Colors.blue),
+                      SizedBox(width: 8),
+                      Text(
                         'Number of clusters:',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
@@ -446,7 +445,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.1),
+                        color: Colors.blue.withAlpha(26), // 0.1 * 255 = 26
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(

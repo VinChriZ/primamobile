@@ -68,42 +68,58 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
       final Map<int, Color> clusterColors = {};
       final Map<int, List<ProductCluster>> groupedClusters = {};
 
-      // Define cluster types based on the actual number of clusters
-      List<String> clusterTypes = [];
-      List<Color> colors = [];
-
-      if (safeNumberOfClusters == 2) {
-        clusterTypes = ['Best Selling', 'Low Selling'];
-        colors = [Colors.green, Colors.red];
-      } else {
-        clusterTypes = ['Best Selling', 'Seasonal', 'Low Selling'];
-        colors = [Colors.green, Colors.amber, Colors.red];
-
-        // Add more colors if needed for higher cluster counts
-        if (safeNumberOfClusters > 3) {
-          for (int i = 3; i < safeNumberOfClusters; i++) {
-            clusterTypes.add('Cluster ${i + 1}');
-            colors.add(Colors.blue);
-          }
+      // First group products by cluster
+      for (var product in productClusters) {
+        if (!groupedClusters.containsKey(product.cluster)) {
+          groupedClusters[product.cluster] = [];
         }
+        groupedClusters[product.cluster]!.add(product);
       }
 
-      // Group products by cluster
-      for (var cluster in productClusters) {
-        if (!groupedClusters.containsKey(cluster.cluster)) {
-          groupedClusters[cluster.cluster] = [];
+      // Calculate metrics for all clusters for comparison
+      List<Map<String, dynamic>> clusterMetrics = [];
 
-          // Assign label and color based on cluster ID
-          int index = cluster.cluster;
-          if (index < clusterTypes.length) {
-            clusterLabels[index] = clusterTypes[index];
-            clusterColors[index] = colors[index];
-          } else {
-            clusterLabels[index] = 'Cluster ${index + 1}';
-            clusterColors[index] = Colors.blue;
-          }
+      groupedClusters.forEach((clusterId, products) {
+        double totalSales = 0;
+        double dailySales = 0;
+        double daysSold = 0;
+
+        for (var product in products) {
+          totalSales += product.totalSales;
+          dailySales += product.avgDailySales;
+          daysSold += product.daysSold;
         }
-        groupedClusters[cluster.cluster]!.add(cluster);
+
+        clusterMetrics.add({
+          'id': clusterId,
+          'avgTotalSales': totalSales / products.length,
+          'avgDailySales': dailySales / products.length,
+          'avgDaysSold': daysSold / products.length,
+          'count': products.length,
+        });
+      });
+
+      // Sort clusters by total sales (highest first)
+      clusterMetrics
+          .sort((a, b) => b['avgTotalSales'].compareTo(a['avgTotalSales']));
+
+      // Always assign exactly 3 categories based on relative performance
+      for (int i = 0; i < clusterMetrics.length; i++) {
+        int clusterId = clusterMetrics[i]['id'];
+
+        if (i == 0) {
+          // Best performing cluster
+          clusterLabels[clusterId] = 'Best Selling';
+          clusterColors[clusterId] = Colors.green[700]!;
+        } else if (i == clusterMetrics.length - 1) {
+          // Worst performing cluster
+          clusterLabels[clusterId] = 'Low Selling';
+          clusterColors[clusterId] = Colors.red[700]!;
+        } else {
+          // Middle clusters
+          clusterLabels[clusterId] = 'Seasonal';
+          clusterColors[clusterId] = Colors.amber[700]!;
+        }
       }
 
       emit(ClusteringLoaded(
