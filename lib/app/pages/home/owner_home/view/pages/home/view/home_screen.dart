@@ -10,22 +10,20 @@ import 'package:primamobile/utils/globals.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  /// Returns "-" if the value is 0; otherwise, returns a string formatted
-  /// with an optional prefix and thousands separators.
+  /// Returns the formatted value with thousands separators.
+  /// If the value is 0, it now returns "0" with the optional prefix.
   String formatTodayValue(dynamic value, {String prefix = ''}) {
-    if (value == 0) {
-      return '-';
-    } else {
-      // Create a NumberFormat instance for Indonesian format (uses . as thousand separator)
-      final NumberFormat formatter = NumberFormat.decimalPattern('id_ID');
+    // Create a NumberFormat instance for Indonesian format (uses . as thousand separator)
+    final NumberFormat formatter = NumberFormat.decimalPattern('id_ID');
 
-      if (value is double) {
-        // Format the double value with thousands separator
-        return '$prefix${formatter.format(value)}';
-      } else {
-        // Format the integer value with thousands separator
-        return '$prefix${formatter.format(value)}';
-      }
+    if (value == 0) {
+      return '${prefix}0';
+    } else if (value is double) {
+      // Format the double value with thousands separator
+      return '$prefix${formatter.format(value)}';
+    } else {
+      // Format the integer value with thousands separator
+      return '$prefix${formatter.format(value)}';
     }
   }
 
@@ -54,7 +52,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
           Container(
-            width: 70,
+            width: 100,
             padding: const EdgeInsets.only(right: 5),
             child: Text(
               baseLabel,
