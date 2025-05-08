@@ -5,3 +5,4 @@ export 'transaction/transaction.dart';
 export 'transaction/transaction_detail.dart';
 export 'product/product.dart';
 export 'cluster/product_cluster.dart';
+export 'classification/product_classification.dart';

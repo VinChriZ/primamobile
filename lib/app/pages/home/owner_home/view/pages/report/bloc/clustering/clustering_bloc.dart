@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:primamobile/app/models/models.dart';
+import 'package:primamobile/repository/classification_repository.dart';
 import 'package:primamobile/repository/cluster_repository.dart';
 import 'package:primamobile/repository/product_repository.dart';
 
@@ -11,14 +12,17 @@ part 'clustering_state.dart';
 class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
   final ClusterRepository clusterRepository;
   final ProductRepository productRepository;
+  final ClassificationRepository classificationRepository;
 
   ClusteringBloc({
     required this.clusterRepository,
     required this.productRepository,
+    required this.classificationRepository,
   }) : super(ClusteringInitial()) {
     on<LoadClusteringEvent>(_onLoadClustering);
     on<ChangeClusteringFilterEvent>(_onChangeFilter);
     on<LoadClusteringByYearEvent>(_onLoadClusteringByYear);
+    on<RetrainModelEvent>(_onRetrainModel);
   }
 
   Future<void> _onLoadClustering(
@@ -56,81 +60,246 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
         }
       }
 
-      // Fetch product clusters based on the date range and safe cluster count
-      final productClusters = await clusterRepository.fetchProductClusters(
-        startDate: startDate,
-        endDate: endDate,
-        numberOfClusters: safeNumberOfClusters,
-      );
+      try {
+        // First fetch standard product clusters for all the product data
+        final productClusters = await clusterRepository.fetchProductClusters(
+          startDate: startDate,
+          endDate: endDate,
+          numberOfClusters: safeNumberOfClusters,
+        );
 
-      // Create cluster labels and colors
-      final Map<int, String> clusterLabels = {};
-      final Map<int, Color> clusterColors = {};
-      final Map<int, List<ProductCluster>> groupedClusters = {};
-
-      // First group products by cluster
-      for (var product in productClusters) {
-        if (!groupedClusters.containsKey(product.cluster)) {
-          groupedClusters[product.cluster] = [];
-        }
-        groupedClusters[product.cluster]!.add(product);
-      }
-
-      // Calculate metrics for all clusters for comparison
-      List<Map<String, dynamic>> clusterMetrics = [];
-
-      groupedClusters.forEach((clusterId, products) {
-        double totalSales = 0;
-        double dailySales = 0;
-        double daysSold = 0;
-
-        for (var product in products) {
-          totalSales += product.totalSales;
-          dailySales += product.avgDailySales;
-          daysSold += product.daysSold;
+        // Create a map of UPC to ProductCluster for easy lookup
+        final Map<String, ProductCluster> upcToCluster = {};
+        for (var product in productClusters) {
+          upcToCluster[product.upc] = product;
         }
 
-        clusterMetrics.add({
-          'id': clusterId,
-          'avgTotalSales': totalSales / products.length,
-          'avgDailySales': dailySales / products.length,
-          'avgDaysSold': daysSold / products.length,
-          'count': products.length,
+        // Now try to use classification API for category labels
+        final List<ProductClassification> classifications =
+            await classificationRepository.fetchProductClassifications(
+          startDate: startDate,
+          endDate: endDate,
+        );
+
+        // Create cluster labels and colors map based on categories
+        final Map<String, Color> categoryColors = {
+          "Top Seller": Colors.green[700]!,
+          "Seasonal": Colors.amber[700]!,
+          "Low Seller": Colors.red[700]!,
+        };
+
+        // Maps for cluster labels and colors
+        final Map<int, String> clusterLabels = {};
+        final Map<int, Color> clusterColors = {};
+        final Map<int, List<ProductCluster>> groupedClusters = {};
+
+        // Group products by their classified cluster
+        for (var classification in classifications) {
+          // Set cluster label and color
+          clusterLabels[classification.cluster] = classification.category;
+          clusterColors[classification.cluster] =
+              categoryColors[classification.category] ?? Colors.blue;
+
+          // Find this product's data in the productClusters
+          final cluster = classification.cluster;
+          final ProductCluster? productData = upcToCluster[classification.upc];
+
+          if (productData != null) {
+            // Create a new ProductCluster with the classified cluster
+            final classifiedProduct = ProductCluster(
+              upc: productData.upc,
+              totalSales: productData.totalSales,
+              daysSold: productData.daysSold,
+              avgDailySales: productData.avgDailySales,
+              salesFrequency: productData.salesFrequency,
+              maxDailySales: productData.maxDailySales,
+              minDailySales: productData.minDailySales,
+              stdDailySales: productData.stdDailySales,
+              daysSinceLastSale: productData.daysSinceLastSale,
+              txCount: productData.txCount,
+              cluster: cluster, // Use cluster from classification
+            );
+
+            // Add to grouped clusters
+            if (!groupedClusters.containsKey(cluster)) {
+              groupedClusters[cluster] = [];
+            }
+            groupedClusters[cluster]!.add(classifiedProduct);
+          }
+        }
+
+        // Create a new list of product clusters with classified clusters
+        final List<ProductCluster> classifiedProductClusters = [];
+        groupedClusters.forEach((clusterId, products) {
+          classifiedProductClusters.addAll(products);
         });
-      });
 
-      // Sort clusters by total sales (highest first)
-      clusterMetrics
-          .sort((a, b) => b['avgTotalSales'].compareTo(a['avgTotalSales']));
-
-      // Always assign exactly 3 categories based on relative performance
-      for (int i = 0; i < clusterMetrics.length; i++) {
-        int clusterId = clusterMetrics[i]['id'];
-
-        if (i == 0) {
-          // Best performing cluster
-          clusterLabels[clusterId] = 'Best Selling';
-          clusterColors[clusterId] = Colors.green[700]!;
-        } else if (i == clusterMetrics.length - 1) {
-          // Worst performing cluster
-          clusterLabels[clusterId] = 'Low Selling';
-          clusterColors[clusterId] = Colors.red[700]!;
-        } else {
-          // Middle clusters
-          clusterLabels[clusterId] = 'Seasonal';
-          clusterColors[clusterId] = Colors.amber[700]!;
+        if (classifiedProductClusters.isNotEmpty) {
+          emit(ClusteringLoaded(
+            productClusters: classifiedProductClusters,
+            clusterLabels: clusterLabels,
+            clusterColors: clusterColors,
+            groupedClusters: groupedClusters,
+            startDate: startDate,
+            endDate: endDate,
+            numberOfClusters: safeNumberOfClusters,
+            usesClassificationModel: true,
+          ));
+          return;
         }
-      }
 
-      emit(ClusteringLoaded(
-        productClusters: productClusters,
-        clusterLabels: clusterLabels,
-        clusterColors: clusterColors,
-        groupedClusters: groupedClusters,
-        startDate: startDate,
-        endDate: endDate,
-        numberOfClusters: safeNumberOfClusters,
-      ));
+        // Fallback to traditional clustering if no classification results
+        print('No classification results - using traditional K-means');
+
+        // Create cluster labels and colors for traditional clustering
+        final Map<int, String> traditionalLabels = {};
+        final Map<int, Color> traditionalColors = {};
+        final Map<int, List<ProductCluster>> traditionalGroupedClusters = {};
+
+        // First group products by cluster
+        for (var product in productClusters) {
+          if (!traditionalGroupedClusters.containsKey(product.cluster)) {
+            traditionalGroupedClusters[product.cluster] = [];
+          }
+          traditionalGroupedClusters[product.cluster]!.add(product);
+        }
+
+        // Calculate metrics for all clusters for comparison
+        List<Map<String, dynamic>> clusterMetrics = [];
+
+        traditionalGroupedClusters.forEach((clusterId, products) {
+          double totalSales = 0;
+          double dailySales = 0;
+          double daysSold = 0;
+
+          for (var product in products) {
+            totalSales += product.totalSales;
+            dailySales += product.avgDailySales;
+            daysSold += product.daysSold;
+          }
+
+          clusterMetrics.add({
+            'id': clusterId,
+            'avgTotalSales': totalSales / products.length,
+            'avgDailySales': dailySales / products.length,
+            'avgDaysSold': daysSold / products.length,
+            'count': products.length,
+          });
+        });
+
+        // Sort clusters by total sales (highest first)
+        clusterMetrics
+            .sort((a, b) => b['avgTotalSales'].compareTo(a['avgTotalSales']));
+
+        // Always assign exactly 3 categories based on relative performance
+        for (int i = 0; i < clusterMetrics.length; i++) {
+          int clusterId = clusterMetrics[i]['id'];
+
+          if (i == 0) {
+            // Best performing cluster
+            traditionalLabels[clusterId] = 'Top Seller';
+            traditionalColors[clusterId] = Colors.green[700]!;
+          } else if (i == clusterMetrics.length - 1) {
+            // Worst performing cluster
+            traditionalLabels[clusterId] = 'Low Seller';
+            traditionalColors[clusterId] = Colors.red[700]!;
+          } else {
+            // Middle clusters
+            traditionalLabels[clusterId] = 'Seasonal';
+            traditionalColors[clusterId] = Colors.amber[700]!;
+          }
+        }
+
+        emit(ClusteringLoaded(
+          productClusters: productClusters,
+          clusterLabels: traditionalLabels,
+          clusterColors: traditionalColors,
+          groupedClusters: traditionalGroupedClusters,
+          startDate: startDate,
+          endDate: endDate,
+          numberOfClusters: safeNumberOfClusters,
+          usesClassificationModel: false,
+        ));
+      } catch (e) {
+        print('Error during clustering or classification: $e');
+
+        // Fallback to just K-means clustering
+        final productClusters = await clusterRepository.fetchProductClusters(
+          startDate: startDate,
+          endDate: endDate,
+          numberOfClusters: safeNumberOfClusters,
+        );
+
+        // Create cluster labels and colors
+        final Map<int, String> clusterLabels = {};
+        final Map<int, Color> clusterColors = {};
+        final Map<int, List<ProductCluster>> groupedClusters = {};
+
+        // First group products by cluster
+        for (var product in productClusters) {
+          if (!groupedClusters.containsKey(product.cluster)) {
+            groupedClusters[product.cluster] = [];
+          }
+          groupedClusters[product.cluster]!.add(product);
+        }
+
+        // Calculate metrics for all clusters for comparison
+        List<Map<String, dynamic>> clusterMetrics = [];
+
+        groupedClusters.forEach((clusterId, products) {
+          double totalSales = 0;
+          double dailySales = 0;
+          double daysSold = 0;
+
+          for (var product in products) {
+            totalSales += product.totalSales;
+            dailySales += product.avgDailySales;
+            daysSold += product.daysSold;
+          }
+
+          clusterMetrics.add({
+            'id': clusterId,
+            'avgTotalSales': totalSales / products.length,
+            'avgDailySales': dailySales / products.length,
+            'avgDaysSold': daysSold / products.length,
+            'count': products.length,
+          });
+        });
+
+        // Sort clusters by total sales (highest first)
+        clusterMetrics
+            .sort((a, b) => b['avgTotalSales'].compareTo(a['avgTotalSales']));
+
+        // Always assign exactly 3 categories based on relative performance
+        for (int i = 0; i < clusterMetrics.length; i++) {
+          int clusterId = clusterMetrics[i]['id'];
+
+          if (i == 0) {
+            // Best performing cluster
+            clusterLabels[clusterId] = 'Top Seller';
+            clusterColors[clusterId] = Colors.green[700]!;
+          } else if (i == clusterMetrics.length - 1) {
+            // Worst performing cluster
+            clusterLabels[clusterId] = 'Low Seller';
+            clusterColors[clusterId] = Colors.red[700]!;
+          } else {
+            // Middle clusters
+            clusterLabels[clusterId] = 'Seasonal';
+            clusterColors[clusterId] = Colors.amber[700]!;
+          }
+        }
+
+        emit(ClusteringLoaded(
+          productClusters: productClusters,
+          clusterLabels: clusterLabels,
+          clusterColors: clusterColors,
+          groupedClusters: groupedClusters,
+          startDate: startDate,
+          endDate: endDate,
+          numberOfClusters: safeNumberOfClusters,
+          usesClassificationModel: false,
+        ));
+      }
     } catch (e) {
       if (e.toString().contains("401")) {
         emit(const ClusteringError(
@@ -150,9 +319,16 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
             startDate: event.startDate,
             endDate: event.endDate,
             numberOfClusters: event.numberOfClusters));
+      } else if (e.toString().contains("Model not trained yet")) {
+        emit(ClusteringError(
+            message:
+                "The classification model needs to be trained before it can be used. Use the 'Train Model' button to create a new model.",
+            startDate: event.startDate,
+            endDate: event.endDate,
+            numberOfClusters: event.numberOfClusters));
       } else {
         emit(ClusteringError(
-          message: "Failed to load clustering data. Please try again later.",
+          message: "Failed to load clustering data: ${e.toString()}",
           startDate: event.startDate,
           endDate: event.endDate,
           numberOfClusters: event.numberOfClusters,
@@ -180,5 +356,54 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
       endDate: event.endDate,
       numberOfClusters: event.numberOfClusters,
     ));
+  }
+
+  Future<void> _onRetrainModel(
+      RetrainModelEvent event, Emitter<ClusteringState> emit) async {
+    final currentState = state;
+
+    if (currentState is ClusteringLoaded || currentState is ClusteringError) {
+      final startDate = currentState.startDate ??
+          DateTime.now().subtract(const Duration(days: 365));
+      final endDate = currentState.endDate ?? DateTime.now();
+      final numberOfClusters = currentState.numberOfClusters;
+
+      emit(ClusteringTrainingModel(
+        startDate: startDate,
+        endDate: endDate,
+        numberOfClusters: numberOfClusters,
+      ));
+
+      try {
+        final result = await classificationRepository.retrainModel(
+          startDate: startDate,
+          endDate: endDate,
+          k: numberOfClusters,
+        );
+
+        emit(ClusteringModelTrained(
+          message: result,
+          startDate: startDate,
+          endDate: endDate,
+          numberOfClusters: numberOfClusters,
+        ));
+
+        // Reload data after 3 seconds to allow the model to finish training
+        await Future.delayed(const Duration(seconds: 3));
+
+        add(LoadClusteringEvent(
+          startDate: startDate,
+          endDate: endDate,
+          numberOfClusters: numberOfClusters,
+        ));
+      } catch (e) {
+        emit(ClusteringError(
+          message: "Failed to train model: ${e.toString()}",
+          startDate: startDate,
+          endDate: endDate,
+          numberOfClusters: numberOfClusters,
+        ));
+      }
+    }
   }
 }

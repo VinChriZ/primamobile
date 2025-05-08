@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/app_router.dart';
 import 'package:primamobile/app/authentication/bloc/authentication_bloc.dart';
+import 'package:primamobile/repository/classification_repository.dart';
 import 'package:primamobile/repository/cluster_repository.dart';
 import 'package:primamobile/repository/login_repository.dart';
 import 'package:primamobile/repository/user_session_repository.dart';
@@ -32,6 +33,7 @@ class App extends StatelessWidget {
     final logoutRepository = LogoutRepository();
     final tokenValidatorRepository = TokenValidatorRepository();
     final clusteringRepository = ClusterRepository();
+    final classificationRepository = ClassificationRepository();
     final authenticationBloc = AuthenticationBloc(
       loginRepository: loginRepository,
       userSessionRepository: userSessionRepository,
@@ -62,6 +64,7 @@ class App extends StatelessWidget {
         RepositoryProvider.value(value: logoutRepository),
         RepositoryProvider.value(value: tokenValidatorRepository),
         RepositoryProvider.value(value: clusteringRepository),
+        RepositoryProvider.value(value: classificationRepository),
       ],
       child: BlocProvider.value(
         value: authenticationBloc,

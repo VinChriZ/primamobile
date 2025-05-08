@@ -15,6 +15,9 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
   int _numberOfClusters = 3;
   final int _currentYear = DateTime.now().year;
 
+  // Control whether to show all items or just top 10
+  final Map<int, bool> _showAllItems = {};
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,6 +46,61 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                 ],
               ),
             );
+          } else if (state is ClusteringTrainingModel) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Training Classification Model...',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'This process will take a few moments.',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'The model will identify product categories automatically.',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                ],
+              ),
+            );
+          } else if (state is ClusteringModelTrained) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.check_circle_outline,
+                      size: 60, color: Colors.green[700]),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Model Training Completed',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                    child: Text(
+                      state.message,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Loading results...',
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 8),
+                  const CircularProgressIndicator(strokeWidth: 2),
+                ],
+              ),
+            );
           } else if (state is ClusteringLoaded) {
             return _buildClusteringContent(state);
           } else if (state is ClusteringError) {
@@ -61,17 +119,37 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<ClusteringBloc>().add(
-                            LoadClusteringEvent(
-                              startDate: state.startDate,
-                              endDate: state.endDate,
-                              numberOfClusters: state.numberOfClusters,
-                            ),
-                          );
-                    },
-                    child: const Text('Try Again'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          context.read<ClusteringBloc>().add(
+                                LoadClusteringEvent(
+                                  startDate: state.startDate,
+                                  endDate: state.endDate,
+                                  numberOfClusters: state.numberOfClusters,
+                                ),
+                              );
+                        },
+                        child: const Text('Try Again'),
+                      ),
+                      const SizedBox(width: 12),
+                      if (state.message.contains('model needs to be trained'))
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue[700],
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () {
+                            context.read<ClusteringBloc>().add(
+                                  const RetrainModelEvent(),
+                                );
+                          },
+                          icon: const Icon(Icons.model_training),
+                          label: const Text('Train Model'),
+                        ),
+                    ],
                   ),
                 ],
               ),
@@ -87,9 +165,32 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
     // Format to show only the year
     String yearText = 'Year: ${state.startDate!.year}';
 
+    // Reset the show all items map when loading new data
+    if (_showAllItems.length != state.groupedClusters.length) {
+      _showAllItems.clear();
+      for (var clusterId in state.groupedClusters.keys) {
+        _showAllItems[clusterId] = false;
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // Train Model Elevated Button at top
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: ElevatedButton.icon(
+            onPressed: () => _showTrainModelConfirmation(context),
+            icon: const Icon(Icons.model_training),
+            label: const Text('Train Classification Model'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue[700],
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+          ),
+        ),
+
         // Header with info section
         Container(
           margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -136,9 +237,14 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 4),
+              if (state.usesClassificationModel)
+                _buildModelBadge()
+              else
+                _buildKMeansBadge(),
               const SizedBox(height: 12),
               const Text(
-                'This analysis uses K-means clustering to identify product sales patterns:',
+                'This analysis identifies product sales patterns:',
                 style: TextStyle(fontSize: 14),
               ),
               const SizedBox(height: 12),
@@ -190,6 +296,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8.0),
                       child: _buildClusterSection(
+                        clusterId,
                         clusterLabel,
                         clusterColor,
                         clusterProducts,
@@ -199,6 +306,152 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                 ),
         ),
       ],
+    );
+  }
+
+  Widget _buildModelBadge() {
+    return Row(
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.blue[50],
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: Colors.blue[200]!),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.model_training, size: 14, color: Colors.blue[800]),
+              const SizedBox(width: 4),
+              Text(
+                'Using Trained Model',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.blue[800],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildKMeansBadge() {
+    return Row(
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: Colors.grey[300]!),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.auto_graph, size: 14, color: Colors.grey[700]),
+              const SizedBox(width: 4),
+              Text(
+                'Using K-Means Clustering',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showTrainModelConfirmation(BuildContext context) {
+    final clusteringState = context.read<ClusteringBloc>().state;
+    // Store the bloc reference before showing dialog
+    final clusteringBloc = context.read<ClusteringBloc>();
+
+    DateTime? startDate, endDate;
+    int clusters = 3;
+
+    if (clusteringState is ClusteringLoaded) {
+      startDate = clusteringState.startDate;
+      endDate = clusteringState.endDate;
+      clusters = clusteringState.numberOfClusters;
+    }
+
+    // Format dates for display
+    final startText = startDate != null
+        ? '${startDate.day}/${startDate.month}/${startDate.year}'
+        : 'selected period';
+    final endText = endDate != null
+        ? '${endDate.day}/${endDate.month}/${endDate.year}'
+        : '';
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.model_training, size: 24),
+              SizedBox(width: 8),
+              Text('Model Training'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'This will train a machine learning model to automatically classify your products based on sales patterns.',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Training Period: $startText to $endText',
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Number of clusters: $clusters',
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                '• Training may take a few moments to complete\n'
+                '• Model will use the current date range and settings\n'
+                '• This will improve category consistency across different time periods',
+                style: TextStyle(fontSize: 13, color: Colors.grey),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue[700],
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                // Use the stored bloc reference instead of trying to read from context
+                clusteringBloc.add(const RetrainModelEvent());
+              },
+              icon: const Icon(Icons.play_arrow, size: 18),
+              label: const Text('Start Training'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -224,10 +477,15 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
     );
   }
 
-  Widget _buildClusterSection(
-      String clusterLabel, Color clusterColor, List<ProductCluster> products) {
+  Widget _buildClusterSection(int clusterId, String clusterLabel,
+      Color clusterColor, List<ProductCluster> products) {
     // Sort products by total sales in descending order within each cluster
     products.sort((a, b) => b.totalSales.compareTo(a.totalSales));
+
+    // Check if we should show all items or just top 10
+    final bool showAll = _showAllItems[clusterId] ?? false;
+    final displayProducts = showAll ? products : products.take(10).toList();
+    final hasMore = products.length > 10;
 
     return Card(
       elevation: 2,
@@ -275,7 +533,35 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildProductsDataTable(products),
+                _buildProductsDataTable(displayProducts),
+
+                // Show all button when we have more than 10 products
+                if (hasMore)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Center(
+                      child: TextButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _showAllItems[clusterId] = !showAll;
+                          });
+                        },
+                        icon: Icon(
+                          showAll ? Icons.expand_less : Icons.expand_more,
+                          size: 18,
+                        ),
+                        label: Text(
+                          showAll
+                              ? 'Show Less'
+                              : 'Show All (${products.length})',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: clusterColor,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -292,7 +578,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
         headingRowHeight: 48,
         dataRowMinHeight: 48,
         dataRowMaxHeight: 64,
-        headingRowColor: WidgetStateProperty.all(Colors.grey.shade200),
+        headingRowColor: MaterialStateProperty.all(Colors.grey.shade200),
         columns: const [
           DataColumn(
               label: Text('Product Name',

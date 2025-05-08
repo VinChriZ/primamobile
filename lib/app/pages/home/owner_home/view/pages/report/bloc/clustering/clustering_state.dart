@@ -25,11 +25,34 @@ class ClusteringLoading extends ClusteringState {
   });
 }
 
+class ClusteringTrainingModel extends ClusteringState {
+  const ClusteringTrainingModel({
+    super.startDate,
+    super.endDate,
+    super.numberOfClusters,
+  });
+}
+
+class ClusteringModelTrained extends ClusteringState {
+  final String message;
+
+  const ClusteringModelTrained({
+    required this.message,
+    super.startDate,
+    super.endDate,
+    super.numberOfClusters,
+  });
+
+  @override
+  List<Object?> get props => [message, startDate, endDate, numberOfClusters];
+}
+
 class ClusteringLoaded extends ClusteringState {
   final List<ProductCluster> productClusters;
   final Map<int, String> clusterLabels;
   final Map<int, Color> clusterColors;
   final Map<int, List<ProductCluster>> groupedClusters;
+  final bool usesClassificationModel;
 
   const ClusteringLoaded({
     required this.productClusters,
@@ -39,6 +62,7 @@ class ClusteringLoaded extends ClusteringState {
     super.startDate,
     super.endDate,
     super.numberOfClusters,
+    this.usesClassificationModel = false,
   });
 
   @override
@@ -50,6 +74,7 @@ class ClusteringLoaded extends ClusteringState {
         startDate,
         endDate,
         numberOfClusters,
+        usesClassificationModel,
       ];
 }
 

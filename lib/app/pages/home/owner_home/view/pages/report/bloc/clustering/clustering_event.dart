@@ -49,3 +49,7 @@ class ChangeClusteringFilterEvent extends ClusteringEvent {
   @override
   List<Object?> get props => [startDate, endDate, numberOfClusters];
 }
+
+class RetrainModelEvent extends ClusteringEvent {
+  const RetrainModelEvent();
+}
