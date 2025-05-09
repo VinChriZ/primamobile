@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_spinbox/flutter_spinbox.dart';
 import 'package:primamobile/app/models/models.dart'; // Ensure this includes Product & Report models
 import 'package:primamobile/repository/report_repository.dart';
 import 'package:primamobile/repository/report_detail_repository.dart';
@@ -327,10 +328,9 @@ class _AddReportPageState extends State<AddReportPage> {
       _showError('Error searching products: $e');
     }
   }
-
   /// Prompts the user to enter a quantity for the selected product.
   Future<void> _promptAddProductDetail(Product product) async {
-    final quantityController = TextEditingController(text: "1");
+    int quantity = 1; // Default quantity
     String? errorMessage;
 
     final result = await showDialog<ReportDetailItem>(
@@ -345,15 +345,51 @@ class _AddReportPageState extends State<AddReportPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('Available stock: ${product.stock}'),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: quantityController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'Quantity',
-                    border: const OutlineInputBorder(),
-                    errorText: errorMessage,
-                  ),
+                const SizedBox(height: 12),
+                
+                // Quantity SpinBox
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Quantity:',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      height: 36, // Height for better tap target
+                      alignment: Alignment.center, // Center content vertically
+                      child: SpinBox(
+                        min: 1,
+                        max: _selectedType == "return" ? product.stock.toDouble() : 9999,
+                        value: quantity.toDouble(),
+                        decimals: 0,
+                        step: 1,
+                        textAlign: TextAlign.center, // Center the value text
+                        iconSize: 22, // Smaller icons for better alignment
+                        spacing: 1, // Reduce spacing between elements
+                        decoration: const InputDecoration.collapsed(
+                          hintText: '',
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            quantity = value.toInt();
+                            if (errorMessage != null) {
+                              errorMessage = null;
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -364,8 +400,7 @@ class _AddReportPageState extends State<AddReportPage> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  final int? quantity = int.tryParse(quantityController.text);
-                  if (quantity == null || quantity <= 0) {
+                  if (quantity <= 0) {
                     setState(() {
                       errorMessage = 'Enter valid quantity';
                     });
@@ -402,12 +437,10 @@ class _AddReportPageState extends State<AddReportPage> {
       });
     }
   }
-
   /// Edit an existing report detail
   void _editReportDetail(int index) async {
     final item = _reportDetails[index];
-    final quantityController =
-        TextEditingController(text: item.quantity.toString());
+    int quantity = item.quantity;
     String? errorMessage;
 
     final result = await showDialog<ReportDetailItem>(
@@ -417,49 +450,67 @@ class _AddReportPageState extends State<AddReportPage> {
           return AlertDialog(
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            title: Text('Edit ${item.product.name}',
-                style: const TextStyle(fontSize: 14)),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            title: Text('Edit ${item.product.name}'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Available stock: ${item.product.stock}',
-                    style: const TextStyle(fontSize: 12)),
-                const SizedBox(height: 6),
-                TextFormField(
-                  controller: quantityController,
-                  keyboardType: TextInputType.number,
-                  style: const TextStyle(fontSize: 13),
-                  decoration: InputDecoration(
-                    labelText: 'Quantity',
-                    labelStyle: const TextStyle(fontSize: 12),
-                    border: const OutlineInputBorder(),
-                    errorText: errorMessage,
-                    errorStyle: const TextStyle(fontSize: 11),
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 10),
-                  ),
+                Text('Available stock: ${item.product.stock}'),
+                const SizedBox(height: 12),
+                
+                // Quantity SpinBox
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Quantity:',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      height: 36, // Height for better tap target
+                      alignment: Alignment.center, // Center content vertically
+                      child: SpinBox(
+                        min: 1,
+                        max: _selectedType == "return" ? item.product.stock.toDouble() : 9999,
+                        value: quantity.toDouble(),
+                        decimals: 0,
+                        step: 1,
+                        textAlign: TextAlign.center, // Center the value text
+                        iconSize: 22, // Smaller icons for better alignment
+                        spacing: 1, // Reduce spacing between elements
+                        decoration: const InputDecoration.collapsed(
+                          hintText: '',
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            quantity = value.toInt();
+                            if (errorMessage != null) {
+                              errorMessage = null;
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
             actions: [
               TextButton(
-                style: TextButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel', style: TextStyle(fontSize: 12)),
+                child: const Text('Cancel'),
               ),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                ),
                 onPressed: () {
-                  final int? quantity = int.tryParse(quantityController.text);
-                  if (quantity == null || quantity <= 0) {
+                  if (quantity <= 0) {
                     setState(() {
                       errorMessage = 'Enter valid quantity';
                     });
@@ -483,7 +534,7 @@ class _AddReportPageState extends State<AddReportPage> {
                     ),
                   );
                 },
-                child: const Text('Update', style: TextStyle(fontSize: 12)),
+                child: const Text('Update'),
               ),
             ],
           );

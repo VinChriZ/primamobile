@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_spinbox/flutter_spinbox.dart';
 import 'package:primamobile/app/models/models.dart';
 import 'package:primamobile/repository/product_repository.dart';
 import 'package:primamobile/repository/transaction_detail_repository.dart';
@@ -376,11 +377,8 @@ class _AddSalesPageState extends State<AddSalesPage> {
 
   /// Prompt the user to enter quantity and agreed price for the selected product.
   Future<void> _promptAddProductDetail(Product product) async {
-    final quantityController =
-        TextEditingController(text: "1"); // Set default to 1
-    final agreedPriceController = TextEditingController(
-      text: product.displayPrice.toString(),
-    );
+    int quantity = 1; // Default quantity
+    double agreedPrice = product.displayPrice; // Default price
     String? errorMessage;
 
     final result = await showDialog<SalesProductItem>(
@@ -395,25 +393,93 @@ class _AddSalesPageState extends State<AddSalesPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('Available stock: ${product.stock}'),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: quantityController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'Quantity',
-                    border: const OutlineInputBorder(),
-                    errorText: errorMessage,
-                  ),
+                const SizedBox(height: 12),
+
+                // Quantity SpinBox
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Quantity:',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      height: 36, // Height for better tap target
+                      alignment: Alignment.center, // Center content vertically
+                      child: SpinBox(
+                        min: 1,
+                        max: product.stock.toDouble(),
+                        value: quantity.toDouble(),
+                        decimals: 0,
+                        step: 1,
+                        textAlign: TextAlign.center, // Center the value text
+                        iconSize: 22, // Smaller icons for better alignment
+                        spacing: 1, // Reduce spacing between elements
+                        decoration: const InputDecoration.collapsed(
+                          hintText: '',
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            quantity = value.toInt();
+                            if (errorMessage != null) {
+                              errorMessage = null;
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: agreedPriceController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
-                    labelText: 'Agreed Price (Rp)',
-                    border: OutlineInputBorder(),
-                  ),
+                const SizedBox(height: 16),
+
+                // Agreed Price SpinBox
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Agreed Price (Rp):',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      height: 36, // Height for better tap target
+                      alignment: Alignment.center, // Center content vertically
+                      child: SpinBox(
+                        min: 0,
+                        max: 100000000, // Set a reasonable maximum price
+                        value: agreedPrice,
+                        step: 10000, // Increment by 10k as requested
+                        textAlign: TextAlign.center, // Center the value text
+                        iconSize: 22, // Smaller icons for better alignment
+                        spacing: 1, // Reduce spacing between elements
+                        decoration: const InputDecoration.collapsed(
+                          hintText: '',
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            agreedPrice = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -424,16 +490,13 @@ class _AddSalesPageState extends State<AddSalesPage> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  final int? quantity = int.tryParse(quantityController.text);
-                  final double? agreedPrice =
-                      double.tryParse(agreedPriceController.text);
-                  if (quantity == null || quantity <= 0) {
+                  if (quantity <= 0) {
                     setState(() {
                       errorMessage = 'Enter valid quantity';
                     });
                     return;
                   }
-                  if (agreedPrice == null || agreedPrice <= 0) {
+                  if (agreedPrice <= 0) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Enter valid price')),
                     );
@@ -471,11 +534,8 @@ class _AddSalesPageState extends State<AddSalesPage> {
   /// Edit an existing sales item
   void _editSalesItem(int index) async {
     final item = _salesItems[index];
-    final quantityController =
-        TextEditingController(text: item.quantity.toString());
-    final agreedPriceController = TextEditingController(
-      text: item.agreedPrice.toString(),
-    );
+    int quantity = item.quantity;
+    double agreedPrice = item.agreedPrice;
     String? errorMessage;
 
     final result = await showDialog<SalesProductItem>(
@@ -490,25 +550,93 @@ class _AddSalesPageState extends State<AddSalesPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('Available stock: ${item.product.stock}'),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: quantityController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'Quantity',
-                    border: const OutlineInputBorder(),
-                    errorText: errorMessage,
-                  ),
+                const SizedBox(height: 12),
+
+                // Quantity SpinBox
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Quantity:',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      height: 36, // Height for better tap target
+                      alignment: Alignment.center, // Center content vertically
+                      child: SpinBox(
+                        min: 1,
+                        max: item.product.stock.toDouble(),
+                        value: quantity.toDouble(),
+                        decimals: 0,
+                        step: 1,
+                        textAlign: TextAlign.center, // Center the value text
+                        iconSize: 20, // Smaller icons for better alignment
+                        spacing: 1, // Reduce spacing between elements
+                        decoration: const InputDecoration.collapsed(
+                          hintText: '',
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            quantity = value.toInt();
+                            if (errorMessage != null) {
+                              errorMessage = null;
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: agreedPriceController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
-                    labelText: 'Agreed Price (Rp)',
-                    border: OutlineInputBorder(),
-                  ),
+                const SizedBox(height: 16),
+
+                // Agreed Price SpinBox
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Agreed Price (Rp):',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      height: 36, // Height for better tap target
+                      alignment: Alignment.center, // Center content vertically
+                      child: SpinBox(
+                        min: 0,
+                        max: 100000000, // Set a reasonable maximum price
+                        value: agreedPrice,
+                        step: 10000, // Increment by 25k as requested
+                        textAlign: TextAlign.center, // Center the value text
+                        iconSize: 20, // Smaller icons for better alignment
+                        spacing: 1, // Reduce spacing between elements
+                        decoration: const InputDecoration.collapsed(
+                          hintText: '',
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            agreedPrice = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -519,31 +647,24 @@ class _AddSalesPageState extends State<AddSalesPage> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  final int? quantity = int.tryParse(quantityController.text);
-                  final double? agreedPrice =
-                      double.tryParse(agreedPriceController.text);
-
-                  if (quantity == null || quantity <= 0) {
+                  if (quantity <= 0) {
                     setState(() {
                       errorMessage = 'Enter valid quantity';
                     });
                     return;
                   }
-
-                  if (agreedPrice == null || agreedPrice <= 0) {
+                  if (agreedPrice <= 0) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Enter valid price')),
                     );
                     return;
                   }
-
                   if (quantity > item.product.stock) {
                     setState(() {
                       errorMessage = 'Quantity exceeds stock';
                     });
                     return;
                   }
-
                   Navigator.pop(
                     context,
                     SalesProductItem(

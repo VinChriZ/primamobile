@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:flutter_spinbox/flutter_spinbox.dart';
 import 'package:primamobile/app/models/report/report.dart';
 import 'package:primamobile/app/models/report/report_detail.dart';
 import 'package:primamobile/app/pages/home/worker_home/view/pages/worker_report/bloc/report_detail/bloc/worker_report_detail_bloc.dart';
@@ -217,13 +218,11 @@ class WorkerReportDetailScreen extends StatelessWidget {
       ),
     );
   }
-
   void _showEditReportDetailDialog(
       BuildContext context, Report report, ReportDetail detail) {
     final workerReportDetailBloc = context.read<WorkerReportDetailBloc>();
-    final quantityController =
-        TextEditingController(text: detail.quantity.toString());
-    String? quantityErrorMessage;
+    int quantity = detail.quantity;
+    String? errorMessage;
 
     // Get the product to show available stock
     final productRepository = RepositoryProvider.of<ProductRepository>(context);
@@ -248,40 +247,76 @@ class WorkerReportDetailScreen extends StatelessWidget {
               builder: (context, setState) {
                 return AlertDialog(
                   title: Text('Edit ${product?.name ?? detail.upc}'),
-                  content: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Display the UPC as text but don't allow editing
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Display the UPC as text but don't allow editing
+                      Text(
+                        'UPC: ${detail.upc}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Display available stock
+                      if (product != null)
                         Text(
-                          'UPC: ${detail.upc}',
-                          style: TextStyle(
+                          'Available stock: ${product.stock}',
+                          style: const TextStyle(
                             fontSize: 14,
-                            color: Colors.grey[700],
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        // Display available stock
-                        if (product != null)
-                          Text(
-                            'Available stock: ${product.stock}',
-                            style: const TextStyle(
+                      const SizedBox(height: 16),
+                      
+                      // Quantity SpinBox
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Quantity:',
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
+                              color: Colors.grey,
                             ),
                           ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: quantityController,
-                          decoration: InputDecoration(
-                            labelText: 'Quantity',
-                            border: const OutlineInputBorder(),
-                            errorText: quantityErrorMessage,
+                          const SizedBox(height: 6),
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade300),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            height: 36, // Height for better tap target
+                            alignment: Alignment.center, // Center content vertically
+                            child: SpinBox(
+                              min: 1,
+                              max: report.type.toLowerCase() == "return" && product != null 
+                                  ? product.stock.toDouble() 
+                                  : 9999,
+                              value: quantity.toDouble(),
+                              decimals: 0,
+                              step: 1,
+                              textAlign: TextAlign.center, // Center the value text
+                              iconSize: 22, // Smaller icons for better alignment
+                              spacing: 1, // Reduce spacing between elements
+                              decoration: const InputDecoration.collapsed(
+                                hintText: '',
+                              ),
+                              onChanged: (value) {
+                                setState(() {
+                                  quantity = value.toInt();
+                                  if (errorMessage != null) {
+                                    errorMessage = null;
+                                  }
+                                });
+                              },
+                            ),
                           ),
-                          keyboardType: TextInputType.number,
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                    ],
                   ),
                   actions: [
                     TextButton(
@@ -290,13 +325,10 @@ class WorkerReportDetailScreen extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: () async {
-                        final quantity =
-                            int.tryParse(quantityController.text.trim());
-
                         // Validate quantity
-                        if (quantity == null || quantity <= 0) {
+                        if (quantity <= 0) {
                           setState(() {
-                            quantityErrorMessage = 'Enter valid quantity';
+                            errorMessage = 'Enter valid quantity';
                           });
                           return;
                         }
@@ -306,7 +338,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                             product != null &&
                             quantity > product.stock) {
                           setState(() {
-                            quantityErrorMessage =
+                            errorMessage =
                                 'Quantity exceeds available stock';
                           });
                           return;
@@ -438,7 +470,6 @@ class WorkerReportDetailScreen extends StatelessWidget {
       );
     }
   }
-
   Future<void> _searchAndAddProduct(BuildContext context, int reportId) async {
     try {
       final productRepository =
@@ -454,13 +485,13 @@ class WorkerReportDetailScreen extends StatelessWidget {
             builder: (context, setState) {
               return Dialog(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Container(
                   width: double.maxFinite,
                   constraints:
-                      const BoxConstraints(maxWidth: 500, maxHeight: 600),
-                  padding: const EdgeInsets.all(16),
+                      const BoxConstraints(maxWidth: 500, maxHeight: 500),
+                  padding: const EdgeInsets.all(14),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -469,33 +500,35 @@ class WorkerReportDetailScreen extends StatelessWidget {
                       const Text(
                         'Search Product',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
 
                       // Search box with icon
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: TextField(
                           controller: searchController,
                           autofocus: true,
                           decoration: InputDecoration(
                             hintText: 'Enter product name',
-                            prefixIcon:
-                                const Icon(Icons.search, color: Colors.blue),
+                            hintStyle: const TextStyle(fontSize: 13),
+                            prefixIcon: const Icon(Icons.search,
+                                color: Colors.blue, size: 18),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(10),
                               borderSide: BorderSide.none,
                             ),
                             contentPadding:
-                                const EdgeInsets.symmetric(vertical: 12),
+                                const EdgeInsets.symmetric(vertical: 10),
                           ),
+                          style: const TextStyle(fontSize: 13),
                           onChanged: (query) {
                             setState(() {
                               filteredProducts = allProducts
@@ -508,19 +541,19 @@ class WorkerReportDetailScreen extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
 
                       // Product count
                       Text(
                         '${filteredProducts.length} products found',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 12,
                           color: Colors.grey.shade600,
                         ),
                         textAlign: TextAlign.center,
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
 
                       // Products list
                       Expanded(
@@ -531,14 +564,14 @@ class WorkerReportDetailScreen extends StatelessWidget {
                                   children: [
                                     Icon(
                                       Icons.search_off,
-                                      size: 48,
+                                      size: 36,
                                       color: Colors.grey.shade400,
                                     ),
-                                    const SizedBox(height: 16),
+                                    const SizedBox(height: 12),
                                     Text(
                                       'No products found',
                                       style: TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 14,
                                         color: Colors.grey.shade600,
                                       ),
                                     ),
@@ -552,41 +585,42 @@ class WorkerReportDetailScreen extends StatelessWidget {
                                   return Card(
                                     elevation: 1,
                                     margin:
-                                        const EdgeInsets.symmetric(vertical: 6),
+                                        const EdgeInsets.symmetric(vertical: 4),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: ListTile(
                                       contentPadding:
                                           const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 6,
+                                        horizontal: 12,
+                                        vertical: 4,
                                       ),
                                       title: Text(
                                         product.name,
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
+                                          fontSize: 13,
                                         ),
                                       ),
                                       subtitle: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          const SizedBox(height: 4),
+                                          const SizedBox(height: 3),
                                           Container(
                                             padding: const EdgeInsets.symmetric(
-                                              horizontal: 6,
-                                              vertical: 2,
+                                              horizontal: 5,
+                                              vertical: 1,
                                             ),
                                             decoration: BoxDecoration(
                                               color: Colors.green.shade50,
                                               borderRadius:
-                                                  BorderRadius.circular(4),
+                                                  BorderRadius.circular(3),
                                             ),
                                             child: Text(
                                               'Available Stock: ${product.stock}',
                                               style: TextStyle(
-                                                fontSize: 12,
+                                                fontSize: 11,
                                                 color: Colors.green.shade800,
                                                 fontWeight: FontWeight.w600,
                                               ),
@@ -603,18 +637,17 @@ class WorkerReportDetailScreen extends StatelessWidget {
                               ),
                       ),
 
-                      const SizedBox(height: 8),
-
                       // Cancel button
                       TextButton(
                         style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                         ),
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
+                        child: const Text('Cancel',
+                            style: TextStyle(fontSize: 13)),
                       ),
                     ],
                   ),
@@ -633,10 +666,9 @@ class WorkerReportDetailScreen extends StatelessWidget {
       );
     }
   }
-
   Future<void> _promptAddDetailDialog(
       BuildContext context, dynamic product, int reportId) async {
-    final quantityController = TextEditingController(text: "1");
+    int quantity = 1; // Default quantity
     final workerReportDetailBloc = context.read<WorkerReportDetailBloc>();
     String? errorMessage;
 
@@ -652,15 +684,51 @@ class WorkerReportDetailScreen extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('Available stock: ${product.stock}'),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: quantityController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'Quantity',
-                    border: const OutlineInputBorder(),
-                    errorText: errorMessage,
-                  ),
+                const SizedBox(height: 12),
+                
+                // Quantity SpinBox
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Quantity:',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      height: 36, // Height for better tap target
+                      alignment: Alignment.center, // Center content vertically
+                      child: SpinBox(
+                        min: 1,
+                        max: report.type.toLowerCase() == "return" ? product.stock.toDouble() : 9999,
+                        value: quantity.toDouble(),
+                        decimals: 0,
+                        step: 1,
+                        textAlign: TextAlign.center, // Center the value text
+                        iconSize: 22, // Smaller icons for better alignment
+                        spacing: 1, // Reduce spacing between elements
+                        decoration: const InputDecoration.collapsed(
+                          hintText: '',
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            quantity = value.toInt();
+                            if (errorMessage != null) {
+                              errorMessage = null;
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -671,8 +739,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
               ),
               ElevatedButton(
                 onPressed: () {
-                  final int? quantity = int.tryParse(quantityController.text);
-                  if (quantity == null || quantity <= 0) {
+                  if (quantity <= 0) {
                     setState(() {
                       errorMessage = 'Enter valid quantity';
                     });

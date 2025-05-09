@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_scanner/mobile_scanner.dart'; // New import
+import 'package:flutter_spinbox/flutter_spinbox.dart';
 import 'package:primamobile/app/models/transaction/transaction.dart';
 import 'package:primamobile/app/models/transaction/transaction_detail.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/sales/bloc/transaction_detail/transaction_detail_bloc.dart';
@@ -213,7 +214,6 @@ class TransactionDetailScreen extends StatelessWidget {
   }
 
   void _showEditDetailDialog(BuildContext context, TransactionDetail detail) {
-    final formKey = GlobalKey<FormState>();
     String upc = detail.upc; // Keep this variable for backend communication
     int quantity = detail.quantity;
     double agreedPrice = detail.agreedPrice;
@@ -242,62 +242,107 @@ class TransactionDetailScreen extends StatelessWidget {
                 return StatefulBuilder(builder: (context, setState) {
                   return AlertDialog(
                     title: const Text('Edit Transaction Detail'),
-                    content: Form(
-                      key: formKey,
-                      child: SingleChildScrollView(
-                        child: Column(
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (snapshot.hasData)
+                          Text('Available stock: ${product!.stock}'),
+                        const SizedBox(height: 12),
+
+                        // Quantity SpinBox
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (snapshot.hasData)
-                              Text('Available stock: ${product!.stock}'),
-                            const SizedBox(height: 8),
-                            TextFormField(
-                              initialValue: detail.quantity.toString(),
-                              decoration: InputDecoration(
-                                labelText: 'Quantity',
-                                border: const OutlineInputBorder(),
-                                errorText: errorMessage,
+                            const Text(
+                              'Quantity:',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey,
                               ),
-                              keyboardType: TextInputType.number,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter quantity';
-                                }
-                                if (int.tryParse(value) == null ||
-                                    int.parse(value) <= 0) {
-                                  return 'Enter a valid quantity';
-                                }
-                                return null;
-                              },
-                              onSaved: (value) => quantity = int.parse(value!),
                             ),
-                            const SizedBox(
-                                height: 16), // Increased spacing here
-                            TextFormField(
-                              initialValue:
-                                  detail.agreedPrice.toStringAsFixed(2),
-                              decoration: const InputDecoration(
-                                labelText: 'Agreed Price',
-                                border: OutlineInputBorder(),
+                            const SizedBox(height: 6),
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade300),
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                      decimal: true),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter agreed price';
-                                }
-                                if (double.tryParse(value) == null ||
-                                    double.parse(value) <= 0) {
-                                  return 'Enter a valid price';
-                                }
-                                return null;
-                              },
-                              onSaved: (value) =>
-                                  agreedPrice = double.parse(value!),
+                              height: 36, // Height for better tap target
+                              alignment:
+                                  Alignment.center, // Center content vertically
+                              child: SpinBox(
+                                min: 1,
+                                max: availableStock.toDouble(),
+                                value: quantity.toDouble(),
+                                decimals: 0,
+                                step: 1,
+                                textAlign:
+                                    TextAlign.center, // Center the value text
+                                iconSize:
+                                    22, // Smaller icons for better alignment
+                                spacing: 1, // Reduce spacing between elements
+                                decoration: const InputDecoration.collapsed(
+                                  hintText: '',
+                                ),
+                                onChanged: (value) {
+                                  setState(() {
+                                    quantity = value.toInt();
+                                    if (errorMessage != null) {
+                                      errorMessage = null;
+                                    }
+                                  });
+                                },
+                              ),
                             ),
                           ],
                         ),
-                      ),
+                        const SizedBox(height: 16),
+
+                        // Agreed Price SpinBox
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Agreed Price (Rp):',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade300),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              height: 36, // Height for better tap target
+                              alignment:
+                                  Alignment.center, // Center content vertically
+                              child: SpinBox(
+                                min: 0,
+                                max:
+                                    100000000, // Set a reasonable maximum price
+                                value: agreedPrice,
+                                step: 10000, // Increment by 10k
+                                textAlign:
+                                    TextAlign.center, // Center the value text
+                                iconSize:
+                                    22, // Smaller icons for better alignment
+                                spacing: 1, // Reduce spacing between elements
+                                decoration: const InputDecoration.collapsed(
+                                  hintText: '',
+                                ),
+                                onChanged: (value) {
+                                  setState(() {
+                                    agreedPrice = value;
+                                  });
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                     actions: [
                       TextButton(
@@ -306,36 +351,47 @@ class TransactionDetailScreen extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () {
-                          if (formKey.currentState!.validate()) {
-                            formKey.currentState!.save();
+                          if (quantity <= 0) {
+                            setState(() {
+                              errorMessage = 'Enter valid quantity';
+                            });
+                            return;
+                          }
 
-                            // Check if quantity exceeds the total available stock (current stock + current quantity)
-                            if (quantity > availableStock) {
-                              setState(() {
-                                errorMessage =
-                                    'Maximum allowed quantity is $availableStock';
-                              });
-                              return;
-                            }
-
-                            transactionDetailBloc.add(
-                              UpdateTransactionDetail(
-                                transaction.transactionId,
-                                detail.detailId,
-                                {
-                                  'upc': upc, // We keep the original UPC
-                                  'quantity': quantity,
-                                  'agreed_price': agreedPrice,
-                                },
-                              ),
-                            );
-                            Navigator.of(dialogContext).pop();
+                          if (agreedPrice <= 0) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                  content: Text(
-                                      'Transaction detail updated successfully.')),
+                                  content: Text('Enter valid price')),
                             );
+                            return;
                           }
+
+                          // Check if quantity exceeds the total available stock (current stock + current quantity)
+                          if (quantity > availableStock) {
+                            setState(() {
+                              errorMessage =
+                                  'Maximum allowed quantity is $availableStock';
+                            });
+                            return;
+                          }
+
+                          transactionDetailBloc.add(
+                            UpdateTransactionDetail(
+                              transaction.transactionId,
+                              detail.detailId,
+                              {
+                                'upc': upc, // We keep the original UPC
+                                'quantity': quantity,
+                                'agreed_price': agreedPrice,
+                              },
+                            ),
+                          );
+                          Navigator.of(dialogContext).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text(
+                                    'Transaction detail updated successfully.')),
+                          );
                         },
                         child: const Text('Update'),
                       ),
@@ -466,13 +522,13 @@ class TransactionDetailScreen extends StatelessWidget {
             builder: (context, setState) {
               return Dialog(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Container(
                   width: double.maxFinite,
                   constraints:
-                      const BoxConstraints(maxWidth: 500, maxHeight: 600),
-                  padding: const EdgeInsets.all(16),
+                      const BoxConstraints(maxWidth: 500, maxHeight: 500),
+                  padding: const EdgeInsets.all(14),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -481,33 +537,35 @@ class TransactionDetailScreen extends StatelessWidget {
                       const Text(
                         'Search Product',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
 
                       // Search box with icon
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: TextField(
                           controller: searchController,
                           autofocus: true,
                           decoration: InputDecoration(
                             hintText: 'Enter product name',
-                            prefixIcon:
-                                const Icon(Icons.search, color: Colors.blue),
+                            hintStyle: const TextStyle(fontSize: 13),
+                            prefixIcon: const Icon(Icons.search,
+                                color: Colors.blue, size: 18),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(10),
                               borderSide: BorderSide.none,
                             ),
                             contentPadding:
-                                const EdgeInsets.symmetric(vertical: 12),
+                                const EdgeInsets.symmetric(vertical: 10),
                           ),
+                          style: const TextStyle(fontSize: 13),
                           onChanged: (query) {
                             setState(() {
                               filteredProducts = allProducts
@@ -520,19 +578,19 @@ class TransactionDetailScreen extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
 
                       // Product count
                       Text(
                         '${filteredProducts.length} products found',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 12,
                           color: Colors.grey.shade600,
                         ),
                         textAlign: TextAlign.center,
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
 
                       // Products list
                       Expanded(
@@ -543,14 +601,14 @@ class TransactionDetailScreen extends StatelessWidget {
                                   children: [
                                     Icon(
                                       Icons.search_off,
-                                      size: 48,
+                                      size: 36,
                                       color: Colors.grey.shade400,
                                     ),
-                                    const SizedBox(height: 16),
+                                    const SizedBox(height: 12),
                                     Text(
                                       'No products found',
                                       style: TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 14,
                                         color: Colors.grey.shade600,
                                       ),
                                     ),
@@ -564,27 +622,28 @@ class TransactionDetailScreen extends StatelessWidget {
                                   return Card(
                                     elevation: 1,
                                     margin:
-                                        const EdgeInsets.symmetric(vertical: 6),
+                                        const EdgeInsets.symmetric(vertical: 4),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: ListTile(
                                       contentPadding:
                                           const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 6,
+                                        horizontal: 12,
+                                        vertical: 4,
                                       ),
                                       title: Text(
                                         product.name,
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
+                                          fontSize: 13,
                                         ),
                                       ),
                                       subtitle: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          const SizedBox(height: 4),
+                                          const SizedBox(height: 3),
                                           Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
@@ -592,39 +651,39 @@ class TransactionDetailScreen extends StatelessWidget {
                                               Container(
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                  horizontal: 6,
-                                                  vertical: 2,
+                                                  horizontal: 5,
+                                                  vertical: 1,
                                                 ),
                                                 decoration: BoxDecoration(
                                                   color: Colors.blue.shade50,
                                                   borderRadius:
-                                                      BorderRadius.circular(4),
+                                                      BorderRadius.circular(3),
                                                 ),
                                                 child: Text(
                                                   'Display: Rp${_formatCurrency(product.displayPrice)}',
                                                   style: TextStyle(
-                                                    fontSize: 12,
+                                                    fontSize: 11,
                                                     color: Colors.blue.shade800,
                                                     fontWeight: FontWeight.w600,
                                                   ),
                                                 ),
                                               ),
-                                              const SizedBox(height: 4),
+                                              const SizedBox(height: 3),
                                               Container(
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                  horizontal: 6,
-                                                  vertical: 2,
+                                                  horizontal: 5,
+                                                  vertical: 1,
                                                 ),
                                                 decoration: BoxDecoration(
                                                   color: Colors.green.shade50,
                                                   borderRadius:
-                                                      BorderRadius.circular(4),
+                                                      BorderRadius.circular(3),
                                                 ),
                                                 child: Text(
                                                   'Net: Rp${_formatCurrency(product.netPrice)}',
                                                   style: TextStyle(
-                                                    fontSize: 12,
+                                                    fontSize: 11,
                                                     color:
                                                         Colors.green.shade800,
                                                     fontWeight: FontWeight.w600,
@@ -644,18 +703,17 @@ class TransactionDetailScreen extends StatelessWidget {
                               ),
                       ),
 
-                      const SizedBox(height: 8),
-
                       // Cancel button
                       TextButton(
                         style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                         ),
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
+                        child: const Text('Cancel',
+                            style: TextStyle(fontSize: 13)),
                       ),
                     ],
                   ),
@@ -678,9 +736,8 @@ class TransactionDetailScreen extends StatelessWidget {
   /// Prompts the user to enter quantity and agreed price for the selected product.
   Future<void> _promptAddDetailDialog(
       BuildContext context, dynamic product, int transactionId) async {
-    final quantityController = TextEditingController(text: '1');
-    final agreedPriceController =
-        TextEditingController(text: product.displayPrice.toString());
+    int quantity = 1; // Default quantity
+    double agreedPrice = product.displayPrice; // Default price
     final transactionDetailBloc = context.read<TransactionDetailBloc>();
     String? errorMessage;
 
@@ -698,25 +755,95 @@ class TransactionDetailScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text('Available stock: ${product.stock}'),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: quantityController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Quantity',
-                      border: const OutlineInputBorder(),
-                      errorText: errorMessage,
-                    ),
+                  const SizedBox(height: 12),
+
+                  // Quantity SpinBox
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Quantity:',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        height: 36, // Height for better tap target
+                        alignment:
+                            Alignment.center, // Center content vertically
+                        child: SpinBox(
+                          min: 1,
+                          max: product.stock.toDouble(),
+                          value: quantity.toDouble(),
+                          decimals: 0,
+                          step: 1,
+                          textAlign: TextAlign.center, // Center the value text
+                          iconSize: 22, // Smaller icons for better alignment
+                          spacing: 1, // Reduce spacing between elements
+                          decoration: const InputDecoration.collapsed(
+                            hintText: '',
+                          ),
+                          onChanged: (value) {
+                            setState(() {
+                              quantity = value.toInt();
+                              if (errorMessage != null) {
+                                errorMessage = null;
+                              }
+                            });
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: agreedPriceController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: 'Agreed Price (Rp)',
-                      border: OutlineInputBorder(),
-                    ),
+                  const SizedBox(height: 16),
+
+                  // Agreed Price SpinBox
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Agreed Price (Rp):',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        height: 36, // Height for better tap target
+                        alignment:
+                            Alignment.center, // Center content vertically
+                        child: SpinBox(
+                          min: 0,
+                          max: 100000000, // Set a reasonable maximum price
+                          value: agreedPrice,
+                          step: 10000, // Increment by 10k
+                          textAlign: TextAlign.center, // Center the value text
+                          iconSize: 22, // Smaller icons for better alignment
+                          spacing: 1, // Reduce spacing between elements
+                          decoration: const InputDecoration.collapsed(
+                            hintText: '',
+                          ),
+                          onChanged: (value) {
+                            setState(() {
+                              agreedPrice = value;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -727,16 +854,15 @@ class TransactionDetailScreen extends StatelessWidget {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    final int? quantity = int.tryParse(quantityController.text);
-                    final double? agreedPrice =
-                        double.tryParse(agreedPriceController.text);
-                    if (quantity == null ||
-                        quantity <= 0 ||
-                        agreedPrice == null ||
-                        agreedPrice <= 0) {
+                    if (quantity <= 0) {
+                      setState(() {
+                        errorMessage = 'Enter valid quantity';
+                      });
+                      return;
+                    }
+                    if (agreedPrice <= 0) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Enter valid quantity and price')),
+                        const SnackBar(content: Text('Enter valid price')),
                       );
                       return;
                     }
