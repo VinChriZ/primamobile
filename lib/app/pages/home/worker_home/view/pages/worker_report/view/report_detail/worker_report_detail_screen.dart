@@ -218,6 +218,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
       ),
     );
   }
+
   void _showEditReportDetailDialog(
       BuildContext context, Report report, ReportDetail detail) {
     final workerReportDetailBloc = context.read<WorkerReportDetailBloc>();
@@ -269,7 +270,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                           ),
                         ),
                       const SizedBox(height: 16),
-                      
+
                       // Quantity SpinBox
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -289,17 +290,21 @@ class WorkerReportDetailScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             height: 36, // Height for better tap target
-                            alignment: Alignment.center, // Center content vertically
+                            alignment:
+                                Alignment.center, // Center content vertically
                             child: SpinBox(
                               min: 1,
-                              max: report.type.toLowerCase() == "return" && product != null 
-                                  ? product.stock.toDouble() 
+                              max: report.type.toLowerCase() == "return" &&
+                                      product != null
+                                  ? product.stock.toDouble()
                                   : 9999,
                               value: quantity.toDouble(),
                               decimals: 0,
                               step: 1,
-                              textAlign: TextAlign.center, // Center the value text
-                              iconSize: 22, // Smaller icons for better alignment
+                              textAlign:
+                                  TextAlign.center, // Center the value text
+                              iconSize:
+                                  22, // Smaller icons for better alignment
                               spacing: 1, // Reduce spacing between elements
                               decoration: const InputDecoration.collapsed(
                                 hintText: '',
@@ -338,8 +343,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                             product != null &&
                             quantity > product.stock) {
                           setState(() {
-                            errorMessage =
-                                'Quantity exceeds available stock';
+                            errorMessage = 'Quantity exceeds available stock';
                           });
                           return;
                         }
@@ -470,6 +474,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
       );
     }
   }
+
   Future<void> _searchAndAddProduct(BuildContext context, int reportId) async {
     try {
       final productRepository =
@@ -666,6 +671,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
       );
     }
   }
+
   Future<void> _promptAddDetailDialog(
       BuildContext context, dynamic product, int reportId) async {
     int quantity = 1; // Default quantity
@@ -685,7 +691,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
               children: [
                 Text('Available stock: ${product.stock}'),
                 const SizedBox(height: 12),
-                
+
                 // Quantity SpinBox
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -708,7 +714,9 @@ class WorkerReportDetailScreen extends StatelessWidget {
                       alignment: Alignment.center, // Center content vertically
                       child: SpinBox(
                         min: 1,
-                        max: report.type.toLowerCase() == "return" ? product.stock.toDouble() : 9999,
+                        max: report.type.toLowerCase() == "return"
+                            ? product.stock.toDouble()
+                            : 9999,
                         value: quantity.toDouble(),
                         decimals: 0,
                         step: 1,

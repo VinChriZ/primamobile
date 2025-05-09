@@ -328,6 +328,7 @@ class _AddReportPageState extends State<AddReportPage> {
       _showError('Error searching products: $e');
     }
   }
+
   /// Prompts the user to enter a quantity for the selected product.
   Future<void> _promptAddProductDetail(Product product) async {
     int quantity = 1; // Default quantity
@@ -346,7 +347,7 @@ class _AddReportPageState extends State<AddReportPage> {
               children: [
                 Text('Available stock: ${product.stock}'),
                 const SizedBox(height: 12),
-                
+
                 // Quantity SpinBox
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -369,7 +370,9 @@ class _AddReportPageState extends State<AddReportPage> {
                       alignment: Alignment.center, // Center content vertically
                       child: SpinBox(
                         min: 1,
-                        max: _selectedType == "return" ? product.stock.toDouble() : 9999,
+                        max: _selectedType == "return"
+                            ? product.stock.toDouble()
+                            : 9999,
                         value: quantity.toDouble(),
                         decimals: 0,
                         step: 1,
@@ -437,6 +440,7 @@ class _AddReportPageState extends State<AddReportPage> {
       });
     }
   }
+
   /// Edit an existing report detail
   void _editReportDetail(int index) async {
     final item = _reportDetails[index];
@@ -456,7 +460,7 @@ class _AddReportPageState extends State<AddReportPage> {
               children: [
                 Text('Available stock: ${item.product.stock}'),
                 const SizedBox(height: 12),
-                
+
                 // Quantity SpinBox
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -479,7 +483,9 @@ class _AddReportPageState extends State<AddReportPage> {
                       alignment: Alignment.center, // Center content vertically
                       child: SpinBox(
                         min: 1,
-                        max: _selectedType == "return" ? item.product.stock.toDouble() : 9999,
+                        max: _selectedType == "return"
+                            ? item.product.stock.toDouble()
+                            : 9999,
                         value: quantity.toDouble(),
                         decimals: 0,
                         step: 1,
