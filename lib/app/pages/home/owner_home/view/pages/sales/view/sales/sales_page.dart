@@ -10,10 +10,20 @@ class SalesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => SalesBloc(
-        transactionRepository:
-            RepositoryProvider.of<TransactionRepository>(context),
-      )..add(const FetchSales()),
+      create: (context) {
+        // Calculate the default date range for Last 7 Days
+        final now = DateTime.now();
+        final startDate = now.subtract(const Duration(days: 7));
+
+        return SalesBloc(
+          transactionRepository:
+              RepositoryProvider.of<TransactionRepository>(context),
+        )..add(FetchSales(
+            selectedDateRange: 'Last 7 Days',
+            startDate: startDate,
+            endDate: now,
+          ));
+      },
       child: const SalesScreen(),
     );
   }

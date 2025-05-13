@@ -14,7 +14,7 @@ class SalesScreen extends StatelessWidget {
   /// determines the appropriate start/end dates and dispatches a FetchSales event.
   Future<void> _handleDateRangeChange(
       BuildContext context, String? value, SalesState state) async {
-    String selectedDateRange = value ?? 'All Dates';
+    String selectedDateRange = value ?? 'Last 7 Days';
     DateTime? startDate;
     DateTime? endDate;
     final now = DateTime.now();
@@ -46,8 +46,8 @@ class SalesScreen extends StatelessWidget {
           endDate = state.endDate;
         }
       }
-    } else {
-      // "All Dates"
+    } else if (selectedDateRange == 'All Dates') {
+      // "All Dates" - set start and end dates to null
       startDate = null;
       endDate = null;
     }
@@ -139,8 +139,9 @@ class SalesScreen extends StatelessWidget {
         child: BlocBuilder<SalesBloc, SalesState>(
           builder: (context, state) {
             // Provide defaults if the state is not yet SalesLoaded.
-            final selectedDateRange =
-                (state is SalesLoaded) ? state.selectedDateRange : 'All Dates';
+            final selectedDateRange = (state is SalesLoaded)
+                ? state.selectedDateRange
+                : 'Last 7 Days';
             final selectedSortBy =
                 (state is SalesLoaded) ? state.selectedSortBy : 'date_created';
             final selectedSortOrder =

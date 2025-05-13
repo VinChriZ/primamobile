@@ -13,10 +13,9 @@ class FetchSales extends SalesEvent {
   final DateTime? endDate;
   final String sortBy;
   final String sortOrder;
-
   // Default values are provided here so that the event is always complete.
   const FetchSales({
-    this.selectedDateRange = 'All Dates',
+    this.selectedDateRange = 'Last 7 Days',
     this.startDate,
     this.endDate,
     this.sortBy = 'date_created',
