@@ -22,7 +22,14 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Yearly Product Analysis'),
+        title: BlocBuilder<ClusteringBloc, ClusteringState>(
+          builder: (context, state) {
+            if (state is ClusteringLoaded && state.startDate != null) {
+              return Text('Product Analysis ${state.startDate!.year}');
+            }
+            return const Text('Product Analysis');
+          },
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_alt),
@@ -162,9 +169,6 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
   }
 
   Widget _buildClusteringContent(ClusteringLoaded state) {
-    // Format to show only the year
-    String yearText = 'Year: ${state.startDate!.year}';
-
     // Reset the show all items map when loading new data
     if (_showAllItems.length != state.groupedClusters.length) {
       _showAllItems.clear();
@@ -172,13 +176,12 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
         _showAllItems[clusterId] = false;
       }
     }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Train Model Elevated Button at top
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: ElevatedButton.icon(
             onPressed: () => _showTrainModelConfirmation(context),
             icon: const Icon(Icons.model_training),
@@ -188,75 +191,6 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),
-          ),
-        ),
-
-        // Header with info section
-        Container(
-          margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withAlpha(51), // 0.2 * 255 = 51
-                spreadRadius: 1,
-                blurRadius: 3,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.insights, color: Colors.blue),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Product Category',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withAlpha(26), // 0.1 * 255 = 26
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      yearText,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.blue[700],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              if (state.usesClassificationModel)
-                _buildModelBadge()
-              else
-                _buildKMeansBadge(),
-              const SizedBox(height: 12),
-              const Text(
-                'This analysis identifies product sales patterns:',
-                style: TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 12),
-              _buildLegendItem(Colors.green[700]!,
-                  'Best Selling Products: High sales volume and consistency'),
-              const SizedBox(height: 4),
-              _buildLegendItem(Colors.amber[700]!,
-                  'Seasonal Products: Moderate or inconsistent sales'),
-              const SizedBox(height: 4),
-              _buildLegendItem(Colors.red[700]!,
-                  'Low Selling Products: Low sales performance'),
-            ],
           ),
         ),
 
@@ -285,8 +219,23 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   itemCount: state.groupedClusters.length,
                   itemBuilder: (context, index) {
-                    final clusterId =
-                        state.groupedClusters.keys.elementAt(index);
+                    // Define preferred order for cluster display: Green (best seller), Amber (seasonal), Red (low seller)
+                    final preferredOrder = <Color>[
+                      Colors.green[700]!,
+                      Colors.amber[700]!,
+                      Colors.red[700]!,
+                    ];
+
+                    // Get all cluster IDs and sort them based on the preferred color order
+                    final sortedClusterIds = state.groupedClusters.keys.toList()
+                      ..sort((a, b) {
+                        final colorA = state.clusterColors[a] ?? Colors.blue;
+                        final colorB = state.clusterColors[b] ?? Colors.blue;
+                        return preferredOrder.indexOf(colorA) -
+                            preferredOrder.indexOf(colorB);
+                      });
+
+                    final clusterId = sortedClusterIds[index];
                     final clusterProducts = state.groupedClusters[clusterId]!;
                     final clusterLabel =
                         state.clusterLabels[clusterId] ?? 'Cluster $clusterId';
@@ -304,68 +253,6 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                     );
                   },
                 ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildModelBadge() {
-    return Row(
-      children: [
-        Container(
-          margin: const EdgeInsets.only(top: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.blue[50],
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: Colors.blue[200]!),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.model_training, size: 14, color: Colors.blue[800]),
-              const SizedBox(width: 4),
-              Text(
-                'Using Trained Model',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.blue[800],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildKMeansBadge() {
-    return Row(
-      children: [
-        Container(
-          margin: const EdgeInsets.only(top: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: Colors.grey[300]!),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.auto_graph, size: 14, color: Colors.grey[700]),
-              const SizedBox(width: 4),
-              Text(
-                'Using K-Means Clustering',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[700],
-                ),
-              ),
-            ],
-          ),
         ),
       ],
     );
@@ -452,28 +339,6 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
           ],
         );
       },
-    );
-  }
-
-  Widget _buildLegendItem(Color color, String text) {
-    return Row(
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(fontSize: 13),
-          ),
-        ),
-      ],
     );
   }
 
@@ -571,57 +436,144 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
   }
 
   Widget _buildProductsDataTable(List<ProductCluster> products) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        columnSpacing: 16,
-        headingRowHeight: 48,
-        dataRowMinHeight: 48,
-        dataRowMaxHeight: 64,
-        headingRowColor: MaterialStateProperty.all(Colors.grey.shade200),
-        columns: const [
-          DataColumn(
-              label: Text('Product Name',
-                  style: TextStyle(fontWeight: FontWeight.bold))),
-          DataColumn(
-              label: Text('Total Sales',
-                  style: TextStyle(fontWeight: FontWeight.bold))),
-          DataColumn(
-              label: Text('Days Sold',
-                  style: TextStyle(fontWeight: FontWeight.bold))),
-          DataColumn(
-              label: Text('Avg Daily',
-                  style: TextStyle(fontWeight: FontWeight.bold))),
-        ],
-        rows: products.map((product) {
-          return DataRow(
-            cells: [
-              DataCell(
-                FutureBuilder<String>(
-                  future: _getProductName(product.upc),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return Text(
-                        snapshot.data!,
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: products.length,
+      itemBuilder: (context, index) {
+        final product = products[index];
+        return FutureBuilder<String>(
+          future: _getProductName(product.upc),
+          builder: (context, snapshot) {
+            final productName = snapshot.hasData ? snapshot.data! : product.upc;
+
+            return Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ExpansionTile(
+                title: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        productName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      );
-                    } else {
-                      return Text(
-                        product.upc,
-                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                      );
-                    }
-                  },
+                      ),
+                    ),
+                  ],
                 ),
+                subtitle: Row(
+                  children: [
+                    const Icon(Icons.shopping_cart,
+                        size: 14, color: Colors.blue),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Sales: ${product.totalSales.toStringAsFixed(0)}',
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    const SizedBox(width: 12),
+                    const Icon(Icons.calendar_today,
+                        size: 14, color: Colors.green),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Days: ${product.daysSold}',
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+                childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                children: [
+                  _buildProductStatRow('Sales Statistics', [
+                    ProductStat(
+                        'Total',
+                        '${product.totalSales.toStringAsFixed(0)}',
+                        Icons.shopping_cart_checkout),
+                    ProductStat(
+                        'Avg Daily',
+                        '${product.avgDailySales.toStringAsFixed(1)}',
+                        Icons.trending_up),
+                    ProductStat(
+                        'Frequency',
+                        '${product.salesFrequency.toStringAsFixed(2)}',
+                        Icons.repeat),
+                  ]),
+                  const SizedBox(height: 12),
+                  _buildProductStatRow('Sales Range', [
+                    ProductStat(
+                        'Max',
+                        '${product.maxDailySales.toStringAsFixed(0)}',
+                        Icons.arrow_upward),
+                    ProductStat(
+                        'Min',
+                        '${product.minDailySales.toStringAsFixed(0)}',
+                        Icons.arrow_downward),
+                    ProductStat(
+                        'Std Dev',
+                        '${product.stdDailySales.toStringAsFixed(2)}',
+                        Icons.show_chart),
+                  ]),
+                  const SizedBox(height: 12),
+                  _buildProductStatRow('Additional Info', [
+                    ProductStat('Days Sold', '${product.daysSold}',
+                        Icons.calendar_month),
+                    ProductStat('Days Since', '${product.daysSinceLastSale}',
+                        Icons.access_time),
+                    ProductStat(
+                        'Tx Count', '${product.txCount}', Icons.receipt_long),
+                  ]),
+                ],
               ),
-              DataCell(Text(product.totalSales.toStringAsFixed(0))),
-              DataCell(Text(product.daysSold.toString())),
-              DataCell(Text(product.avgDailySales.toStringAsFixed(1))),
-            ],
-          );
-        }).toList(),
-      ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildProductStatRow(String sectionTitle, List<ProductStat> stats) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          sectionTitle,
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.grey[700],
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: stats.map((stat) {
+            return Expanded(
+              child: Column(
+                children: [
+                  Icon(stat.icon, size: 18, color: Colors.blue[700]),
+                  const SizedBox(height: 4),
+                  Text(
+                    stat.label,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    stat.value,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
@@ -777,4 +729,12 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
       },
     );
   }
+}
+
+class ProductStat {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  ProductStat(this.label, this.value, this.icon);
 }
