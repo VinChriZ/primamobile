@@ -10,56 +10,6 @@ class OwnerApprovalDetailScreen extends StatelessWidget {
   final Report report;
   const OwnerApprovalDetailScreen({super.key, required this.report});
 
-  Widget _buildAttributeRow({required String label, required String value}) {
-    // Updated to align label left with consistent spacing
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4.0),
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 2,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15.0,
-                  color: Colors.black),
-              textAlign: TextAlign.left,
-            ),
-          ),
-          const Text(
-            ' : ',
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15.0,
-                color: Colors.black),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 15.0, color: Colors.black),
-            ),
-          ),
-          // Removed the status icon display
-        ],
-      ),
-    );
-  }
-
-  // Get color based on status for the card border
   Color _getStatusBorderColor(String status) {
     switch (status.toLowerCase()) {
       case 'approved':
@@ -73,6 +23,57 @@ class OwnerApprovalDetailScreen extends StatelessWidget {
     }
   }
 
+  Widget _buildAttributeRow({required String label, required String value}) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withAlpha(26),
+            spreadRadius: 1,
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13.0,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          const Text(
+            ' : ',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13.0,
+              color: Colors.black,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 13.0,
+                color: Colors.black,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDetailCard(BuildContext context, ReportDetail detail) {
     final productRepository = RepositoryProvider.of<ProductRepository>(context);
     return Card(
@@ -80,15 +81,16 @@ class OwnerApprovalDetailScreen extends StatelessWidget {
       elevation: 3,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.0),
-        side:
-            BorderSide(color: _getStatusBorderColor(report.status), width: 1.0),
+        side: BorderSide(
+          color: _getStatusBorderColor(report.status),
+          width: 1.0,
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Fetch and display the product name instead of UPC.
             FutureBuilder(
               future: productRepository.fetchProduct(detail.upc),
               builder: (context, snapshot) {
@@ -127,7 +129,7 @@ class OwnerApprovalDetailScreen extends StatelessWidget {
                         product?.name ?? detail.upc,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16.0,
+                          fontSize: 14.0,
                           color: Colors.black,
                         ),
                       ),
@@ -135,7 +137,7 @@ class OwnerApprovalDetailScreen extends StatelessWidget {
                       Text(
                         'UPC: ${detail.upc}',
                         style: const TextStyle(
-                          fontSize: 12.0,
+                          fontSize: 11.0,
                           color: Colors.black54,
                         ),
                       ),
@@ -146,7 +148,7 @@ class OwnerApprovalDetailScreen extends StatelessWidget {
                     detail.upc,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16.0,
+                      fontSize: 14.0,
                       color: Colors.black,
                     ),
                   );
@@ -156,7 +158,10 @@ class OwnerApprovalDetailScreen extends StatelessWidget {
             const Divider(),
             Text(
               'Quantity: ${detail.quantity}',
-              style: const TextStyle(fontSize: 15.0, color: Colors.black),
+              style: const TextStyle(
+                fontSize: 13.0,
+                color: Colors.black,
+              ),
             ),
           ],
         ),
@@ -217,24 +222,19 @@ class OwnerApprovalDetailScreen extends StatelessWidget {
                             const Text(
                               'Report Information',
                               style: TextStyle(
-                                fontSize: 18.0,
+                                fontSize: 16.0,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black,
                               ),
                             ),
                             const SizedBox(height: 16),
                             _buildAttributeRow(
-                              label: 'Type',
-                              value: report.type,
-                            ),
+                                label: 'Type', value: report.type),
                             _buildAttributeRow(
-                              label: 'Status',
-                              value: report.status,
-                            ),
+                                label: 'Status', value: report.status),
                             _buildAttributeRow(
-                              label: 'User ID',
-                              value: report.userId.toString(),
-                            ),
+                                label: 'User ID',
+                                value: report.userId.toString()),
                             _buildAttributeRow(
                               label: 'Date Created',
                               value: DateFormat('yyyy-MM-dd')
@@ -245,12 +245,9 @@ class OwnerApprovalDetailScreen extends StatelessWidget {
                               value: DateFormat('yyyy-MM-dd HH:mm')
                                   .format(report.lastUpdated),
                             ),
-                            // Add note field display if it exists
                             if (report.note != null && report.note!.isNotEmpty)
                               _buildAttributeRow(
-                                label: 'Note',
-                                value: report.note!,
-                              ),
+                                  label: 'Note', value: report.note!),
                           ],
                         ),
                       ),
@@ -261,7 +258,7 @@ class OwnerApprovalDetailScreen extends StatelessWidget {
                       child: Text(
                         'Report Details',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
@@ -272,20 +269,17 @@ class OwnerApprovalDetailScreen extends StatelessWidget {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12.0),
                               side: BorderSide(
-                                color: Colors.grey.shade300,
-                                width: 1.0,
-                              ),
+                                  color: Colors.grey.shade300, width: 1.0),
                             ),
                             child: const Padding(
                               padding: EdgeInsets.all(24.0),
                               child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   SizedBox(height: 16),
                                   Text(
                                     'No report details available',
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 14,
                                       color: Colors.black54,
                                     ),
                                   ),
@@ -310,7 +304,7 @@ class OwnerApprovalDetailScreen extends StatelessWidget {
                 children: [
                   Text(
                     state.message,
-                    style: const TextStyle(fontSize: 16, color: Colors.black),
+                    style: const TextStyle(fontSize: 14, color: Colors.black),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),

@@ -47,18 +47,18 @@ class TransactionDetailScreen extends StatelessWidget {
             child: Text(
               label,
               style:
-                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0),
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.0),
               textAlign: TextAlign.left,
             ),
           ),
           const Text(
             ' : ',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.0),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 15.0),
+              style: const TextStyle(fontSize: 13.0),
             ),
           ),
         ],
@@ -99,8 +99,14 @@ class TransactionDetailScreen extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-      elevation: 3.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      elevation: 2.0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+        side: BorderSide(
+          color: Colors.blue.shade600,
+          width: 1.2,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -951,6 +957,10 @@ class TransactionDetailScreen extends StatelessWidget {
                       elevation: 2,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.0),
+                        side: BorderSide(
+                          color: Colors.blue.shade600,
+                          width: 1.5,
+                        ),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
