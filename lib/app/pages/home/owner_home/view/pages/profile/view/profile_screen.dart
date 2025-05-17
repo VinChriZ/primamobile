@@ -22,7 +22,7 @@ class ProfileScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // Enhanced Header with gradient and profile picture
+                          // Header
                           Container(
                             width: double.infinity,
                             decoration: BoxDecoration(
@@ -35,61 +35,53 @@ class ProfileScreen extends StatelessWidget {
                                 end: Alignment.bottomRight,
                               ),
                               borderRadius: const BorderRadius.only(
-                                bottomLeft: Radius.circular(30),
-                                bottomRight: Radius.circular(30),
+                                bottomLeft: Radius.circular(20),
+                                bottomRight: Radius.circular(20),
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey.withAlpha(128),
-                                  spreadRadius: 2,
-                                  blurRadius: 7,
-                                  offset: const Offset(0, 3),
+                                  color: Colors.grey.withAlpha(100),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
                                 ),
                               ],
                             ),
-                            padding: const EdgeInsets.only(bottom: 25),
+                            padding: const EdgeInsets.only(bottom: 20),
                             child: Column(
                               children: [
-                                const Padding(
-                                  padding: EdgeInsets.all(16.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.account_circle,
+                                const SizedBox(height: 12),
+                                const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.account_circle,
+                                        color: Colors.white, size: 24),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'Profile',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
                                         color: Colors.white,
-                                        size: 30,
                                       ),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'Profile',
-                                        style: TextStyle(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                          letterSpacing: 1.2,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(height: 10),
                                 Container(
-                                  width: 120.0,
-                                  height: 120.0,
+                                  width: 90,
+                                  height: 90,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: Colors.white,
                                     border: Border.all(
                                       color: Colors.white,
-                                      width: 3.0,
+                                      width: 2.5,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withAlpha(51),
-                                        spreadRadius: 2,
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 3),
+                                        color: Colors.black.withAlpha(30),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
                                       ),
                                     ],
                                   ),
@@ -97,37 +89,35 @@ class ProfileScreen extends StatelessWidget {
                                     child: Text(
                                       'PriMo',
                                       style: TextStyle(
-                                        fontSize: 25,
+                                        fontSize: 22,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.red.shade700,
-                                        letterSpacing: 1,
                                       ),
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 10),
                                 Text(
                                   profileState.name,
                                   style: const TextStyle(
-                                    fontSize: 26,
+                                    fontSize: 20,
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.5,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 6),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 6),
+                                      horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withAlpha(77),
-                                    borderRadius: BorderRadius.circular(20),
+                                    color: Colors.white.withAlpha(70),
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
                                   child: Text(
                                     profileState.role,
                                     style: const TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 14,
                                       color: Colors.white,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -137,36 +127,34 @@ class ProfileScreen extends StatelessWidget {
                             ),
                           ),
 
-                          // App Settings Section - removed Account Information section
+                          // Settings Section
                           Padding(
-                            padding: const EdgeInsets.all(20.0),
+                            padding: const EdgeInsets.all(16.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const SizedBox(height: 10),
                                 _buildSectionHeader('App Settings'),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 10),
                                 _buildSettingItem(
                                   'Help & Support',
                                   Icons.help_outline,
-                                  () {/* Add functionality here */},
+                                  () {},
                                 ),
                                 _buildSettingItem(
                                   'About App',
                                   Icons.info_outline,
-                                  () {/* Add functionality here */},
+                                  () {},
                                 ),
                                 _buildSettingItem(
                                   'Privacy Policy',
                                   Icons.privacy_tip_outlined,
-                                  () {/* Add functionality here */},
+                                  () {},
                                 ),
                                 _buildSettingItem(
                                   'Terms & Conditions',
                                   Icons.description_outlined,
-                                  () {/* Add functionality here */},
+                                  () {},
                                 ),
-                                const SizedBox(height: 10),
                               ],
                             ),
                           ),
@@ -174,19 +162,19 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Improved Logout Button
+
+                  // Logout Button
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 16),
+                        horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withAlpha(51),
-                          spreadRadius: 1,
-                          blurRadius: 6,
-                          offset: const Offset(0, -3),
+                          color: Colors.grey.withAlpha(40),
+                          blurRadius: 5,
+                          offset: const Offset(0, -2),
                         ),
                       ],
                     ),
@@ -197,22 +185,21 @@ class ProfileScreen extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red.shade600,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        elevation: 3,
                       ),
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.logout, size: 20),
-                          SizedBox(width: 8),
+                          Icon(Icons.logout, size: 18),
+                          SizedBox(width: 6),
                           Text(
                             "Logout",
                             style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
@@ -234,33 +221,29 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Text(
         title,
         style: TextStyle(
-          fontSize: 18,
+          fontSize: 16,
           fontWeight: FontWeight.bold,
           color: Colors.blue.shade800,
-          letterSpacing: 0.5,
         ),
       ),
     );
   }
 
-  // Removed _buildInfoCard since we no longer need it
-
   Widget _buildSettingItem(String title, IconData icon, VoidCallback onTap) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withAlpha(26),
-            spreadRadius: 1,
+            color: Colors.grey.withAlpha(20),
             blurRadius: 3,
-            offset: const Offset(0, 2),
+            offset: const Offset(0, 1),
           ),
         ],
       ),
@@ -268,16 +251,13 @@ class ProfileScreen extends StatelessWidget {
         leading: Icon(icon, color: Colors.blue.shade700),
         title: Text(
           title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
         ),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 14),
         onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
         ),
       ),
     );
