@@ -146,63 +146,83 @@ class SalesScreen extends StatelessWidget {
                 (state is SalesLoaded) ? state.selectedSortBy : 'date_created';
             final selectedSortOrder =
                 (state is SalesLoaded) ? state.selectedSortOrder : 'desc';
-
             return Column(
               children: [
                 // Remove the title bar and just keep the filters
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8.0, vertical: 12.0),
+                      horizontal: 6.0, vertical: 8.0),
                   child: Row(
                     children: [
                       // Date Range Dropdown
                       SizedBox(
-                        width: 180,
+                        width: 150,
                         child: DropdownButtonFormField<String>(
                           decoration: const InputDecoration(
                             labelText: 'Date Range',
                             border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10.0, vertical: 8.0),
+                            labelStyle: TextStyle(fontSize: 12),
                           ),
                           value: selectedDateRange,
                           items: const [
                             DropdownMenuItem(
                                 value: 'Last 7 Days',
-                                child: Text('Last 7 Days')),
+                                child: Text('Last 7 Days',
+                                    style: TextStyle(fontSize: 13))),
                             DropdownMenuItem(
-                                value: 'Last Month', child: Text('Last Month')),
+                                value: 'Last Month',
+                                child: Text('Last Month',
+                                    style: TextStyle(fontSize: 13))),
                             DropdownMenuItem(
-                                value: 'Last Year', child: Text('Last Year')),
+                                value: 'Last Year',
+                                child: Text('Last Year',
+                                    style: TextStyle(fontSize: 13))),
                             DropdownMenuItem(
-                                value: 'All Dates', child: Text('All Dates')),
+                                value: 'All Dates',
+                                child: Text('All Dates',
+                                    style: TextStyle(fontSize: 13))),
                             DropdownMenuItem(
-                                value: 'Custom', child: Text('Custom')),
+                                value: 'Custom',
+                                child: Text('Custom',
+                                    style: TextStyle(fontSize: 13))),
                           ],
                           onChanged: (value) =>
                               _handleDateRangeChange(context, value, state),
                         ),
                       ),
-                      const SizedBox(width: 16.0),
+                      const SizedBox(width: 10.0),
                       // Sort By Dropdown
                       SizedBox(
-                        width: 180,
+                        width: 150,
                         child: DropdownButtonFormField<String>(
                           decoration: const InputDecoration(
                             labelText: 'Sort By',
                             border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10.0, vertical: 8.0),
+                            labelStyle: TextStyle(fontSize: 12),
                           ),
                           value: selectedSortBy,
                           items: const [
                             DropdownMenuItem(
                                 value: 'last_updated',
-                                child: Text('Last Updated')),
+                                child: Text('Last Updated',
+                                    style: TextStyle(fontSize: 13))),
                             DropdownMenuItem(
-                                value: 'quantity', child: Text('Stock')),
+                                value: 'quantity',
+                                child: Text('Stock',
+                                    style: TextStyle(fontSize: 13))),
                             DropdownMenuItem(
-                                value: 'profit', child: Text('Profit')),
+                                value: 'profit',
+                                child: Text('Profit',
+                                    style: TextStyle(fontSize: 13))),
                             DropdownMenuItem(
                                 value: 'date_created',
-                                child: Text('Date Created')),
+                                child: Text('Date Created',
+                                    style: TextStyle(fontSize: 13))),
                           ],
                           onChanged: (value) {
                             if (value != null) {
@@ -223,14 +243,17 @@ class SalesScreen extends StatelessWidget {
                           },
                         ),
                       ),
-                      const SizedBox(width: 16.0),
+                      const SizedBox(width: 10.0),
                       // Sort Order Dropdown
                       SizedBox(
-                        width: 180,
+                        width: 150,
                         child: DropdownButtonFormField<String>(
                           decoration: const InputDecoration(
                             labelText: 'Sort Order',
                             border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10.0, vertical: 8.0),
+                            labelStyle: TextStyle(fontSize: 12),
                           ),
                           // Display as "Ascending" or "Descending" based on stored value.
                           value: selectedSortOrder.toLowerCase() == 'asc'
@@ -238,9 +261,13 @@ class SalesScreen extends StatelessWidget {
                               : 'Descending',
                           items: const [
                             DropdownMenuItem(
-                                value: 'Ascending', child: Text('Ascending')),
+                                value: 'Ascending',
+                                child: Text('Ascending',
+                                    style: TextStyle(fontSize: 13))),
                             DropdownMenuItem(
-                                value: 'Descending', child: Text('Descending')),
+                                value: 'Descending',
+                                child: Text('Descending',
+                                    style: TextStyle(fontSize: 13))),
                           ],
                           onChanged: (value) {
                             if (value != null) {
@@ -513,9 +540,11 @@ class SalesScreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(Icons.add),
-        label: const Text("Add Sale"),
+        icon: const Icon(Icons.add, size: 20),
+        label: const Text("Add Sale", style: TextStyle(fontSize: 13)),
         backgroundColor: Colors.blue[700],
+        extendedPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         onPressed: () async {
           final result = await Navigator.push(
             context,

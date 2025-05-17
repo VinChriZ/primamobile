@@ -127,51 +127,69 @@ class WorkerReportScreen extends StatelessWidget {
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8.0, vertical: 12.0),
+                      horizontal: 6.0, vertical: 8.0),
                   child: Row(
                     children: [
+                      // Date Range dropdown
                       SizedBox(
-                        width: 180,
+                        width: 150,
                         child: DropdownButtonFormField<String>(
                           decoration: const InputDecoration(
                             labelText: 'Date Range',
                             border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10.0, vertical: 8.0),
+                            labelStyle: TextStyle(fontSize: 12),
                           ),
                           value: selectedDateRange,
                           items: const [
                             DropdownMenuItem(
                                 value: 'Last 7 Days',
-                                child: Text('Last 7 Days')),
+                                child: Text('Last 7 Days',
+                                    style: TextStyle(fontSize: 13))),
                             DropdownMenuItem(
-                                value: 'Last Month', child: Text('Last Month')),
+                                value: 'Last Month',
+                                child: Text('Last Month',
+                                    style: TextStyle(fontSize: 13))),
                             DropdownMenuItem(
-                                value: 'Last Year', child: Text('Last Year')),
+                                value: 'Last Year',
+                                child: Text('Last Year',
+                                    style: TextStyle(fontSize: 13))),
                             DropdownMenuItem(
-                                value: 'All Dates', child: Text('All Dates')),
+                                value: 'All Dates',
+                                child: Text('All Dates',
+                                    style: TextStyle(fontSize: 13))),
                             DropdownMenuItem(
-                                value: 'Custom', child: Text('Custom')),
+                                value: 'Custom',
+                                child: Text('Custom',
+                                    style: TextStyle(fontSize: 13))),
                           ],
                           onChanged: (value) =>
                               _handleDateRangeChange(context, value, state),
                         ),
                       ),
-                      const SizedBox(width: 16.0),
+                      const SizedBox(width: 10.0),
                       // Sort By dropdown
                       SizedBox(
-                        width: 180,
+                        width: 150,
                         child: DropdownButtonFormField<String>(
                           decoration: const InputDecoration(
                             labelText: 'Sort By',
                             border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10.0, vertical: 8.0),
+                            labelStyle: TextStyle(fontSize: 12),
                           ),
                           value: selectedSortBy,
                           items: const [
                             DropdownMenuItem(
                                 value: 'last_updated',
-                                child: Text('Last Updated')),
+                                child: Text('Last Updated',
+                                    style: TextStyle(fontSize: 13))),
                             DropdownMenuItem(
                                 value: 'date_created',
-                                child: Text('Date Created')),
+                                child: Text('Date Created',
+                                    style: TextStyle(fontSize: 13))),
                           ],
                           onChanged: (value) {
                             if (value != null) {
@@ -192,27 +210,34 @@ class WorkerReportScreen extends StatelessWidget {
                           },
                         ),
                       ),
-                      const SizedBox(width: 16.0),
+                      const SizedBox(width: 10.0),
                       // Sort Order dropdown
                       SizedBox(
-                        width: 180,
+                        width: 150,
                         child: DropdownButtonFormField<String>(
                           decoration: const InputDecoration(
                             labelText: 'Sort Order',
                             border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10.0, vertical: 8.0),
+                            labelStyle: TextStyle(fontSize: 12),
                           ),
                           value: selectedSortOrder.toLowerCase() == 'asc'
                               ? 'Ascending'
                               : 'Descending',
                           items: const [
                             DropdownMenuItem(
-                                value: 'Ascending', child: Text('Ascending')),
+                                value: 'Ascending',
+                                child: Text('Ascending',
+                                    style: TextStyle(fontSize: 13))),
                             DropdownMenuItem(
-                                value: 'Descending', child: Text('Descending')),
+                                value: 'Descending',
+                                child: Text('Descending',
+                                    style: TextStyle(fontSize: 13))),
                           ],
                           onChanged: (value) {
                             if (value != null) {
-                              String sortOrder =
+                              final sortOrder =
                                   value.toLowerCase() == 'ascending'
                                       ? 'asc'
                                       : 'desc';
@@ -236,6 +261,7 @@ class WorkerReportScreen extends StatelessWidget {
                     ],
                   ),
                 ),
+
                 // Report List
                 Expanded(
                   child: Builder(

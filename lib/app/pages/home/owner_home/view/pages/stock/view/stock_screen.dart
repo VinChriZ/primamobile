@@ -130,6 +130,7 @@ class StockScreen extends StatelessWidget {
                   }
                 },
                 decoration: InputDecoration(
+                  isDense: true,
                   hintText: 'Search product by name',
                   prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
@@ -138,13 +139,12 @@ class StockScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 4.0),
 
             // FILTERS + SORT IN A ROW
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding:
-                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                  const EdgeInsets.symmetric(horizontal: 6.0, vertical: 8.0),
               child: Row(
                 children: [
                   // CATEGORY DROPDOWN
@@ -162,8 +162,8 @@ class StockScreen extends StatelessWidget {
                             decoration: const InputDecoration(
                               labelText: 'Select Category',
                               border: OutlineInputBorder(),
-                              contentPadding:
-                                  EdgeInsets.fromLTRB(12.0, 24.0, 12.0, 12.0),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 10.0, vertical: 8.0),
                             ),
                             value: state.selectedCategory ?? "All Categories",
                             onChanged: (value) {
@@ -179,12 +179,16 @@ class StockScreen extends StatelessWidget {
                             items: [
                               const DropdownMenuItem(
                                 value: "All Categories",
-                                child: Text("All Categories"),
+                                child: Text(
+                                  "All Categories",
+                                  style: TextStyle(fontSize: 13),
+                                ),
                               ),
                               ...state.categories.map((category) {
                                 return DropdownMenuItem(
                                   value: category,
-                                  child: Text(category),
+                                  child: Text(category,
+                                      style: const TextStyle(fontSize: 13)),
                                 );
                               }),
                             ],
@@ -195,7 +199,7 @@ class StockScreen extends StatelessWidget {
                     },
                   ),
 
-                  const SizedBox(width: 16.0),
+                  const SizedBox(width: 8.0),
 
                   // BRAND DROPDOWN
                   BlocBuilder<StockBloc, StockState>(
@@ -212,8 +216,8 @@ class StockScreen extends StatelessWidget {
                             decoration: const InputDecoration(
                               labelText: 'Select Brand',
                               border: OutlineInputBorder(),
-                              contentPadding:
-                                  EdgeInsets.fromLTRB(12.0, 24.0, 12.0, 12.0),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 10.0, vertical: 8.0),
                             ),
                             value: state.selectedBrand ?? "All Brands",
                             onChanged: (value) {
@@ -229,12 +233,14 @@ class StockScreen extends StatelessWidget {
                             items: [
                               const DropdownMenuItem(
                                 value: "All Brands",
-                                child: Text("All Brands"),
+                                child: Text("All Brands",
+                                    style: TextStyle(fontSize: 13)),
                               ),
                               ...state.brands.map((brand) {
                                 return DropdownMenuItem(
                                   value: brand,
-                                  child: Text(brand),
+                                  child: Text(brand,
+                                      style: const TextStyle(fontSize: 13)),
                                 );
                               }),
                             ],
@@ -245,7 +251,7 @@ class StockScreen extends StatelessWidget {
                     },
                   ),
 
-                  const SizedBox(width: 16.0),
+                  const SizedBox(width: 8.0),
 
                   // SORT DROPDOWN
                   BlocBuilder<StockBloc, StockState>(
@@ -257,8 +263,8 @@ class StockScreen extends StatelessWidget {
                             decoration: const InputDecoration(
                               labelText: 'Sort Option',
                               border: OutlineInputBorder(),
-                              contentPadding:
-                                  EdgeInsets.fromLTRB(12.0, 24.0, 12.0, 12.0),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 10.0, vertical: 8.0),
                             ),
                             value: state.sortOption ?? 'Last Updated',
                             onChanged: (value) {
@@ -275,7 +281,8 @@ class StockScreen extends StatelessWidget {
                             ].map((option) {
                               return DropdownMenuItem(
                                 value: option,
-                                child: Text(option),
+                                child: Text(option,
+                                    style: const TextStyle(fontSize: 13)),
                               );
                             }).toList(),
                           ),
