@@ -170,11 +170,18 @@ class _ReportScreenState extends State<ReportScreen> {
           child: Icon(icon, color: color, size: 24),
         ),
         const SizedBox(height: 8),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+        SizedBox(
+          width: 100, // Fixed width to constrain text
+          child: Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12, // Even smaller font size
+                ),
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
         ),
         Text(
           label,
