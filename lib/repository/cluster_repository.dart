@@ -18,7 +18,8 @@ class ClusterRepository {
       return await _provider.getProductClusters(
         startDate: startDate,
         endDate: endDate,
-        clusters: numberOfClusters,
+        numberOfClusters:
+            numberOfClusters, // Fix: Use the correct parameter name
       );
     } catch (e) {
       // Check if this is a "too few samples" error and provide a more user-friendly message
@@ -34,6 +35,31 @@ class ClusterRepository {
     }
   }
 
+  // Group clusters by their assigned cluster ID
+  Future<Map<int, List<ProductCluster>>> getGroupedClusters({
+    required DateTime startDate,
+    required DateTime endDate,
+    int numberOfClusters = 3,
+  }) async {
+    final productClusters = await fetchProductClusters(
+      startDate: startDate,
+      endDate: endDate,
+      numberOfClusters: numberOfClusters,
+    );
+
+    // Group by cluster
+    final Map<int, List<ProductCluster>> groupedResults = {};
+
+    for (var product in productClusters) {
+      if (!groupedResults.containsKey(product.cluster)) {
+        groupedResults[product.cluster] = [];
+      }
+      groupedResults[product.cluster]!.add(product);
+    }
+
+    return groupedResults;
+  }
+
   // Helper method to determine the maximum possible clusters based on data size
   Future<int> getRecommendedClusterCount({
     required DateTime startDate,
@@ -44,7 +70,7 @@ class ClusterRepository {
       final data = await _provider.getProductClusters(
         startDate: startDate,
         endDate: endDate,
-        clusters: 2,
+        numberOfClusters: 2, // Fix: Use the correct parameter name
       );
 
       // Based on the data size, recommend a cluster count

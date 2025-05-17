@@ -32,19 +32,33 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
       endDate: event.endDate,
       numberOfClusters: event.numberOfClusters,
     ));
-    try {
-      // If dates are not provided, default to the entire current year
-      final DateTime now = DateTime.now();
-      final DateTime endDate = event.endDate ?? DateTime(now.year, 12, 31);
-      final DateTime startDate = event.startDate ?? DateTime(now.year, 1, 1);
 
-      // Use the number of clusters provided, no need to get recommendation from the server
-      int safeNumberOfClusters = event.numberOfClusters;
-      // If number of clusters is too large, use a reasonable default
-      if (safeNumberOfClusters > 5) {
-        safeNumberOfClusters = 3;
-        print('Using default of $safeNumberOfClusters clusters');
+    try {
+      // Set default dates if not provided
+      final DateTime now = DateTime.now();
+      DateTime endDate = event.endDate ?? DateTime(now.year, 12, 31);
+      DateTime startDate = event.startDate ?? DateTime(now.year, 1, 1);
+
+      // If dates are not provided, try to get the latest year with complete data
+      if (event.startDate == null || event.endDate == null) {
+        try {
+          final years =
+              await classificationRepository.fetchYearsWithCompleteData();
+          if (years.isNotEmpty) {
+            // Use the most recent year with complete data
+            final latestYear = years.last;
+            startDate = DateTime(latestYear, 1, 1);
+            endDate = DateTime(latestYear, 12, 31);
+          }
+        } catch (e) {
+          // If there's an error fetching years, use the defaults already set
+          print('Error fetching years with complete data: $e');
+        }
       }
+
+      // Always use 3 clusters as specified
+      final int safeNumberOfClusters = 3;
+      print('Using fixed number of clusters: $safeNumberOfClusters');
 
       try {
         // Directly use classification API which now returns all product metrics
@@ -144,7 +158,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
           e.toString().contains("No sales data available")) {
         emit(ClusteringError(
             message:
-                "No clustering data available for ${event.startDate?.year}. Please try a different year.",
+                "No clustering data available for ${event.startDate?.year ?? DateTime.now().year}. Please try a different year.",
             startDate: event.startDate,
             endDate: event.endDate,
             numberOfClusters: event.numberOfClusters));

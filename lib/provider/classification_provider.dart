@@ -81,4 +81,24 @@ class ClassificationProvider {
       rethrow;
     }
   }
+
+  // Get years that have complete data (January to December)
+  Future<List<int>> getYearsWithCompleteData() async {
+    try {
+      final response =
+          await dioClient.get('/classify/years-with-complete-data');
+      print('Get Years With Complete Data Response: ${response.data}');
+
+      if (response.statusCode == 200) {
+        final data = response.data as List<dynamic>;
+        return data.map((year) => year as int).toList();
+      } else {
+        print('Non-200 status code: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error fetching years with complete data: $e');
+      return [];
+    }
+  }
 }

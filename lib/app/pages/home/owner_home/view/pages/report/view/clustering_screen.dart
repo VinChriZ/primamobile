@@ -12,11 +12,71 @@ class ClusteringScreen extends StatefulWidget {
 
 class _ClusteringScreenState extends State<ClusteringScreen> {
   int _selectedYear = DateTime.now().year;
-  int _numberOfClusters = 3;
+  final int _numberOfClusters = 3; // Fixed value of 3
   final int _currentYear = DateTime.now().year;
+  List<int> _availableYears = []; // Years with complete data
 
   // Control whether to show all items or just top 10
   final Map<int, bool> _showAllItems = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAvailableYearsAndInitialize();
+  }
+
+  // Fetch years with complete data and initialize with the latest year
+  Future<void> _fetchAvailableYearsAndInitialize() async {
+    try {
+      final classificationRepo =
+          context.read<ClusteringBloc>().classificationRepository;
+      // Fetch years with complete data from January to December
+      final years = await classificationRepo.fetchYearsWithCompleteData();
+      setState(() {
+        if (years.isNotEmpty) {
+          // Make sure years list has no duplicates
+          _availableYears = years.toSet().toList()..sort();
+          // Use the most recent year with data as default
+          _selectedYear = _availableYears.last;
+
+          // Load data for the most recent year with complete data
+          _loadDataForYear(_selectedYear);
+        } else {
+          // Fallback to current year if no years with complete data
+          _availableYears = [_currentYear];
+          _selectedYear = _currentYear;
+          print('No years with complete data found, using current year');
+
+          // Load data for current year as fallback
+          _loadDataForYear(_currentYear);
+        }
+      });
+    } catch (e) {
+      // Fallback to current year if unable to fetch
+      setState(() {
+        _availableYears = [_currentYear];
+        _selectedYear = _currentYear;
+        print('Error fetching years with complete data: $e');
+
+        // Load data for current year as fallback
+        _loadDataForYear(_currentYear);
+      });
+    }
+  }
+
+  // Helper method to load data for a specific year
+  void _loadDataForYear(int year) {
+    final startDate = DateTime(year, 1, 1);
+    final endDate = DateTime(year, 12, 31);
+
+    context.read<ClusteringBloc>().add(
+          LoadClusteringEvent(
+            startDate: startDate,
+            endDate: endDate,
+            numberOfClusters: _numberOfClusters,
+          ),
+        );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -264,12 +324,10 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
     final clusteringBloc = context.read<ClusteringBloc>();
 
     DateTime? startDate, endDate;
-    int clusters = 3;
 
     if (clusteringState is ClusteringLoaded) {
       startDate = clusteringState.startDate;
       endDate = clusteringState.endDate;
-      clusters = clusteringState.numberOfClusters;
     }
 
     // Format dates for display
@@ -305,9 +363,9 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                 style: const TextStyle(fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 4),
-              Text(
-                'Number of clusters: $clusters',
-                style: const TextStyle(fontWeight: FontWeight.w500),
+              const Text(
+                'Number of clusters: 3',
+                style: TextStyle(fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 16),
               const Text(
@@ -589,12 +647,18 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
 
   void _showFilterDialog() async {
     final currentState = context.read<ClusteringBloc>().state;
-    // Store the bloc reference before showing dialog
-    final clusteringBloc = context.read<ClusteringBloc>();
+
+    // Set selected year based on current state or default to current year
+    int yearToUse = currentState.startDate?.year ?? _currentYear;
+
+    // Make sure the selected year exists in the available years list
+    if (!_availableYears.contains(yearToUse)) {
+      yearToUse =
+          _availableYears.isNotEmpty ? _availableYears.last : _currentYear;
+    }
 
     setState(() {
-      _selectedYear = currentState.startDate?.year ?? _currentYear;
-      _numberOfClusters = currentState.numberOfClusters;
+      _selectedYear = yearToUse;
     });
 
     await showDialog(
@@ -632,66 +696,31 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                       contentPadding:
                           EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                     ),
-                    value: _selectedYear,
-                    items:
-                        List.generate(10, (index) => _currentYear - 9 + index)
-                            .map((year) => DropdownMenuItem<int>(
-                                  value: year,
-                                  child: Text('$year'),
-                                ))
-                            .toList(),
+                    value: _availableYears.contains(_selectedYear)
+                        ? _selectedYear
+                        : _availableYears.first,
+                    items: _availableYears
+                        .map((year) => DropdownMenuItem<int>(
+                              value: year,
+                              child: Text('$year'),
+                            ))
+                        .toList(),
                     onChanged: (value) {
-                      setState(() {
-                        _selectedYear = value!;
-                      });
+                      if (value != null) {
+                        setState(() {
+                          _selectedYear = value;
+                        });
+                      }
                     },
                   ),
-                  const SizedBox(height: 24),
-                  const Row(
-                    children: [
-                      Icon(Icons.category, size: 20, color: Colors.blue),
-                      SizedBox(width: 8),
-                      Text(
-                        'Number of clusters:',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
                   const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Text('2'),
-                      Expanded(
-                        child: Slider(
-                          min: 2,
-                          max: 5,
-                          divisions: 3,
-                          label: _numberOfClusters.toString(),
-                          value: _numberOfClusters.toDouble(),
-                          onChanged: (value) {
-                            setState(() {
-                              _numberOfClusters = value.toInt();
-                            });
-                          },
-                        ),
-                      ),
-                      const Text('5'),
-                    ],
-                  ),
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.withAlpha(26), // 0.1 * 255 = 26
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        'K = $_numberOfClusters clusters',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                        ),
+                  const Center(
+                    child: Text(
+                      'Products will be classified into 3 categories',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey,
+                        fontStyle: FontStyle.italic,
                       ),
                     ),
                   ),
@@ -705,19 +734,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                 ElevatedButton.icon(
                   onPressed: () {
                     Navigator.pop(context);
-
-                    // Set date range for the entire selected year
-                    final startDate = DateTime(_selectedYear, 1, 1);
-                    final endDate = DateTime(_selectedYear, 12, 31);
-
-                    // Use the stored bloc reference instead of context.read
-                    clusteringBloc.add(
-                      ChangeClusteringFilterEvent(
-                        startDate: startDate,
-                        endDate: endDate,
-                        numberOfClusters: _numberOfClusters,
-                      ),
-                    );
+                    _loadDataForYear(_selectedYear);
                   },
                   icon: const Icon(Icons.check),
                   label: const Text('Apply'),
