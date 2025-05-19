@@ -80,7 +80,7 @@ class WorkerReportScreen extends StatelessWidget {
             baseLabel,
             style: const TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 14, // Reduced from 16
+              fontSize: 14,
             ),
             textAlign: TextAlign.left,
           ),
@@ -90,14 +90,14 @@ class WorkerReportScreen extends StatelessWidget {
           ":",
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            fontSize: 14, // Reduced from 16
+            fontSize: 14,
           ),
         ),
         const SizedBox(width: 10), // Space after colon
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(fontSize: 14), // Reduced from 16
+            style: const TextStyle(fontSize: 14),
           ),
         ),
       ],
@@ -380,7 +380,7 @@ class WorkerReportScreen extends StatelessWidget {
                                           Text(
                                             'Report: ${DateFormat('yyyy-MM-dd').format(report.dateCreated)}',
                                             style: const TextStyle(
-                                              fontSize: 16, // Reduced from 18
+                                              fontSize: 16,
                                               fontWeight: FontWeight.bold,
                                               color: Colors.black,
                                             ),
@@ -415,8 +415,7 @@ class WorkerReportScreen extends StatelessWidget {
                                                       style: TextStyle(
                                                         fontWeight:
                                                             FontWeight.w600,
-                                                        fontSize:
-                                                            14, // Reduced from 16
+                                                        fontSize: 14,
                                                       ),
                                                       textAlign: TextAlign.left,
                                                     ),
@@ -427,8 +426,7 @@ class WorkerReportScreen extends StatelessWidget {
                                                     style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.w600,
-                                                      fontSize:
-                                                          14, // Reduced from 16
+                                                      fontSize: 14,
                                                     ),
                                                   ),
                                                   const SizedBox(width: 10),
@@ -445,8 +443,7 @@ class WorkerReportScreen extends StatelessWidget {
                                                         Text(
                                                           capitalizedStatus,
                                                           style: TextStyle(
-                                                            fontSize:
-                                                                14, // Reduced from 16
+                                                            fontSize: 14,
                                                             fontWeight:
                                                                 FontWeight.w600,
                                                             color: statusColor,
@@ -476,124 +473,141 @@ class WorkerReportScreen extends StatelessWidget {
                                                 Row(
                                                   children: [
                                                     Expanded(
-                                                      child: ElevatedButton(
-                                                        style: ElevatedButton
-                                                            .styleFrom(
-                                                          backgroundColor:
-                                                              Colors.blue,
-                                                          foregroundColor:
-                                                              Colors.white,
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  vertical:
-                                                                      10.0),
-                                                        ),
-                                                        onPressed: () async {
-                                                          final updated =
-                                                              await Navigator
-                                                                  .push(
-                                                            context,
-                                                            MaterialPageRoute(
-                                                                builder: (context) =>
-                                                                    EditReportPage(
-                                                                        report:
-                                                                            report)),
-                                                          );
-                                                          if (updated != null) {
-                                                            context
-                                                                .read<
-                                                                    WorkerReportBloc>()
-                                                                .add(
-                                                                  FetchWorkerReport(
-                                                                    selectedDateRange:
-                                                                        state
-                                                                            .selectedDateRange,
-                                                                    startDate: state
-                                                                        .startDate,
-                                                                    endDate: state
-                                                                        .endDate,
-                                                                    sortBy: state
-                                                                        .selectedSortBy,
-                                                                    sortOrder: state
-                                                                        .selectedSortOrder,
-                                                                  ),
-                                                                );
-                                                          }
-                                                        },
-                                                        child: const Text(
+                                                      child: SizedBox(
+                                                        height: 34,
+                                                        child: ElevatedButton(
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            backgroundColor:
+                                                                Colors
+                                                                    .blue[600],
+                                                            foregroundColor:
+                                                                Colors.white,
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          20),
+                                                            ),
+                                                          ),
+                                                          onPressed: () async {
+                                                            final updated =
+                                                                await Navigator
+                                                                    .push(
+                                                              context,
+                                                              MaterialPageRoute(
+                                                                  builder: (context) =>
+                                                                      EditReportPage(
+                                                                          report:
+                                                                              report)),
+                                                            );
+                                                            if (updated !=
+                                                                null) {
+                                                              context
+                                                                  .read<
+                                                                      WorkerReportBloc>()
+                                                                  .add(
+                                                                    FetchWorkerReport(
+                                                                      selectedDateRange:
+                                                                          state
+                                                                              .selectedDateRange,
+                                                                      startDate:
+                                                                          state
+                                                                              .startDate,
+                                                                      endDate: state
+                                                                          .endDate,
+                                                                      sortBy: state
+                                                                          .selectedSortBy,
+                                                                      sortOrder:
+                                                                          state
+                                                                              .selectedSortOrder,
+                                                                    ),
+                                                                  );
+                                                            }
+                                                          },
+                                                          child: const Text(
                                                             'Edit',
                                                             style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold)),
+                                                              fontSize: 13,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
+                                                          ),
+                                                        ),
                                                       ),
                                                     ),
                                                     const SizedBox(width: 8.0),
                                                     Expanded(
-                                                      child: ElevatedButton(
-                                                        style: ElevatedButton
-                                                            .styleFrom(
-                                                          backgroundColor:
-                                                              Colors.red,
-                                                          foregroundColor:
-                                                              Colors.white,
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  vertical:
-                                                                      10.0),
-                                                        ),
-                                                        onPressed: () {
-                                                          showDialog(
-                                                            context: context,
-                                                            builder:
-                                                                (dialogContext) {
-                                                              return AlertDialog(
-                                                                title: const Text(
-                                                                    'Delete Report'),
-                                                                content: const Text(
-                                                                    'Are you sure you want to delete this report?'),
-                                                                actions: [
-                                                                  TextButton(
-                                                                    onPressed: () =>
+                                                      child: SizedBox(
+                                                        height: 34,
+                                                        child: ElevatedButton(
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            backgroundColor:
+                                                                Colors.red[400],
+                                                            foregroundColor:
+                                                                Colors.white,
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          20),
+                                                            ),
+                                                          ),
+                                                          onPressed: () {
+                                                            showDialog(
+                                                              context: context,
+                                                              builder:
+                                                                  (dialogContext) {
+                                                                return AlertDialog(
+                                                                  title: const Text(
+                                                                      'Delete Report'),
+                                                                  content:
+                                                                      const Text(
+                                                                          'Are you sure you want to delete this report?'),
+                                                                  actions: [
+                                                                    TextButton(
+                                                                      onPressed:
+                                                                          () =>
+                                                                              Navigator.pop(dialogContext),
+                                                                      child: const Text(
+                                                                          'Cancel'),
+                                                                    ),
+                                                                    TextButton(
+                                                                      onPressed:
+                                                                          () {
+                                                                        context
+                                                                            .read<WorkerReportBloc>()
+                                                                            .add(DeleteWorkerReport(report.reportId));
                                                                         Navigator.pop(
-                                                                            dialogContext),
-                                                                    child: const Text(
-                                                                        'Cancel'),
-                                                                  ),
-                                                                  TextButton(
-                                                                    onPressed:
-                                                                        () {
-                                                                      context
-                                                                          .read<
-                                                                              WorkerReportBloc>()
-                                                                          .add(DeleteWorkerReport(
-                                                                              report.reportId));
-                                                                      Navigator.pop(
-                                                                          dialogContext);
-                                                                      ScaffoldMessenger.of(
-                                                                              context)
-                                                                          .showSnackBar(
-                                                                        const SnackBar(
-                                                                            content:
-                                                                                Text('Report deleted successfully.')),
-                                                                      );
-                                                                    },
-                                                                    child: const Text(
-                                                                        'Delete'),
-                                                                  ),
-                                                                ],
-                                                              );
-                                                            },
-                                                          );
-                                                        },
-                                                        child: const Text(
+                                                                            dialogContext);
+                                                                        ScaffoldMessenger.of(context)
+                                                                            .showSnackBar(
+                                                                          const SnackBar(
+                                                                              content: Text('Report deleted successfully.')),
+                                                                        );
+                                                                      },
+                                                                      child: const Text(
+                                                                          'Delete'),
+                                                                    ),
+                                                                  ],
+                                                                );
+                                                              },
+                                                            );
+                                                          },
+                                                          child: const Text(
                                                             'Delete',
                                                             style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold)),
+                                                              fontSize: 13,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
+                                                          ),
+                                                        ),
                                                       ),
                                                     ),
                                                   ],

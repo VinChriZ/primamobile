@@ -691,65 +691,77 @@ class OwnerApprovalScreen extends StatelessWidget {
                                                 Row(
                                                   children: [
                                                     Expanded(
-                                                      child: ElevatedButton(
-                                                        onPressed: () {
-                                                          _showNoteDialog(
-                                                              context,
-                                                              report,
-                                                              true // isApprove = true
-                                                              );
-                                                        },
-                                                        style: ElevatedButton
-                                                            .styleFrom(
-                                                          backgroundColor:
-                                                              Colors.green,
-                                                          foregroundColor:
-                                                              Colors.white,
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  vertical:
-                                                                      10.0),
-                                                        ),
-                                                        child: const Text(
-                                                          'Approve',
-                                                          style: TextStyle(
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight.bold,
+                                                      child: SizedBox(
+                                                        height: 34,
+                                                        child: ElevatedButton(
+                                                          onPressed: () {
+                                                            _showNoteDialog(
+                                                                context,
+                                                                report,
+                                                                true // isApprove = true
+                                                                );
+                                                          },
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            backgroundColor:
+                                                                Colors.green,
+                                                            foregroundColor:
+                                                                Colors.white,
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          20),
+                                                            ),
+                                                          ),
+                                                          child: const Text(
+                                                            'Approve',
+                                                            style: TextStyle(
+                                                              fontSize: 13,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
                                                           ),
                                                         ),
                                                       ),
                                                     ),
                                                     const SizedBox(width: 8.0),
                                                     Expanded(
-                                                      child: ElevatedButton(
-                                                        onPressed: () {
-                                                          _showNoteDialog(
-                                                              context,
-                                                              report,
-                                                              false // isApprove = false
-                                                              );
-                                                        },
-                                                        style: ElevatedButton
-                                                            .styleFrom(
-                                                          backgroundColor:
-                                                              Colors
-                                                                  .orange[800],
-                                                          foregroundColor:
-                                                              Colors.white,
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  vertical:
-                                                                      10.0),
-                                                        ),
-                                                        child: const Text(
-                                                          'Deny',
-                                                          style: TextStyle(
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight.bold,
+                                                      child: SizedBox(
+                                                        height: 34,
+                                                        child: ElevatedButton(
+                                                          onPressed: () {
+                                                            _showNoteDialog(
+                                                                context,
+                                                                report,
+                                                                false // isApprove = false
+                                                                );
+                                                          },
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            backgroundColor:
+                                                                Colors.orange[
+                                                                    800],
+                                                            foregroundColor:
+                                                                Colors.white,
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          20),
+                                                            ),
+                                                          ),
+                                                          child: const Text(
+                                                            'Deny',
+                                                            style: TextStyle(
+                                                              fontSize: 13,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
                                                           ),
                                                         ),
                                                       ),
@@ -761,6 +773,7 @@ class OwnerApprovalScreen extends StatelessWidget {
                                               // Delete button
                                               SizedBox(
                                                 width: double.infinity,
+                                                height: 34,
                                                 child: ElevatedButton(
                                                   onPressed: () {
                                                     showDialog(
@@ -807,19 +820,23 @@ class OwnerApprovalScreen extends StatelessWidget {
                                                   },
                                                   style:
                                                       ElevatedButton.styleFrom(
-                                                    backgroundColor: Colors.red,
+                                                    backgroundColor:
+                                                        Colors.red[400],
                                                     foregroundColor:
                                                         Colors.white,
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        vertical: 10.0),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              20),
+                                                    ),
                                                   ),
                                                   child: const Text(
                                                     'Delete',
                                                     style: TextStyle(
-                                                      fontSize: 14,
+                                                      fontSize: 13,
                                                       fontWeight:
-                                                          FontWeight.bold,
+                                                          FontWeight.w500,
                                                     ),
                                                   ),
                                                 ),

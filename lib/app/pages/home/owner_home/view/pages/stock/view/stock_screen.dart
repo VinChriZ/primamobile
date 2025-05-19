@@ -25,13 +25,13 @@ class StockScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 150, // Increased width from 110 to 130
+          width: 150,
           padding: const EdgeInsets.only(right: 5), // Add right padding
           child: Text(
             baseLabel,
             style: const TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 14, // Decreased from 16
+              fontSize: 14,
             ),
             textAlign: TextAlign.left,
           ),
@@ -41,7 +41,7 @@ class StockScreen extends StatelessWidget {
           ":",
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            fontSize: 14, // Decreased from 16
+            fontSize: 14,
           ),
         ),
         const SizedBox(width: 10), // Space after colon
@@ -61,6 +61,7 @@ class StockScreen extends StatelessWidget {
     Color? color,
     String? title,
     IconData? titleIcon,
+    bool titleWrapping = false,
   }) {
     return Container(
       width: double.infinity,
@@ -84,24 +85,28 @@ class StockScreen extends StatelessWidget {
                     if (titleIcon != null) ...[
                       Icon(
                         titleIcon,
-                        size: 18, // Decreased from 20
+                        size: 18,
                         color: Colors.blue[800],
                       ),
                       const SizedBox(width: 8),
                     ],
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16, // Decreased from 18
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                        overflow: TextOverflow.visible,
+                        softWrap: titleWrapping,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10), // Decreased from 12
+                const SizedBox(height: 10),
                 Divider(color: Colors.blue.shade300, thickness: 1),
-                const SizedBox(height: 6), // Decreased from 8
+                const SizedBox(height: 6),
               ],
               child,
             ],
@@ -356,6 +361,8 @@ class StockScreen extends StatelessWidget {
                                             },
                                             child: _buildCard(
                                               title: product.name,
+                                              titleWrapping:
+                                                  true, // Enable text wrapping for long titles
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.stretch,
@@ -383,8 +390,9 @@ class StockScreen extends StatelessWidget {
                                                       ),
                                                     ],
                                                   ),
-                                                  const SizedBox(height: 16.0),
-                                                  // Only show Edit and Delete buttons if user role is 1 or 2
+                                                  const SizedBox(
+                                                      height:
+                                                          16.0), // Only show Edit and Delete buttons if user role is 1 or 2
                                                   if (Globals.userSession.user
                                                               .roleId ==
                                                           1 ||
@@ -393,116 +401,135 @@ class StockScreen extends StatelessWidget {
                                                           2)
                                                     Row(
                                                       children: [
+                                                        // Edit button
                                                         Expanded(
-                                                          child: ElevatedButton(
-                                                            style:
-                                                                ElevatedButton
-                                                                    .styleFrom(
-                                                              backgroundColor:
-                                                                  Colors.blue,
-                                                              foregroundColor:
-                                                                  Colors.white,
-                                                              padding: const EdgeInsets
-                                                                  .symmetric(
-                                                                  vertical:
-                                                                      10.0), // Reduced padding
-                                                            ),
-                                                            onPressed: () {
-                                                              Navigator.push(
-                                                                context,
-                                                                MaterialPageRoute(
-                                                                  builder: (_) =>
-                                                                      BlocProvider
-                                                                          .value(
-                                                                    value: context
-                                                                        .read<
-                                                                            StockBloc>(),
-                                                                    child: EditProductPage(
-                                                                        product:
-                                                                            product),
-                                                                  ),
+                                                          child: SizedBox(
+                                                            height: 34,
+                                                            child:
+                                                                ElevatedButton(
+                                                              style:
+                                                                  ElevatedButton
+                                                                      .styleFrom(
+                                                                backgroundColor:
+                                                                    Colors.blue[
+                                                                        600],
+                                                                foregroundColor:
+                                                                    Colors
+                                                                        .white,
+                                                                shape:
+                                                                    RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              20),
                                                                 ),
-                                                              );
-                                                            },
-                                                            child: const Text(
-                                                              'Edit',
-                                                              style: TextStyle(
-                                                                fontSize:
-                                                                    14, // Reduced from 16
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
+                                                              ),
+                                                              onPressed: () {
+                                                                Navigator.push(
+                                                                  context,
+                                                                  MaterialPageRoute(
+                                                                    builder: (_) =>
+                                                                        BlocProvider
+                                                                            .value(
+                                                                      value: context
+                                                                          .read<
+                                                                              StockBloc>(),
+                                                                      child: EditProductPage(
+                                                                          product:
+                                                                              product),
+                                                                    ),
+                                                                  ),
+                                                                );
+                                                              },
+                                                              child: const Text(
+                                                                'Edit',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize: 13,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                ),
                                                               ),
                                                             ),
                                                           ),
                                                         ),
                                                         const SizedBox(
                                                             width: 8.0),
+                                                        // Delete button
                                                         Expanded(
-                                                          child: ElevatedButton(
-                                                            style:
-                                                                ElevatedButton
-                                                                    .styleFrom(
-                                                              backgroundColor:
-                                                                  Colors.red,
-                                                              foregroundColor:
-                                                                  Colors.white,
-                                                              padding: const EdgeInsets
-                                                                  .symmetric(
-                                                                  vertical:
-                                                                      10.0), // Reduced padding
-                                                            ),
-                                                            onPressed: () {
-                                                              final stockBloc =
-                                                                  context.read<
-                                                                      StockBloc>();
-                                                              showDialog(
-                                                                context:
-                                                                    context,
-                                                                builder:
-                                                                    (dialogContext) =>
-                                                                        AlertDialog(
-                                                                  title: const Text(
-                                                                      'Delete Product'),
-                                                                  content:
-                                                                      const Text(
-                                                                          'Are you sure you want to delete this product?'),
-                                                                  actions: [
-                                                                    TextButton(
-                                                                      onPressed:
-                                                                          () =>
-                                                                              Navigator.of(dialogContext).pop(),
-                                                                      child: const Text(
-                                                                          'Cancel'),
-                                                                    ),
-                                                                    TextButton(
-                                                                      onPressed:
-                                                                          () {
-                                                                        stockBloc
-                                                                            .add(DeleteProduct(product.upc));
-                                                                        Navigator.of(dialogContext)
-                                                                            .pop();
-                                                                      },
-                                                                      child:
-                                                                          const Text(
-                                                                        'Delete',
-                                                                        style: TextStyle(
-                                                                            fontWeight:
-                                                                                FontWeight.bold),
-                                                                      ),
-                                                                    ),
-                                                                  ],
+                                                          child: SizedBox(
+                                                            height: 34,
+                                                            child:
+                                                                ElevatedButton(
+                                                              style:
+                                                                  ElevatedButton
+                                                                      .styleFrom(
+                                                                backgroundColor:
+                                                                    Colors.red[
+                                                                        400],
+                                                                foregroundColor:
+                                                                    Colors
+                                                                        .white,
+                                                                shape:
+                                                                    RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              20),
                                                                 ),
-                                                              );
-                                                            },
-                                                            child: const Text(
-                                                              'Delete',
-                                                              style: TextStyle(
-                                                                fontSize:
-                                                                    14, // Reduced from 16
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
+                                                              ),
+                                                              onPressed: () {
+                                                                final stockBloc =
+                                                                    context.read<
+                                                                        StockBloc>();
+                                                                showDialog(
+                                                                  context:
+                                                                      context,
+                                                                  builder:
+                                                                      (dialogContext) =>
+                                                                          AlertDialog(
+                                                                    title: const Text(
+                                                                        'Delete Product'),
+                                                                    content:
+                                                                        const Text(
+                                                                            'Are you sure you want to delete this product?'),
+                                                                    actions: [
+                                                                      TextButton(
+                                                                        onPressed:
+                                                                            () =>
+                                                                                Navigator.of(dialogContext).pop(),
+                                                                        child: const Text(
+                                                                            'Cancel'),
+                                                                      ),
+                                                                      TextButton(
+                                                                        onPressed:
+                                                                            () {
+                                                                          stockBloc
+                                                                              .add(DeleteProduct(product.upc));
+                                                                          Navigator.of(dialogContext)
+                                                                              .pop();
+                                                                        },
+                                                                        child:
+                                                                            const Text(
+                                                                          'Delete',
+                                                                          style:
+                                                                              TextStyle(fontWeight: FontWeight.bold),
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                );
+                                                              },
+                                                              child: const Text(
+                                                                'Delete',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize: 13,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                ),
                                                               ),
                                                             ),
                                                           ),

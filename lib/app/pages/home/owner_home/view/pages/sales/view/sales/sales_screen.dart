@@ -98,7 +98,7 @@ class SalesScreen extends StatelessWidget {
                     if (titleIcon != null) ...[
                       Icon(
                         titleIcon,
-                        size: 18, // Decreased from 20
+                        size: 18,
                         color: Colors.blue[800],
                       ),
                       const SizedBox(width: 8),
@@ -106,16 +106,16 @@ class SalesScreen extends StatelessWidget {
                     Text(
                       title,
                       style: const TextStyle(
-                        fontSize: 16, // Decreased from 18
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10), // Decreased from 12
+                const SizedBox(height: 10),
                 Divider(color: Colors.blue.shade300, thickness: 1),
-                const SizedBox(height: 6), // Decreased from 8
+                const SizedBox(height: 6),
               ],
               child,
             ],
@@ -378,49 +378,55 @@ class SalesScreen extends StatelessWidget {
                                       Row(
                                         children: [
                                           Expanded(
-                                            child: ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.blue,
-                                                foregroundColor: Colors.white,
-                                                padding: const EdgeInsets
-                                                    .symmetric(
-                                                    vertical:
-                                                        10.0), // Reduced padding
-                                              ),
-                                              onPressed: () async {
-                                                final updated =
-                                                    await Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        SalesEdit(
-                                                            transaction:
-                                                                transaction),
+                                            child: SizedBox(
+                                              height: 34,
+                                              child: ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      Colors.blue[600],
+                                                  foregroundColor: Colors.white,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20),
                                                   ),
-                                                );
-                                                if (updated != null) {
-                                                  context.read<SalesBloc>().add(
-                                                        FetchSales(
-                                                          selectedDateRange: state
-                                                              .selectedDateRange,
-                                                          startDate:
-                                                              state.startDate,
-                                                          endDate:
-                                                              state.endDate,
-                                                          sortBy: state
-                                                              .selectedSortBy,
-                                                          sortOrder: state
-                                                              .selectedSortOrder,
-                                                        ),
-                                                      );
-                                                }
-                                              },
-                                              child: const Text(
-                                                'Edit',
-                                                style: TextStyle(
-                                                  fontSize:
-                                                      14, // Reduced from 16
-                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                onPressed: () async {
+                                                  final updated =
+                                                      await Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          SalesEdit(
+                                                              transaction:
+                                                                  transaction),
+                                                    ),
+                                                  );
+                                                  if (updated != null) {
+                                                    context
+                                                        .read<SalesBloc>()
+                                                        .add(
+                                                          FetchSales(
+                                                            selectedDateRange: state
+                                                                .selectedDateRange,
+                                                            startDate:
+                                                                state.startDate,
+                                                            endDate:
+                                                                state.endDate,
+                                                            sortBy: state
+                                                                .selectedSortBy,
+                                                            sortOrder: state
+                                                                .selectedSortOrder,
+                                                          ),
+                                                        );
+                                                  }
+                                                },
+                                                child: const Text(
+                                                  'Edit',
+                                                  style: TextStyle(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
                                                 ),
                                               ),
                                             ),
@@ -432,68 +438,76 @@ class SalesScreen extends StatelessWidget {
                                               Globals.userSession.user.roleId ==
                                                   2)
                                             Expanded(
-                                              child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.red,
-                                                  foregroundColor: Colors.white,
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      vertical:
-                                                          10.0), // Reduced padding
-                                                ),
-                                                onPressed: () {
-                                                  showDialog(
-                                                    context: context,
-                                                    builder: (dialogContext) {
-                                                      return AlertDialog(
-                                                        title: const Text(
-                                                            'Delete Transaction'),
-                                                        content: const Text(
-                                                            'Are you sure you want to delete this transaction?'),
-                                                        actions: [
-                                                          TextButton(
-                                                            onPressed: () =>
+                                              child: SizedBox(
+                                                height: 34,
+                                                child: ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        Colors.red[400],
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              20),
+                                                    ),
+                                                  ),
+                                                  onPressed: () {
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (dialogContext) {
+                                                        return AlertDialog(
+                                                          title: const Text(
+                                                              'Delete Transaction'),
+                                                          content: const Text(
+                                                              'Are you sure you want to delete this transaction?'),
+                                                          actions: [
+                                                            TextButton(
+                                                              onPressed: () =>
+                                                                  Navigator.pop(
+                                                                      dialogContext),
+                                                              child: const Text(
+                                                                  'Cancel'),
+                                                            ),
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                context
+                                                                    .read<
+                                                                        SalesBloc>()
+                                                                    .add(DeleteTransaction(
+                                                                        transaction
+                                                                            .transactionId));
                                                                 Navigator.pop(
-                                                                    dialogContext),
-                                                            child: const Text(
-                                                                'Cancel'),
-                                                          ),
-                                                          TextButton(
-                                                            onPressed: () {
-                                                              context
-                                                                  .read<
-                                                                      SalesBloc>()
-                                                                  .add(DeleteTransaction(
-                                                                      transaction
-                                                                          .transactionId));
-                                                              Navigator.pop(
-                                                                  dialogContext);
-                                                              ScaffoldMessenger
-                                                                      .of(context)
-                                                                  .showSnackBar(
-                                                                const SnackBar(
-                                                                    content: Text(
-                                                                        'Transaction deleted successfully.')),
-                                                              );
-                                                            },
-                                                            child: const Text(
-                                                                'Delete',
-                                                                style: TextStyle(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold)),
-                                                          ),
-                                                        ],
-                                                      );
-                                                    },
-                                                  );
-                                                },
-                                                child: const Text(
-                                                  'Delete',
-                                                  style: TextStyle(
-                                                    fontSize:
-                                                        14, // Reduced from 16
-                                                    fontWeight: FontWeight.bold,
+                                                                    dialogContext);
+                                                                ScaffoldMessenger.of(
+                                                                        context)
+                                                                    .showSnackBar(
+                                                                  const SnackBar(
+                                                                      content: Text(
+                                                                          'Transaction deleted successfully.')),
+                                                                );
+                                                              },
+                                                              child: const Text(
+                                                                  'Delete',
+                                                                  style: TextStyle(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold)),
+                                                            ),
+                                                          ],
+                                                        );
+                                                      },
+                                                    );
+                                                  },
+                                                  child: const Text(
+                                                    'Delete',
+                                                    style: TextStyle(
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
@@ -579,13 +593,13 @@ class SalesScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 150, // Increased width from 110 to 130
+          width: 150,
           padding: const EdgeInsets.only(right: 5),
           child: Text(
             baseLabel,
             style: const TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 14, // Decreased from 16
+              fontSize: 14,
             ),
             textAlign: TextAlign.left,
           ),
@@ -595,14 +609,14 @@ class SalesScreen extends StatelessWidget {
           ":",
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            fontSize: 14, // Decreased from 16
+            fontSize: 14,
           ),
         ),
         const SizedBox(width: 10), // Space after colon
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(fontSize: 14), // Decreased from 16
+            style: const TextStyle(fontSize: 14),
           ),
         ),
       ],
