@@ -788,7 +788,8 @@ class TransactionDetailScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         height: 36, // Height for better tap target
-                        alignment: Alignment.center, // Center content vertically
+                        alignment:
+                            Alignment.center, // Center content vertically
                         child: SpinBox(
                           min: 1,
                           max: product.stock.toDouble(),
@@ -834,7 +835,8 @@ class TransactionDetailScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         height: 36, // Height for better tap target
-                        alignment: Alignment.center, // Center content vertically
+                        alignment:
+                            Alignment.center, // Center content vertically
                         child: SpinBox(
                           min: 0,
                           max: 100000000, // Set a reasonable maximum price
@@ -893,7 +895,8 @@ class TransactionDetailScreen extends StatelessWidget {
                           }
                           if (agreedPrice <= 0) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Enter valid price')),
+                              const SnackBar(
+                                  content: Text('Enter valid price')),
                             );
                             return;
                           }
@@ -916,8 +919,8 @@ class TransactionDetailScreen extends StatelessWidget {
                           Navigator.pop(dialogContext);
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content:
-                                    Text('Transaction detail added successfully')),
+                                content: Text(
+                                    'Transaction detail added successfully')),
                           );
                         },
                         style: ElevatedButton.styleFrom(

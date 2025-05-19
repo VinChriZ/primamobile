@@ -438,7 +438,8 @@ class _AddReportPageState extends State<AddReportPage> {
                         }
 
                         // Only validate stock limit for "return" type reports
-                        if (_selectedType == "return" && quantity > product.stock) {
+                        if (_selectedType == "return" &&
+                            quantity > product.stock) {
                           setState(() {
                             errorMessage = 'Quantity exceeds stock';
                           });

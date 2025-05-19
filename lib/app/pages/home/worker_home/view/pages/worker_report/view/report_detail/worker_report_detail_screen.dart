@@ -719,7 +719,8 @@ class WorkerReportDetailScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         height: 36, // Height for better tap target
-                        alignment: Alignment.center, // Center content vertically
+                        alignment:
+                            Alignment.center, // Center content vertically
                         child: SpinBox(
                           min: 1,
                           max: report.type.toLowerCase() == "return"
@@ -801,7 +802,8 @@ class WorkerReportDetailScreen extends StatelessWidget {
                           Navigator.pop(dialogContext);
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content: Text('Report detail added successfully')),
+                                content:
+                                    Text('Report detail added successfully')),
                           );
                         },
                         style: ElevatedButton.styleFrom(
