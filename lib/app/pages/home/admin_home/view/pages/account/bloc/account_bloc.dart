@@ -21,6 +21,8 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
       FetchAccounts event, Emitter<AccountState> emit) async {
     try {
       final accounts = await userRepository.fetchAllUsers();
+      // Sort accounts by userId in descending order
+      accounts.sort((a, b) => b.userId.compareTo(a.userId));
       emit(AccountLoaded(accounts: accounts));
     } catch (e) {
       if (e.toString().contains("401")) {
@@ -37,6 +39,8 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     try {
       await userRepository.addUser(event.user, event.password);
       final accounts = await userRepository.fetchAllUsers();
+      // Sort accounts by userId in descending order
+      accounts.sort((a, b) => b.userId.compareTo(a.userId));
       if (state is AccountLoaded) {
         final currentState = state as AccountLoaded;
         emit(currentState.copyWith(accounts: accounts));
@@ -58,6 +62,8 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     try {
       await userRepository.updateUser(event.userId, event.updatedData);
       final accounts = await userRepository.fetchAllUsers();
+      // Sort accounts by userId in descending order
+      accounts.sort((a, b) => b.userId.compareTo(a.userId));
       if (state is AccountLoaded) {
         final currentState = state as AccountLoaded;
         emit(currentState.copyWith(accounts: accounts));
@@ -79,6 +85,8 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     try {
       await userRepository.deactivateUser(event.userId);
       final accounts = await userRepository.fetchAllUsers();
+      // Sort accounts by userId in descending order
+      accounts.sort((a, b) => b.userId.compareTo(a.userId));
       if (state is AccountLoaded) {
         final currentState = state as AccountLoaded;
         emit(currentState.copyWith(accounts: accounts));
@@ -99,6 +107,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
       FilterAccounts event, Emitter<AccountState> emit) async {
     if (state is AccountLoaded) {
       final currentState = state as AccountLoaded;
+
       emit(currentState.copyWith(
         selectedStatus: event.selectedStatus,
         selectedRole: event.selectedRole,

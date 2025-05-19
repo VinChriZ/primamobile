@@ -29,28 +29,37 @@ class AccountLoaded extends AccountState {
   });
 
   List<User> get filteredAccounts {
-    return accounts.where((account) {
-      bool statusMatch;
-      if (selectedStatus == 'Active') {
-        statusMatch = account.active;
-      } else if (selectedStatus == 'Inactive') {
-        statusMatch = !account.active;
-      } else {
-        statusMatch = true;
-      }
+    // Start with a copy of accounts to avoid modifying the original list
+    List<User> filtered = List<User>.from(accounts);
 
-      bool roleMatch;
-      if (selectedRole == 'Admin') {
-        roleMatch = account.roleId == 1;
-      } else if (selectedRole == 'Owner') {
-        roleMatch = account.roleId == 2;
-      } else if (selectedRole == 'Worker') {
-        roleMatch = account.roleId == 3;
-      } else {
-        roleMatch = true;
-      }
-      return statusMatch && roleMatch;
-    }).toList();
+    // Apply status filter
+    if (selectedStatus != 'All') {
+      filtered = filtered.where((user) {
+        if (selectedStatus == 'Active') return user.active;
+        return !user.active;
+      }).toList();
+    }
+
+    // Apply role filter
+    if (selectedRole != 'All') {
+      filtered = filtered.where((user) {
+        switch (selectedRole) {
+          case 'Admin':
+            return user.roleId == 1;
+          case 'Owner':
+            return user.roleId == 2;
+          case 'Worker':
+            return user.roleId == 3;
+          default:
+            return true;
+        }
+      }).toList();
+    }
+
+    // Sort by user ID in descending order
+    filtered.sort((a, b) => b.userId.compareTo(a.userId));
+
+    return filtered;
   }
 
   AccountLoaded copyWith({
