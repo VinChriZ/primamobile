@@ -226,13 +226,15 @@ class AccountScreen extends StatelessWidget {
                                         const SizedBox(height: 12.0),
                                         SizedBox(
                                           width: double.infinity,
+                                          height: 34,
                                           child: ElevatedButton(
                                             style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.blue,
+                                              backgroundColor: Colors.blue[600],
                                               foregroundColor: Colors.white,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 10.0),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
                                             ),
                                             onPressed: () {
                                               Navigator.push(
@@ -248,10 +250,13 @@ class AccountScreen extends StatelessWidget {
                                                 ),
                                               );
                                             },
-                                            child: const Text('Edit',
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
+                                            child: const Text(
+                                              'Edit',
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ],
