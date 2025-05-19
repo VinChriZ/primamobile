@@ -341,7 +341,13 @@ class _AddReportPageState extends State<AddReportPage> {
           return AlertDialog(
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            title: Text('Add ${product.name}'),
+            title: Center(
+              child: Text(
+                'Add ${product.name}',
+                style: const TextStyle(fontSize: 17),
+                textAlign: TextAlign.center,
+              ),
+            ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -397,36 +403,75 @@ class _AddReportPageState extends State<AddReportPage> {
               ],
             ),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  if (quantity <= 0) {
-                    setState(() {
-                      errorMessage = 'Enter valid quantity';
-                    });
-                    return;
-                  }
-
-                  // Only validate stock limit for "return" type reports
-                  if (_selectedType == "return" && quantity > product.stock) {
-                    setState(() {
-                      errorMessage = 'Quantity exceeds stock';
-                    });
-                    return;
-                  }
-
-                  Navigator.pop(
-                    context,
-                    ReportDetailItem(
-                      product: product,
-                      quantity: quantity,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: BorderSide(color: Colors.grey.shade300),
+                        ),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
-                  );
-                },
-                child: const Text('Add'),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (quantity <= 0) {
+                          setState(() {
+                            errorMessage = 'Enter valid quantity';
+                          });
+                          return;
+                        }
+
+                        // Only validate stock limit for "return" type reports
+                        if (_selectedType == "return" && quantity > product.stock) {
+                          setState(() {
+                            errorMessage = 'Quantity exceeds stock';
+                          });
+                          return;
+                        }
+
+                        Navigator.pop(
+                          context,
+                          ReportDetailItem(
+                            product: product,
+                            quantity: quantity,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue.shade600,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        elevation: 1,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Add',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           );

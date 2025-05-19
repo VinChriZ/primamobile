@@ -388,7 +388,14 @@ class _AddSalesPageState extends State<AddSalesPage> {
           return AlertDialog(
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            title: Text('Add ${product.name}'),
+            titlePadding: const EdgeInsets.only(top: 20, left: 20, right: 20),
+            title: Center(
+              child: Text(
+                'Add ${product.name}',
+                style: const TextStyle(fontSize: 17),
+                textAlign: TextAlign.center,
+              ),
+            ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -484,40 +491,79 @@ class _AddSalesPageState extends State<AddSalesPage> {
               ],
             ),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  if (quantity <= 0) {
-                    setState(() {
-                      errorMessage = 'Enter valid quantity';
-                    });
-                    return;
-                  }
-                  if (agreedPrice <= 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Enter valid price')),
-                    );
-                    return;
-                  }
-                  if (quantity > product.stock) {
-                    setState(() {
-                      errorMessage = 'Quantity exceeds stock';
-                    });
-                    return;
-                  }
-                  Navigator.pop(
-                    context,
-                    SalesProductItem(
-                      product: product,
-                      quantity: quantity,
-                      agreedPrice: agreedPrice,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: BorderSide(color: Colors.grey.shade300),
+                        ),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
-                  );
-                },
-                child: const Text('Add'),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (quantity <= 0) {
+                          setState(() {
+                            errorMessage = 'Enter valid quantity';
+                          });
+                          return;
+                        }
+                        if (agreedPrice <= 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Enter valid price')),
+                          );
+                          return;
+                        }
+                        if (quantity > product.stock) {
+                          setState(() {
+                            errorMessage = 'Quantity exceeds stock';
+                          });
+                          return;
+                        }
+                        Navigator.pop(
+                          context,
+                          SalesProductItem(
+                            product: product,
+                            quantity: quantity,
+                            agreedPrice: agreedPrice,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue.shade600,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        elevation: 1,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Add',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           );
@@ -545,7 +591,14 @@ class _AddSalesPageState extends State<AddSalesPage> {
           return AlertDialog(
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            title: Text('Edit ${item.product.name}'),
+            titlePadding: const EdgeInsets.only(top: 20, bottom: 10),
+            title: Center(
+              child: Text(
+                'Edit ${item.product.name}',
+                style: const TextStyle(fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+            ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -641,40 +694,79 @@ class _AddSalesPageState extends State<AddSalesPage> {
               ],
             ),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  if (quantity <= 0) {
-                    setState(() {
-                      errorMessage = 'Enter valid quantity';
-                    });
-                    return;
-                  }
-                  if (agreedPrice <= 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Enter valid price')),
-                    );
-                    return;
-                  }
-                  if (quantity > item.product.stock) {
-                    setState(() {
-                      errorMessage = 'Quantity exceeds stock';
-                    });
-                    return;
-                  }
-                  Navigator.pop(
-                    context,
-                    SalesProductItem(
-                      product: item.product,
-                      quantity: quantity,
-                      agreedPrice: agreedPrice,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: BorderSide(color: Colors.grey.shade300),
+                        ),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
-                  );
-                },
-                child: const Text('Update'),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (quantity <= 0) {
+                          setState(() {
+                            errorMessage = 'Enter valid quantity';
+                          });
+                          return;
+                        }
+                        if (agreedPrice <= 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Enter valid price')),
+                          );
+                          return;
+                        }
+                        if (quantity > item.product.stock) {
+                          setState(() {
+                            errorMessage = 'Quantity exceeds stock';
+                          });
+                          return;
+                        }
+                        Navigator.pop(
+                          context,
+                          SalesProductItem(
+                            product: item.product,
+                            quantity: quantity,
+                            agreedPrice: agreedPrice,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue.shade600,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        elevation: 1,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Update',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           );

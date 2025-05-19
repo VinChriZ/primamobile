@@ -681,105 +681,153 @@ class WorkerReportDetailScreen extends StatelessWidget {
     await showDialog(
       context: context,
       builder: (dialogContext) {
-        return StatefulBuilder(builder: (context, setState) {
-          return AlertDialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            title: Text('Add ${product.name}'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Available stock: ${product.stock}'),
-                const SizedBox(height: 12),
+        return BlocProvider.value(
+          value: workerReportDetailBloc,
+          child: StatefulBuilder(builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              title: Center(
+                child: Text(
+                  'Add ${product.name}',
+                  style: const TextStyle(fontSize: 17),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Available stock: ${product.stock}'),
+                  const SizedBox(height: 12),
 
-                // Quantity SpinBox
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  // Quantity SpinBox
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Quantity:',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        height: 36, // Height for better tap target
+                        alignment: Alignment.center, // Center content vertically
+                        child: SpinBox(
+                          min: 1,
+                          max: report.type.toLowerCase() == "return"
+                              ? product.stock.toDouble()
+                              : 9999,
+                          value: quantity.toDouble(),
+                          decimals: 0,
+                          step: 1,
+                          textAlign: TextAlign.center, // Center the value text
+                          iconSize: 22, // Smaller icons for better alignment
+                          spacing: 1, // Reduce spacing between elements
+                          decoration: const InputDecoration.collapsed(
+                            hintText: '',
+                          ),
+                          onChanged: (value) {
+                            setState(() {
+                              quantity = value.toInt();
+                              if (errorMessage != null) {
+                                errorMessage = null;
+                              }
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    const Text(
-                      'Quantity:',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey,
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(dialogContext),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: BorderSide(color: Colors.grey.shade300),
+                          ),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      height: 36, // Height for better tap target
-                      alignment: Alignment.center, // Center content vertically
-                      child: SpinBox(
-                        min: 1,
-                        max: report.type.toLowerCase() == "return"
-                            ? product.stock.toDouble()
-                            : 9999,
-                        value: quantity.toDouble(),
-                        decimals: 0,
-                        step: 1,
-                        textAlign: TextAlign.center, // Center the value text
-                        iconSize: 22, // Smaller icons for better alignment
-                        spacing: 1, // Reduce spacing between elements
-                        decoration: const InputDecoration.collapsed(
-                          hintText: '',
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            quantity = value.toInt();
-                            if (errorMessage != null) {
-                              errorMessage = null;
-                            }
-                          });
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (quantity <= 0) {
+                            setState(() {
+                              errorMessage = 'Enter valid quantity';
+                            });
+                            return;
+                          }
+
+                          // Only validate stock limit for "return" type reports
+                          if (report.type.toLowerCase() == "return" &&
+                              quantity > product.stock) {
+                            setState(() {
+                              errorMessage = 'Quantity exceeds stock';
+                            });
+                            return;
+                          }
+
+                          workerReportDetailBloc.add(
+                            AddWorkerReportDetail(reportId, {
+                              'upc': product.upc,
+                              'quantity': quantity,
+                            }),
+                          );
+                          Navigator.pop(dialogContext);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Report detail added successfully')),
+                          );
                         },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade600,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          elevation: 1,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          'Add',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  if (quantity <= 0) {
-                    setState(() {
-                      errorMessage = 'Enter valid quantity';
-                    });
-                    return;
-                  }
-
-                  // Only validate stock limit for "return" type reports
-                  if (report.type.toLowerCase() == "return" &&
-                      quantity > product.stock) {
-                    setState(() {
-                      errorMessage = 'Quantity exceeds stock';
-                    });
-                    return;
-                  }
-
-                  workerReportDetailBloc.add(
-                    AddWorkerReportDetail(reportId, {
-                      'upc': product.upc,
-                      'quantity': quantity,
-                    }),
-                  );
-                  Navigator.pop(dialogContext);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Report detail added successfully')),
-                  );
-                },
-                child: const Text('Add'),
-              ),
-            ],
-          );
-        });
+            );
+          }),
+        );
       },
     );
   }

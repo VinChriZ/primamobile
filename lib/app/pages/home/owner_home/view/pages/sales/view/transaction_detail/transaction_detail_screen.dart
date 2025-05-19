@@ -756,7 +756,13 @@ class TransactionDetailScreen extends StatelessWidget {
             return AlertDialog(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
-              title: Text('Add ${product.name}'),
+              title: Center(
+                child: Text(
+                  'Add ${product.name}',
+                  style: const TextStyle(fontSize: 17),
+                  textAlign: TextAlign.center,
+                ),
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -782,8 +788,7 @@ class TransactionDetailScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         height: 36, // Height for better tap target
-                        alignment:
-                            Alignment.center, // Center content vertically
+                        alignment: Alignment.center, // Center content vertically
                         child: SpinBox(
                           min: 1,
                           max: product.stock.toDouble(),
@@ -829,8 +834,7 @@ class TransactionDetailScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         height: 36, // Height for better tap target
-                        alignment:
-                            Alignment.center, // Center content vertically
+                        alignment: Alignment.center, // Center content vertically
                         child: SpinBox(
                           min: 0,
                           max: 100000000, // Set a reasonable maximum price
@@ -854,48 +858,87 @@ class TransactionDetailScreen extends StatelessWidget {
                 ],
               ),
               actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (quantity <= 0) {
-                      setState(() {
-                        errorMessage = 'Enter valid quantity';
-                      });
-                      return;
-                    }
-                    if (agreedPrice <= 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Enter valid price')),
-                      );
-                      return;
-                    }
-                    if (quantity > product.stock) {
-                      setState(() {
-                        errorMessage = 'Quantity exceeds stock';
-                      });
-                      return;
-                    }
-                    transactionDetailBloc.add(
-                      AddTransactionDetail(
-                        transactionId,
-                        {
-                          'upc': product.upc,
-                          'quantity': quantity,
-                          'agreed_price': agreedPrice,
-                        },
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(dialogContext),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: BorderSide(color: Colors.grey.shade300),
+                          ),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
-                    );
-                    Navigator.pop(dialogContext);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content:
-                              Text('Transaction detail added successfully')),
-                    );
-                  },
-                  child: const Text('Add'),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (quantity <= 0) {
+                            setState(() {
+                              errorMessage = 'Enter valid quantity';
+                            });
+                            return;
+                          }
+                          if (agreedPrice <= 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Enter valid price')),
+                            );
+                            return;
+                          }
+                          if (quantity > product.stock) {
+                            setState(() {
+                              errorMessage = 'Quantity exceeds stock';
+                            });
+                            return;
+                          }
+                          transactionDetailBloc.add(
+                            AddTransactionDetail(
+                              transactionId,
+                              {
+                                'upc': product.upc,
+                                'quantity': quantity,
+                                'agreed_price': agreedPrice,
+                              },
+                            ),
+                          );
+                          Navigator.pop(dialogContext);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content:
+                                    Text('Transaction detail added successfully')),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade600,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          elevation: 1,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          'Add',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             );
