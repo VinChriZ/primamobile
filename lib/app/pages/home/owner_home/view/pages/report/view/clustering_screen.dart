@@ -201,21 +201,18 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                         },
                         child: const Text('Try Again'),
                       ),
-                      const SizedBox(width: 12),
-                      if (state.message.contains('model needs to be trained'))
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue[700],
-                            foregroundColor: Colors.white,
-                          ),
-                          onPressed: () {
-                            context.read<ClusteringBloc>().add(
-                                  const RetrainModelEvent(),
-                                );
-                          },
-                          icon: const Icon(Icons.model_training),
-                          label: const Text('Train Model'),
+                      const SizedBox(
+                          width:
+                              12), // Always show Train Model button in error state
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[700],
+                          foregroundColor: Colors.white,
                         ),
+                        onPressed: () => _showTrainModelConfirmation(context),
+                        icon: const Icon(Icons.model_training),
+                        label: const Text('Train Model'),
+                      ),
                     ],
                   ),
                 ],
@@ -271,6 +268,17 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                           style: TextStyle(fontSize: 16),
                           textAlign: TextAlign.center,
                         ),
+                        const SizedBox(height: 24),
+                        // Add Train Model button if no data is available
+                        ElevatedButton.icon(
+                          onPressed: () => _showTrainModelConfirmation(context),
+                          icon: const Icon(Icons.model_training),
+                          label: const Text('Train Classification Model'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue[700],
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -323,78 +331,123 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
     // Store the bloc reference before showing dialog
     final clusteringBloc = context.read<ClusteringBloc>();
 
-    DateTime? startDate, endDate;
+    DateTime? startDate;
+    int selectedTrainingYear = _selectedYear;
 
     if (clusteringState is ClusteringLoaded) {
       startDate = clusteringState.startDate;
-      endDate = clusteringState.endDate;
+      if (startDate != null) {
+        selectedTrainingYear = startDate.year;
+      }
     }
-
-    // Format dates for display
-    final startText = startDate != null
-        ? '${startDate.day}/${startDate.month}/${startDate.year}'
-        : 'selected period';
-    final endText = endDate != null
-        ? '${endDate.day}/${endDate.month}/${endDate.year}'
-        : '';
 
     showDialog(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          title: const Row(
-            children: [
-              Icon(Icons.model_training, size: 24),
-              SizedBox(width: 8),
-              Text('Model Training'),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'This will train a machine learning model to automatically classify your products based on sales patterns.',
-                style: TextStyle(fontSize: 14),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Row(
+                children: [
+                  Icon(Icons.model_training, size: 24),
+                  SizedBox(width: 8),
+                  Text('Model Training'),
+                ],
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Training Period: $startText to $endText',
-                style: const TextStyle(fontWeight: FontWeight.w500),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.calendar_today, size: 20, color: Colors.blue),
+                      SizedBox(width: 8),
+                      Text(
+                        'Select Training Year:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<int>(
+                    decoration: const InputDecoration(
+                      labelText: 'Year',
+                      border: OutlineInputBorder(),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    value: _availableYears.contains(selectedTrainingYear)
+                        ? selectedTrainingYear
+                        : _availableYears.first,
+                    items: _availableYears
+                        .map((year) => DropdownMenuItem<int>(
+                              value: year,
+                              child: Text('$year'),
+                            ))
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          selectedTrainingYear = value;
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Training Period: January 1, $selectedTrainingYear to December 31, $selectedTrainingYear',
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Number of clusters: 3',
+                    style: TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 8),
+                ],
               ),
-              const SizedBox(height: 4),
-              const Text(
-                'Number of clusters: 3',
-                style: TextStyle(fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                '• Training may take a few moments to complete\n'
-                '• Model will use the current date range and settings\n'
-                '• This will improve category consistency across different time periods',
-                style: TextStyle(fontSize: 13, color: Colors.grey),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue[700],
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                // Use the stored bloc reference instead of trying to read from context
-                clusteringBloc.add(const RetrainModelEvent());
-              },
-              icon: const Icon(Icons.play_arrow, size: 18),
-              label: const Text('Start Training'),
-            ),
-          ],
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue[700],
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () {
+                    Navigator.pop(
+                        dialogContext); // Create new start and end dates based on the selected year
+                    final newStartDate = DateTime(selectedTrainingYear, 1, 1);
+                    final newEndDate = DateTime(selectedTrainingYear, 12, 31);
+
+                    // Update the selected year in the parent widget
+                    setState(() {
+                      _selectedYear = selectedTrainingYear;
+                    });
+
+                    // Call the LoadClusteringEvent with the new dates
+                    clusteringBloc.add(
+                      LoadClusteringEvent(
+                        startDate: newStartDate,
+                        endDate: newEndDate,
+                        numberOfClusters: 3,
+                      ),
+                    );
+
+                    // Add a small delay before starting model training
+                    Future.delayed(const Duration(milliseconds: 500), () {
+                      // Start model training after setting the new date range
+                      clusteringBloc.add(const RetrainModelEvent());
+                    });
+                  },
+                  icon: const Icon(Icons.play_arrow, size: 18),
+                  label: const Text('Start Training'),
+                ),
+              ],
+            );
+          },
         );
       },
     );

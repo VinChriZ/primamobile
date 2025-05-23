@@ -158,27 +158,28 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
           e.toString().contains("No sales data available")) {
         emit(ClusteringError(
             message:
-                "No clustering data available for ${event.startDate?.year ?? DateTime.now().year}. Please try a different year.",
+                "No clustering data available for ${event.startDate?.year ?? DateTime.now().year}. Please try training the model first or select a different year.",
             startDate: event.startDate,
             endDate: event.endDate,
             numberOfClusters: event.numberOfClusters));
       } else if (e.toString().contains("Not enough sales data")) {
         emit(ClusteringError(
             message:
-                "Not enough product sales data to form clusters. Try another year with more sales data.",
+                "Not enough product sales data to form clusters. Try training the model or select another year with more sales data.",
             startDate: event.startDate,
             endDate: event.endDate,
             numberOfClusters: event.numberOfClusters));
       } else if (e.toString().contains("Model not trained yet")) {
         emit(ClusteringError(
             message:
-                "The classification model needs to be trained before it can be used. Use the 'Train Model' button to create a new model.",
+                "The classification model needs to be trained before it can be used. Please use the 'Train Model' button below to create a new model.",
             startDate: event.startDate,
             endDate: event.endDate,
             numberOfClusters: event.numberOfClusters));
       } else {
         emit(ClusteringError(
-          message: "Failed to load clustering data: ${e.toString()}",
+          message:
+              "Failed to load clustering data. Please try training the model first or try again later.",
           startDate: event.startDate,
           endDate: event.endDate,
           numberOfClusters: event.numberOfClusters,
