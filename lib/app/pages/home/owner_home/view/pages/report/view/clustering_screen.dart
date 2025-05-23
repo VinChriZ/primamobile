@@ -114,23 +114,23 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
               ),
             );
           } else if (state is ClusteringTrainingModel) {
-            return Center(
+            return const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 16),
-                  const Text(
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text(
                     'Training Classification Model...',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
+                  SizedBox(height: 8),
+                  Text(
                     'This process will take a few moments.',
                     style: TextStyle(fontSize: 14),
                   ),
-                  const SizedBox(height: 4),
-                  const Text(
+                  SizedBox(height: 4),
+                  Text(
                     'The model will identify product categories automatically.',
                     style: TextStyle(fontSize: 14),
                   ),
@@ -287,9 +287,10 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   itemCount: state.groupedClusters.length,
                   itemBuilder: (context, index) {
-                    // Define preferred order for cluster display: Green (best seller), Amber (seasonal), Red (low seller)
+                    // Define preferred order for cluster display: Green (best seller), Amber (seasonal), Red (low seller), Blue (standard)
                     final preferredOrder = <Color>[
                       Colors.green[700]!,
+                      Colors.blue[700]!,
                       Colors.amber[700]!,
                       Colors.red[700]!,
                     ];
@@ -297,10 +298,13 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                     // Get all cluster IDs and sort them based on the preferred color order
                     final sortedClusterIds = state.groupedClusters.keys.toList()
                       ..sort((a, b) {
-                        final colorA = state.clusterColors[a] ?? Colors.blue;
-                        final colorB = state.clusterColors[b] ?? Colors.blue;
-                        return preferredOrder.indexOf(colorA) -
-                            preferredOrder.indexOf(colorB);
+                        final colorA =
+                            state.clusterColors[a] ?? Colors.blue[700]!;
+                        final colorB =
+                            state.clusterColors[b] ?? Colors.blue[700]!;
+                        return preferredOrder
+                            .indexOf(colorA)
+                            .compareTo(preferredOrder.indexOf(colorB));
                       });
 
                     final clusterId = sortedClusterIds[index];

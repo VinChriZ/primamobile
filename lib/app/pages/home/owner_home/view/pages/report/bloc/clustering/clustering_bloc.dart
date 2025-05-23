@@ -66,13 +66,12 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
             await classificationRepository.fetchProductClassifications(
           startDate: startDate,
           endDate: endDate,
-        );
-
-        // Create cluster labels and colors map based on categories
+        ); // Create cluster labels and colors map based on categories
         final Map<String, Color> categoryColors = {
           "Top Seller": Colors.green[700]!,
           "Seasonal": Colors.amber[700]!,
           "Low Seller": Colors.red[700]!,
+          "Standard": Colors.blue[700]!, // Standard cluster color
         };
 
         // Maps for cluster labels and colors
@@ -85,10 +84,10 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
         for (var classification in classifications) {
           // Set cluster label and color
           clusterLabels[classification.cluster] = classification.category;
-          clusterColors[classification.cluster] =
-              categoryColors[classification.category] ?? Colors.blue;
-
-          // Create a ProductCluster directly from classification data
+          clusterColors[classification.cluster] = categoryColors[
+                  classification.category] ??
+              Colors
+                  .blue; // Create a ProductCluster directly from classification data
           final ProductCluster classifiedProduct = ProductCluster(
             upc: classification.upc,
             totalSales: classification.totalSales,
