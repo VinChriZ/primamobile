@@ -199,9 +199,7 @@ class _ReportScreenState extends State<ReportScreen> {
       ..sort((a, b) => a.key.compareTo(b.key));
     if (entries.isEmpty) {
       return const Center(child: Text('No data available'));
-    }
-
-    // Calculate dynamic bar width based on number of data points
+    } // Calculate dynamic bar width based on number of data points
     final int dataCount = entries.length;
     double barWidth = dataCount <= 7
         ? 16.0
@@ -209,14 +207,11 @@ class _ReportScreenState extends State<ReportScreen> {
             ? 12.0
             : dataCount <= 21
                 ? 8.0
-                : 6.0;
-
-    // Change back to diagonal rotation (45 degrees) instead of vertical (90 degrees)
-    final bool shouldRotateLabels = dataCount > 7;
-    final double labelRotation = shouldRotateLabels ? 45.0 : 0.0;
+                : 6.0; // Always use diagonal rotation (45 degrees) for bottom labels
+    final double labelRotation = 45.0;
 
     // Adjust reserved space for diagonal labels
-    final double bottomReservedSize = shouldRotateLabels ? 60.0 : 40.0;
+    final double bottomReservedSize = 60.0;
 
     final List<BarChartGroupData> barGroups = [];
     final Map<int, String> dateLabels = {};
@@ -327,11 +322,28 @@ class _ReportScreenState extends State<ReportScreen> {
                             reservedSize: leftReservedSize,
                             interval: interval,
                             getTitlesWidget: (double value, TitleMeta meta) {
+                              // Format values based on magnitude (use K for thousands, M for millions)
+                              String formattedValue;
+                              if (leftReservedSize > 40) {
+                                // Only for Total Profits chart
+                                if (value >= 1000000) {
+                                  formattedValue =
+                                      '${(value / 1000000).toStringAsFixed(1)}M';
+                                } else if (value >= 1000) {
+                                  formattedValue =
+                                      '${(value / 1000).toStringAsFixed(1)}K';
+                                } else {
+                                  formattedValue = value.toStringAsFixed(0);
+                                }
+                              } else {
+                                formattedValue = value.toStringAsFixed(0);
+                              }
+
                               return SideTitleWidget(
                                 meta: meta,
                                 space: 8.0,
                                 child: Text(
-                                  value.toStringAsFixed(0),
+                                  formattedValue,
                                   style: const TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
