@@ -81,7 +81,6 @@ class ClassificationProvider {
       rethrow;
     }
   }
-
   // Get years that have complete data (January to December)
   Future<List<int>> getYearsWithCompleteData() async {
     try {
@@ -99,6 +98,25 @@ class ClassificationProvider {
     } catch (e) {
       print('Error fetching years with complete data: $e');
       return [];
+    }
+  }
+  
+  // Get the year when the model was last trained
+  Future<int?> getModelTrainedYear() async {
+    try {
+      final response = await dioClient.get('/classify/model-trained-year');
+      print('Get Model Trained Year Response: ${response.data}');
+
+      if (response.statusCode == 200) {
+        // The response is just an integer or null
+        return response.data as int?;
+      } else {
+        print('Non-200 status code: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching model trained year: $e');
+      return null;
     }
   }
 }

@@ -15,7 +15,6 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
   final ClassificationRepository classificationRepository;
   int?
       lastTrainedYear; // Store the year when the model was last trained - public access
-
   ClusteringBloc({
     required this.clusterRepository,
     required this.productRepository,
@@ -25,6 +24,20 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
     on<ChangeClusteringFilterEvent>(_onChangeFilter);
     on<LoadClusteringByYearEvent>(_onLoadClusteringByYear);
     on<RetrainModelEvent>(_onRetrainModel);
+    
+    // Initialize lastTrainedYear when creating the bloc
+    _initTrainedYear();
+  }
+  
+  // Fetch the trained year from the backend
+  Future<void> _initTrainedYear() async {
+    try {
+      lastTrainedYear = await classificationRepository.fetchTrainedYear();
+      print('Model was trained for year: $lastTrainedYear');
+    } catch (e) {
+      print('Error fetching trained year: $e');
+      lastTrainedYear = null;
+    }
   }
 
   Future<void> _onLoadClustering(

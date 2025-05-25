@@ -75,7 +75,6 @@ class ClassificationRepository {
       rethrow;
     }
   }
-
   // Fetch years that have complete data (January to December)
   Future<List<int>> fetchYearsWithCompleteData() async {
     try {
@@ -84,6 +83,16 @@ class ClassificationRepository {
       print('Error fetching years with complete data: $e');
       // Return empty list if there's an error
       return [];
+    }
+  }
+  
+  // Get the year when the model was last trained
+  Future<int?> fetchTrainedYear() async {
+    try {
+      return await _provider.getModelTrainedYear();
+    } catch (e) {
+      print('Error fetching model trained year: $e');
+      return null;
     }
   }
 }
