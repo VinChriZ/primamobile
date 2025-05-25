@@ -24,11 +24,11 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
     on<ChangeClusteringFilterEvent>(_onChangeFilter);
     on<LoadClusteringByYearEvent>(_onLoadClusteringByYear);
     on<RetrainModelEvent>(_onRetrainModel);
-    
+
     // Initialize lastTrainedYear when creating the bloc
     _initTrainedYear();
   }
-  
+
   // Fetch the trained year from the backend
   Future<void> _initTrainedYear() async {
     try {

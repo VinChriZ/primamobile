@@ -81,6 +81,7 @@ class ClassificationProvider {
       rethrow;
     }
   }
+
   // Get years that have complete data (January to December)
   Future<List<int>> getYearsWithCompleteData() async {
     try {
@@ -100,7 +101,7 @@ class ClassificationProvider {
       return [];
     }
   }
-  
+
   // Get the year when the model was last trained
   Future<int?> getModelTrainedYear() async {
     try {
