@@ -29,15 +29,32 @@ class InvoicePrintPreviewPage extends StatelessWidget {
     required this.transaction,
     required this.details,
   });
-
   Widget _buildRow({required String label, required String value}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+          SizedBox(
+            width: 130.0,
+            child: Text(
+              label,
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.0),
+              textAlign: TextAlign.left,
+            ),
+          ),
+          const SizedBox(width: 32.0),
+          const Text(
+            ':',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.0),
+          ),
           const SizedBox(width: 8.0),
-          Expanded(child: Text(value)),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 13.0),
+            ),
+          ),
         ],
       ),
     );
@@ -45,25 +62,43 @@ class InvoicePrintPreviewPage extends StatelessWidget {
 
   Widget _buildHeader() {
     final dateStr = transaction.dateCreated.toLocal().toString().split(' ')[0];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Invoice',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8.0),
-        _buildRow(label: 'Date:', value: dateStr),
-        _buildRow(
-          label: 'Total Agreed Price:',
-          value: 'Rp${transaction.totalAgreedPrice.toStringAsFixed(0)}',
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.blue.shade600,
+          width: 1.5,
         ),
-        _buildRow(
-          label: 'Quantity:',
-          value: transaction.quantity.toString(),
-        ),
-        if (transaction.note != null && transaction.note!.isNotEmpty)
-          _buildRow(label: 'Note:', value: transaction.note!),
-        const Divider(),
-      ],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Invoice',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12.0),
+          _buildRow(label: 'Date', value: dateStr),
+          _buildRow(
+            label: 'Total Agreed Price',
+            value: 'Rp${_formatCurrency(transaction.totalAgreedPrice)}',
+          ),
+          _buildRow(
+            label: 'Quantity',
+            value: transaction.quantity.toString(),
+          ),
+          if (transaction.note != null && transaction.note!.isNotEmpty)
+            _buildRow(label: 'Note', value: transaction.note!),
+        ],
+      ),
     );
   }
 
@@ -85,13 +120,51 @@ class InvoicePrintPreviewPage extends StatelessWidget {
           final product = snapshot.data!;
           productName = product.name;
         }
-
         return Card(
-          margin: const EdgeInsets.symmetric(vertical: 4.0),
-          child: ListTile(
-            title: Text(productName),
-            subtitle: Text(
-                'Quantity: ${detail.quantity} \nAgreed Price: Rp${detail.agreedPrice.toStringAsFixed(0)}'),
+          margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+          elevation: 2.0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+            side: BorderSide(
+              color: Colors.blue.shade600,
+              width: 1.2,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  productName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildRow(
+                        label: 'Quantity',
+                        value: detail.quantity.toString(),
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildRow(
+                        label: 'Agreed Price',
+                        value: 'Rp${_formatCurrency(detail.agreedPrice)}',
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -104,35 +177,52 @@ class InvoicePrintPreviewPage extends StatelessWidget {
         RepositoryProvider.of<ProductRepository>(context, listen: false);
 
     pw.Widget buildPdfRow({required String label, required String value}) {
-      return pw.Row(
-        children: [
-          pw.Text(label, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-          pw.SizedBox(width: 8),
-          pw.Expanded(child: pw.Text(value)),
-        ],
+      return pw.Padding(
+        padding: const pw.EdgeInsets.symmetric(vertical: 4),
+        child: pw.Row(
+          children: [
+            pw.SizedBox(
+              width: 120,
+              child: pw.Text(label,
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            ),
+            pw.Expanded(
+              child: pw.Text(value),
+            ),
+          ],
+        ),
       );
     }
 
     final dateStr = transaction.dateCreated.toLocal().toString().split(' ')[0];
-    final totalPrice = 'Rp${transaction.totalAgreedPrice.toStringAsFixed(0)}';
+    final totalPrice = 'Rp${_formatCurrency(transaction.totalAgreedPrice)}';
     final quantity = transaction.quantity.toString();
     final note = transaction.note ?? '';
 
-    final header = pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        pw.Text('Invoice',
-            style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
-        pw.SizedBox(height: 8),
-        buildPdfRow(label: 'Date:', value: dateStr),
-        buildPdfRow(label: 'Total Agreed Price:', value: totalPrice),
-        buildPdfRow(label: 'Quantity:', value: quantity),
-        if (note.isNotEmpty) buildPdfRow(label: 'Note:', value: note),
-        pw.Divider(),
-      ],
+    final header = pw.Container(
+      padding: const pw.EdgeInsets.all(12),
+      decoration: pw.BoxDecoration(
+        color: PdfColors.grey100,
+        borderRadius: pw.BorderRadius.circular(8),
+        border: pw.Border.all(color: PdfColors.grey300),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text('Invoice',
+              style:
+                  pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+          pw.SizedBox(height: 8),
+          buildPdfRow(label: 'Date:', value: dateStr),
+          buildPdfRow(label: 'Total Agreed Price:', value: totalPrice),
+          buildPdfRow(label: 'Quantity:', value: quantity),
+          if (note.isNotEmpty) buildPdfRow(label: 'Note:', value: note),
+        ],
+      ),
     );
 
     List<pw.Widget> detailWidgets = [
+      pw.SizedBox(height: 16),
       pw.Text('Transaction Details:',
           style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
       pw.SizedBox(height: 8),
@@ -150,21 +240,25 @@ class InvoicePrintPreviewPage extends StatelessWidget {
       detailWidgets.add(
         pw.Container(
           margin: const pw.EdgeInsets.symmetric(vertical: 4),
-          padding: const pw.EdgeInsets.all(8),
+          padding: const pw.EdgeInsets.all(10),
           decoration: pw.BoxDecoration(
-            border: pw.Border.all(color: PdfColors.grey),
-            borderRadius: pw.BorderRadius.circular(4),
+            color: PdfColors.white,
+            border: pw.Border.all(color: PdfColors.grey300),
+            borderRadius: pw.BorderRadius.circular(6),
           ),
           child: pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text(productName,
-                  style: pw.TextStyle(
-                      fontSize: 16, fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 4),
-              pw.Text('Quantity: ${detail.quantity}'),
               pw.Text(
-                  'Agreed Price: Rp${detail.agreedPrice.toStringAsFixed(0)}'),
+                productName,
+                style:
+                    pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+              ),
+              pw.SizedBox(height: 6),
+              buildPdfRow(label: 'Quantity:', value: '${detail.quantity}'),
+              buildPdfRow(
+                  label: 'Agreed Price:',
+                  value: 'Rp${_formatCurrency(detail.agreedPrice)}'),
             ],
           ),
         ),
@@ -175,7 +269,7 @@ class InvoicePrintPreviewPage extends StatelessWidget {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(16),
-        build: (_) => [header, pw.SizedBox(height: 16), ...detailWidgets],
+        build: (_) => [header, ...detailWidgets],
       ),
     );
 
@@ -400,9 +494,9 @@ class InvoicePrintPreviewPage extends StatelessWidget {
 
     // ——— Date & Note ——————————————————————————————
     final dateStr = transaction.dateCreated.toLocal().toString().split(' ')[0];
-    bytes += gen.text(toAscii('Tanggal : $dateStr'));
+    bytes += gen.text(toAscii('Tanggal       : $dateStr'));
     if ((transaction.note ?? '').isNotEmpty) {
-      bytes += gen.text(toAscii('Catatan : ${transaction.note}'));
+      bytes += gen.text(toAscii('Catatan       : ${transaction.note}'));
     }
     bytes += gen.text('--------------------------------');
 
@@ -451,7 +545,7 @@ class InvoicePrintPreviewPage extends StatelessWidget {
       }
 
       final qty = d.quantity.toString();
-      final price = toAscii('Rp${d.agreedPrice.toStringAsFixed(0)}');
+      final price = toAscii('Rp${_formatCurrency(d.agreedPrice)}');
 
       // first line with qty & price
       bytes += gen.row([
@@ -470,14 +564,25 @@ class InvoicePrintPreviewPage extends StatelessWidget {
       if (line2.isNotEmpty) {
         bytes += gen.text(line2);
       }
-    }
-
-    // ——— Footer with totals ——————————————————————————
+    } // ——— Footer with totals ——————————————————————————
     bytes += gen.text('--------------------------------');
-    // Moved totals here
-    bytes += gen.text(toAscii(
-        'Total           : Rp${transaction.totalAgreedPrice.toStringAsFixed(0)}'));
-    bytes += gen.text(toAscii('Total Qty       : ${transaction.quantity}'));
+    bytes += gen.row([
+      PosColumn(
+        text: 'Total',
+        width: 6,
+        styles: const PosStyles(bold: true),
+      ),
+      PosColumn(
+        text: '${transaction.quantity}',
+        width: 2,
+        styles: const PosStyles(align: PosAlign.center, bold: true),
+      ),
+      PosColumn(
+        text: toAscii('Rp${_formatCurrency(transaction.totalAgreedPrice)}'),
+        width: 4,
+        styles: const PosStyles(align: PosAlign.right, bold: true),
+      ),
+    ]);
     bytes += gen.text('--------------------------------');
     bytes += gen.text(
       toAscii('Terima kasih telah berbelanja!'),
@@ -489,48 +594,91 @@ class InvoicePrintPreviewPage extends StatelessWidget {
     return bytes;
   }
 
+  // Format currency with thousand separator
+  String _formatCurrency(double value) {
+    return value.toStringAsFixed(0).replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Invoice Preview')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 16.0),
-            const Text(
-              'Transaction Details:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8.0),
-            ...details.map((detail) => _buildDetailItem(context, detail)),
-            const SizedBox(height: 20.0),
-            Center(
-              child: Column(
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Invoice Preview'),
+          elevation: 0,
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(),
+              const SizedBox(height: 16.0),
+              const Text(
+                'Transaction Details:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8.0),
+              ...details.map((detail) => _buildDetailItem(context, detail)),
+              const SizedBox(height: 20.0),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ElevatedButton.icon(
                     onPressed: () => _printInvoice(context),
-                    icon: const Icon(Icons.print),
-                    label: const Text('Print Invoice'),
+                    icon: const Icon(Icons.print, color: Colors.black),
+                    label: const Text('Print Invoice',
+                        style: TextStyle(color: Colors.black)),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        side: BorderSide(color: Colors.grey.shade300),
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 10.0),
+                  const SizedBox(height: 12.0),
                   ElevatedButton.icon(
                     onPressed: () => _exportToPdf(context),
-                    icon: const Icon(Icons.picture_as_pdf),
-                    label: const Text('Export to PDF'),
+                    icon: const Icon(Icons.picture_as_pdf, color: Colors.black),
+                    label: const Text('Export to PDF',
+                        style: TextStyle(color: Colors.black)),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        side: BorderSide(color: Colors.grey.shade300),
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 10.0),
+                  const SizedBox(height: 12.0),
                   ElevatedButton.icon(
                     onPressed: () => _printThermal(context),
-                    icon: const Icon(Icons.print_outlined),
-                    label: const Text('Print Thermal Receipt'),
+                    icon: const Icon(Icons.print_outlined, color: Colors.black),
+                    label: const Text('Print Thermal Receipt',
+                        style: TextStyle(color: Colors.black)),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        side: BorderSide(color: Colors.grey.shade300),
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
