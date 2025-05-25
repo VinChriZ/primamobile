@@ -13,6 +13,8 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
   final ClusterRepository clusterRepository;
   final ProductRepository productRepository;
   final ClassificationRepository classificationRepository;
+  int?
+      lastTrainedYear; // Store the year when the model was last trained - public access
 
   ClusteringBloc({
     required this.clusterRepository,
@@ -236,7 +238,8 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
           startDate: startDate,
           endDate: endDate,
           numberOfClusters: numberOfClusters,
-        ));
+        )); // Update the last trained year to the year we trained on, not the current year
+        lastTrainedYear = startDate.year;
 
         // Reload data after 3 seconds to allow the model to finish training
         await Future.delayed(const Duration(seconds: 3));

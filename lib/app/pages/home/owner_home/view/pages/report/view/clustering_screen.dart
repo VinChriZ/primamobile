@@ -85,9 +85,9 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
         title: BlocBuilder<ClusteringBloc, ClusteringState>(
           builder: (context, state) {
             if (state is ClusteringLoaded && state.startDate != null) {
-              return Text('Product Analysis ${state.startDate!.year}');
+              return Text('Yearly Report ${state.startDate!.year}');
             }
-            return const Text('Product Analysis');
+            return const Text('Yearly Report');
           },
         ),
         actions: [
@@ -233,98 +233,154 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
         _showAllItems[clusterId] = false;
       }
     }
+    // Get the trained year if available from the bloc
+    final int? trainedYear = context.read<ClusteringBloc>().lastTrainedYear;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Train Model Elevated Button at top
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: ElevatedButton.icon(
-            onPressed: () => _showTrainModelConfirmation(context),
-            icon: const Icon(Icons.model_training),
-            label: const Text('Train Classification Model'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue[700],
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-          ),
-        ),
-
-        // Clusters list
+        // Clusters list (now contains everything including the button)
         Expanded(
-          child: state.groupedClusters.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            children: [
+              // Train Model Elevated Button (now scrolls with content)
+              ElevatedButton.icon(
+                onPressed: () => _showTrainModelConfirmation(context),
+                icon: const Icon(Icons.model_training),
+                label: const Text('Train Classification Model'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue[700],
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+
+              // Year and Trained information
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
                       children: [
-                        Icon(Icons.bar_chart_outlined,
-                            size: 48, color: Colors.grey[400]),
-                        const SizedBox(height: 16),
+                        const Icon(Icons.calendar_today,
+                            size: 16, color: Colors.blue),
+                        const SizedBox(width: 6),
                         const Text(
-                          'No product clustering data available',
-                          style: TextStyle(fontSize: 16),
-                          textAlign: TextAlign.center,
+                          'Year: ',
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        const SizedBox(height: 24),
-                        // Add Train Model button if no data is available
-                        ElevatedButton.icon(
-                          onPressed: () => _showTrainModelConfirmation(context),
-                          icon: const Icon(Icons.model_training),
-                          label: const Text('Train Classification Model'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue[700],
-                            foregroundColor: Colors.white,
-                          ),
+                        Text(
+                          '${state.startDate?.year ?? _currentYear}',
+                          style: const TextStyle(fontWeight: FontWeight.w500),
                         ),
                       ],
                     ),
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  itemCount: state.groupedClusters.length,
-                  itemBuilder: (context, index) {
-                    // Define preferred order for cluster display: Green (best seller), Amber (seasonal), Red (low seller), Blue (standard)
-                    final preferredOrder = <Color>[
-                      Colors.green[700]!,
-                      Colors.blue[700]!,
-                      Colors.amber[700]!,
-                      Colors.red[700]!,
-                    ];
-
-                    // Get all cluster IDs and sort them based on the preferred color order
-                    final sortedClusterIds = state.groupedClusters.keys.toList()
-                      ..sort((a, b) {
-                        final colorA =
-                            state.clusterColors[a] ?? Colors.blue[700]!;
-                        final colorB =
-                            state.clusterColors[b] ?? Colors.blue[700]!;
-                        return preferredOrder
-                            .indexOf(colorA)
-                            .compareTo(preferredOrder.indexOf(colorB));
-                      });
-
-                    final clusterId = sortedClusterIds[index];
-                    final clusterProducts = state.groupedClusters[clusterId]!;
-                    final clusterLabel =
-                        state.clusterLabels[clusterId] ?? 'Cluster $clusterId';
-                    final clusterColor =
-                        state.clusterColors[clusterId] ?? Colors.blue;
-
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: _buildClusterSection(
-                        clusterId,
-                        clusterLabel,
-                        clusterColor,
-                        clusterProducts,
-                      ),
-                    );
-                  },
+                    Row(
+                      children: [
+                        const Icon(Icons.model_training,
+                            size: 16, color: Colors.green),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'Trained: ',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          trainedYear != null
+                              ? '$trainedYear'
+                              : 'Not Yet Trained',
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
+              ),
+
+              // Divider for visual separation
+              const Divider(),
+              const SizedBox(height: 8),
+
+              // Clusters content
+              state.groupedClusters.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.bar_chart_outlined,
+                                size: 48, color: Colors.grey[400]),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'No product clustering data available',
+                              style: TextStyle(fontSize: 16),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 24),
+                            // Add Train Model button if no data is available
+                            ElevatedButton.icon(
+                              onPressed: () =>
+                                  _showTrainModelConfirmation(context),
+                              icon: const Icon(Icons.model_training),
+                              label: const Text('Train Classification Model'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue[700],
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: state.groupedClusters.length,
+                      itemBuilder: (context, index) {
+                        // Define preferred order for cluster display: Green (best seller), Amber (seasonal), Red (low seller), Blue (standard)
+                        final preferredOrder = <Color>[
+                          Colors.green[700]!,
+                          Colors.blue[700]!,
+                          Colors.amber[700]!,
+                          Colors.red[700]!,
+                        ];
+
+                        // Get all cluster IDs and sort them based on the preferred color order
+                        final sortedClusterIds =
+                            state.groupedClusters.keys.toList()
+                              ..sort((a, b) {
+                                final colorA =
+                                    state.clusterColors[a] ?? Colors.blue[700]!;
+                                final colorB =
+                                    state.clusterColors[b] ?? Colors.blue[700]!;
+                                return preferredOrder
+                                    .indexOf(colorA)
+                                    .compareTo(preferredOrder.indexOf(colorB));
+                              });
+
+                        final clusterId = sortedClusterIds[index];
+                        final clusterProducts =
+                            state.groupedClusters[clusterId]!;
+                        final clusterLabel = state.clusterLabels[clusterId] ??
+                            'Cluster $clusterId';
+                        final clusterColor =
+                            state.clusterColors[clusterId] ?? Colors.blue;
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: _buildClusterSection(
+                            clusterId,
+                            clusterLabel,
+                            clusterColor,
+                            clusterProducts,
+                          ),
+                        );
+                      },
+                    ),
+            ],
+          ),
         ),
       ],
     );

@@ -4,15 +4,19 @@ abstract class ClusteringState extends Equatable {
   final DateTime? startDate;
   final DateTime? endDate;
   final int numberOfClusters;
+  final int?
+      trainedYear; // Added trained year to track when the model was last trained
 
   const ClusteringState({
     this.startDate,
     this.endDate,
     this.numberOfClusters = 3,
+    this.trainedYear,
   });
 
   @override
-  List<Object?> get props => [startDate, endDate, numberOfClusters];
+  List<Object?> get props =>
+      [startDate, endDate, numberOfClusters, trainedYear];
 }
 
 class ClusteringInitial extends ClusteringState {}
