@@ -82,7 +82,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       // 2. Load dashboard data.
       // Fetch all products and filter for low stock (stock < 5).
       final products = await productRepository.fetchProducts();
-      final lowStockProducts = products.where((p) => p.stock < 5).toList();
+      final lowStockProducts = products.where((p) => p.stock < 3).toList();
       final totalStockPrice = products.fold<double>(
         0.0,
         (sum, p) => sum + (p.stock * p.netPrice),

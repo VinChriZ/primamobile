@@ -300,7 +300,7 @@ class ProductDetailPage extends StatelessWidget {
   String _getStockStatusMessage(int stock) {
     if (stock <= 0) {
       return 'Out of stock! Place an order immediately.';
-    } else if (stock <= 5) {
+    } else if (stock <= 3) {
       return 'Low stock! Consider placing an order soon.';
     } else if (stock <= 20) {
       return 'Stock level is moderate. Monitor inventory.';
