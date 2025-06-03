@@ -12,7 +12,6 @@ class ProductCluster {
   final int daysSinceLastSale;
   final int txCount;
   final int cluster;
-  final String? category; // Added category field
 
   ProductCluster({
     required this.upc,
@@ -26,7 +25,6 @@ class ProductCluster {
     required this.daysSinceLastSale,
     required this.txCount,
     required this.cluster,
-    this.category,
   });
   // Create a ProductCluster object from JSON
   factory ProductCluster.fromJson(Map<String, dynamic> json) {
@@ -42,7 +40,6 @@ class ProductCluster {
       daysSinceLastSale: json['days_since_last_sale'],
       txCount: json['tx_count'],
       cluster: json['cluster'],
-      category: json['category'], // Parse category from JSON
     );
   }
   // Convert a ProductCluster object to JSON
@@ -59,7 +56,6 @@ class ProductCluster {
       'days_since_last_sale': daysSinceLastSale,
       'tx_count': txCount,
       'cluster': cluster,
-      'category': category, // Include category in JSON
     };
   }
 }
