@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:primamobile/app/models/models.dart';
+import 'package:primamobile/app/models/classification/product_classification.dart';
 import 'package:primamobile/repository/classification_repository.dart';
 import 'package:primamobile/repository/cluster_repository.dart';
 import 'package:primamobile/repository/product_repository.dart';
@@ -77,7 +78,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
 
       try {
         // Directly use classification API which now returns all product metrics
-        final List<ProductClassification> classifications =
+        final List<ProductClassification> productClassifications =
             await classificationRepository.fetchProductClassifications(
           startDate: startDate,
           endDate: endDate,
@@ -86,11 +87,10 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
         // Maps for cluster labels and colors
         final Map<int, String> clusterLabels = {};
         final Map<int, Color> clusterColors = {};
-        final Map<int, List<ProductCluster>> groupedClusters = {};
-        final List<ProductCluster> productClusters = [];
+        final Map<int, List<ProductClassification>> groupedClusters = {};
 
         // Process each classification result
-        for (var classification in classifications) {
+        for (var classification in productClassifications) {
           // Set cluster label - keep the full label including "Seasonal" prefix
           clusterLabels[classification.cluster] = classification.category;
 
@@ -106,35 +106,18 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
             clusterColors[classification.cluster] = Colors.red[700]!;
           } else {
             clusterColors[classification.cluster] = Colors.blue[700]!;
-          } // Create a ProductCluster directly from classification data
-          final ProductCluster classifiedProduct = ProductCluster(
-            upc: classification.upc,
-            totalSales: classification.totalSales,
-            daysSold: classification.daysSold,
-            avgDailySales: classification.avgDailySales,
-            salesFrequency: classification.salesFrequency,
-            maxDailySales: classification.maxDailySales,
-            minDailySales: classification.minDailySales,
-            stdDailySales: classification.stdDailySales,
-            daysSinceLastSale: classification.daysSinceLastSale,
-            txCount: classification.txCount,
-            cluster: classification.cluster,
-            category: classification.category,
-          );
-
-          // Add to list of all product clusters
-          productClusters.add(classifiedProduct);
+          }
 
           // Add to grouped clusters
           if (!groupedClusters.containsKey(classification.cluster)) {
             groupedClusters[classification.cluster] = [];
           }
-          groupedClusters[classification.cluster]!.add(classifiedProduct);
+          groupedClusters[classification.cluster]!.add(classification);
         }
 
-        if (productClusters.isNotEmpty) {
+        if (productClassifications.isNotEmpty) {
           emit(ClusteringLoaded(
-            productClusters: productClusters,
+            productClassifications: productClassifications,
             clusterLabels: clusterLabels,
             clusterColors: clusterColors,
             groupedClusters: groupedClusters,

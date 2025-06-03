@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/models/models.dart';
+import 'package:primamobile/app/models/classification/product_classification.dart';
 import 'package:primamobile/app/pages/home/owner_home/view/pages/report/bloc/clustering/clustering_bloc.dart';
 
 class ClusteringScreen extends StatefulWidget {
@@ -538,7 +539,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
   }
 
   Widget _buildClusterSection(int clusterId, String clusterLabel,
-      Color clusterColor, List<ProductCluster> products,
+      Color clusterColor, List<ProductClassification> products,
       {Widget? labelIcon}) {
     // Sort products by total sales in descending order within each cluster
     products.sort((a, b) => b.totalSales.compareTo(a.totalSales));
@@ -635,7 +636,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
     );
   }
 
-  Widget _buildProductsDataTable(List<ProductCluster> products) {
+  Widget _buildProductsDataTable(List<ProductClassification> products) {
     // access the category directly from each product
 
     return ListView.builder(
@@ -645,8 +646,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
       itemBuilder: (context, index) {
         final product = products[index];
         // Check if the product is seasonal directly from its category property
-        final bool isSeasonal =
-            product.category != null && product.category!.contains('Seasonal');
+        final bool isSeasonal = product.category.contains('Seasonal');
 
         // Print debug info
         // print(

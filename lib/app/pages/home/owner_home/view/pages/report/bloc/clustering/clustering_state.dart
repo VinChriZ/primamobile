@@ -52,14 +52,14 @@ class ClusteringModelTrained extends ClusteringState {
 }
 
 class ClusteringLoaded extends ClusteringState {
-  final List<ProductCluster> productClusters;
+  final List<ProductClassification> productClassifications;
   final Map<int, String> clusterLabels;
   final Map<int, Color> clusterColors;
-  final Map<int, List<ProductCluster>> groupedClusters;
+  final Map<int, List<ProductClassification>> groupedClusters;
   final bool usesClassificationModel;
 
   const ClusteringLoaded({
-    required this.productClusters,
+    required this.productClassifications,
     required this.clusterLabels,
     required this.clusterColors,
     required this.groupedClusters,
@@ -71,7 +71,7 @@ class ClusteringLoaded extends ClusteringState {
 
   @override
   List<Object?> get props => [
-        productClusters,
+        productClassifications,
         clusterLabels,
         clusterColors,
         groupedClusters,
