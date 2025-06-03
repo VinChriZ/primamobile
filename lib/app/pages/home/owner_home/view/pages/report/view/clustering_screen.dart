@@ -730,10 +730,8 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                         'Avg Daily',
                         '${product.avgDailySales.toStringAsFixed(1)}',
                         Icons.trending_up),
-                    ProductStat(
-                        'Frequency',
-                        '${product.salesFrequency.toStringAsFixed(2)}',
-                        Icons.repeat),
+                    ProductStat('Days Sold', '${product.daysSold}',
+                        Icons.calendar_month),
                   ]),
                   const SizedBox(height: 12),
                   _buildProductStatRow('Sales Range', [
@@ -742,22 +740,16 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                         '${product.maxDailySales.toStringAsFixed(0)}',
                         Icons.arrow_upward),
                     ProductStat(
-                        'Min',
-                        '${product.minDailySales.toStringAsFixed(0)}',
-                        Icons.arrow_downward),
-                    ProductStat(
                         'Std Dev',
                         '${product.stdDailySales.toStringAsFixed(2)}',
                         Icons.show_chart),
+                    ProductStat(
+                        'Tx Count', '${product.txCount}', Icons.receipt_long),
                   ]),
                   const SizedBox(height: 12),
                   _buildProductStatRow('Additional Info', [
-                    ProductStat('Days Sold', '${product.daysSold}',
-                        Icons.calendar_month),
-                    ProductStat('Days Since', '${product.daysSinceLastSale}',
-                        Icons.access_time),
-                    ProductStat(
-                        'Tx Count', '${product.txCount}', Icons.receipt_long),
+                    ProductStat('Days Since Last Sale',
+                        '${product.daysSinceLastSale}', Icons.access_time),
                   ]),
                 ],
               ),

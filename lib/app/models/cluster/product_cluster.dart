@@ -5,9 +5,7 @@ class ProductCluster {
   final double totalSales;
   final int daysSold;
   final double avgDailySales;
-  final double salesFrequency;
   final double maxDailySales;
-  final double minDailySales;
   final double stdDailySales;
   final int daysSinceLastSale;
   final int txCount;
@@ -18,9 +16,7 @@ class ProductCluster {
     required this.totalSales,
     required this.daysSold,
     required this.avgDailySales,
-    required this.salesFrequency,
     required this.maxDailySales,
-    required this.minDailySales,
     required this.stdDailySales,
     required this.daysSinceLastSale,
     required this.txCount,
@@ -33,9 +29,7 @@ class ProductCluster {
       totalSales: (json['total_sales'] as num).toDouble(),
       daysSold: json['days_sold'],
       avgDailySales: (json['avg_daily_sales'] as num).toDouble(),
-      salesFrequency: (json['sales_frequency'] as num).toDouble(),
       maxDailySales: (json['max_daily_sales'] as num).toDouble(),
-      minDailySales: (json['min_daily_sales'] as num).toDouble(),
       stdDailySales: (json['std_daily_sales'] as num).toDouble(),
       daysSinceLastSale: json['days_since_last_sale'],
       txCount: json['tx_count'],
@@ -49,9 +43,7 @@ class ProductCluster {
       'total_sales': totalSales,
       'days_sold': daysSold,
       'avg_daily_sales': avgDailySales,
-      'sales_frequency': salesFrequency,
       'max_daily_sales': maxDailySales,
-      'min_daily_sales': minDailySales,
       'std_daily_sales': stdDailySales,
       'days_since_last_sale': daysSinceLastSale,
       'tx_count': txCount,
