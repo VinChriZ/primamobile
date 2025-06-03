@@ -339,34 +339,57 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: state.groupedClusters.length,
                       itemBuilder: (context, index) {
-                        // Define preferred order for cluster display: Green (best seller), Amber (seasonal), Red (low seller), Blue (standard)
-                        final preferredOrder = <Color>[
-                          Colors.green[700]!,
-                          Colors.blue[700]!,
-                          Colors.amber[700]!,
-                          Colors.red[700]!,
-                        ];
+                        // Define preferred order for cluster display:
+                        // Green (Top seller), Blue (Standard), Red (Low seller)
+                        final Map<String, int> categoryPriority = {
+                          "Top Seller": 0,
+                          "Standard": 1,
+                          "Low Seller": 2,
+                        };
 
-                        // Get all cluster IDs and sort them based on the preferred color order
-                        final sortedClusterIds =
-                            state.groupedClusters.keys.toList()
-                              ..sort((a, b) {
-                                final colorA =
-                                    state.clusterColors[a] ?? Colors.blue[700]!;
-                                final colorB =
-                                    state.clusterColors[b] ?? Colors.blue[700]!;
-                                return preferredOrder
-                                    .indexOf(colorA)
-                                    .compareTo(preferredOrder.indexOf(colorB));
-                              });
+                        // Get all cluster IDs and sort them based on the base category priority
+                        final sortedClusterIds = state.groupedClusters.keys
+                            .toList()
+                          ..sort((a, b) {
+                            final labelA = state.clusterLabels[a] ?? "Standard";
+                            final labelB = state.clusterLabels[b] ?? "Standard";
 
+                            // Extract base category (ignoring "Seasonal" modifier)
+                            final baseA = labelA.contains("Seasonal")
+                                ? labelA.substring(9)
+                                : labelA;
+                            final baseB = labelB.contains("Seasonal")
+                                ? labelB.substring(9)
+                                : labelB;
+
+                            final priorityA = categoryPriority[baseA] ?? 1;
+                            final priorityB = categoryPriority[baseB] ?? 1;
+
+                            return priorityA.compareTo(priorityB);
+                          });
                         final clusterId = sortedClusterIds[index];
                         final clusterProducts =
                             state.groupedClusters[clusterId]!;
-                        final clusterLabel = state.clusterLabels[clusterId] ??
+                        String clusterLabel = state.clusterLabels[clusterId] ??
                             'Cluster $clusterId';
-                        final clusterColor =
-                            state.clusterColors[clusterId] ?? Colors.blue;
+
+                        // Remove "Seasonal" from the cluster label
+                        if (clusterLabel.startsWith("Seasonal ")) {
+                          clusterLabel = clusterLabel.substring(9);
+                        }
+
+                        // Set color based on base category
+                        Color clusterColor;
+                        if (clusterLabel.contains("Top Seller")) {
+                          clusterColor = Colors.green[700]!;
+                        } else if (clusterLabel.contains("Low Seller")) {
+                          clusterColor = Colors.red[700]!;
+                        } else {
+                          clusterColor = Colors.blue[700]!; // Standard
+                        }
+
+                        // We don't need a label icon anymore
+                        Widget? labelIcon;
 
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 8.0),
@@ -375,6 +398,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                             clusterLabel,
                             clusterColor,
                             clusterProducts,
+                            labelIcon: labelIcon,
                           ),
                         );
                       },
@@ -514,7 +538,8 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
   }
 
   Widget _buildClusterSection(int clusterId, String clusterLabel,
-      Color clusterColor, List<ProductCluster> products) {
+      Color clusterColor, List<ProductCluster> products,
+      {Widget? labelIcon}) {
     // Sort products by total sales in descending order within each cluster
     products.sort((a, b) => b.totalSales.compareTo(a.totalSales));
 
@@ -551,6 +576,10 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                 color: clusterColor,
               ),
             ),
+            if (labelIcon != null) ...[
+              const SizedBox(width: 4),
+              labelIcon,
+            ],
             const SizedBox(width: 8),
             Text(
               '(${products.length} products)',
@@ -607,12 +636,22 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
   }
 
   Widget _buildProductsDataTable(List<ProductCluster> products) {
+    // access the category directly from each product
+
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: products.length,
       itemBuilder: (context, index) {
         final product = products[index];
+        // Check if the product is seasonal directly from its category property
+        final bool isSeasonal =
+            product.category != null && product.category!.contains('Seasonal');
+
+        // Print debug info
+        // print(
+        //     'Product ${product.upc} has cluster ${product.cluster} with category: ${product.category}, isSeasonal: $isSeasonal');
+
         return FutureBuilder<String>(
           future: _getProductName(product.upc),
           builder: (context, snapshot) {
@@ -635,23 +674,49 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                     ),
                   ],
                 ),
-                subtitle: Row(
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.shopping_cart,
-                        size: 14, color: Colors.blue),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Sales: ${product.totalSales.toStringAsFixed(0)}',
-                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    Row(
+                      children: [
+                        const Icon(Icons.shopping_cart,
+                            size: 14, color: Colors.blue),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Sales: ${product.totalSales.toStringAsFixed(0)}',
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(width: 12),
+                        const Icon(Icons.calendar_today,
+                            size: 14, color: Colors.green),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Days: ${product.daysSold}',
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    const Icon(Icons.calendar_today,
-                        size: 14, color: Colors.green),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Days: ${product.daysSold}',
-                      style: const TextStyle(fontWeight: FontWeight.w500),
-                    ),
+                    // Show seasonal indicator directly without using FutureBuilder
+                    if (isSeasonal)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Row(
+                          children: [
+                            Icon(Icons.calendar_today_outlined,
+                                size: 14, color: Colors.amber[700]),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Seasonal product',
+                              style: TextStyle(
+                                fontStyle: FontStyle.italic,
+                                fontSize: 12,
+                                color: Colors.amber[700],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
                 childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),

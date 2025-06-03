@@ -81,13 +81,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
             await classificationRepository.fetchProductClassifications(
           startDate: startDate,
           endDate: endDate,
-        ); // Create cluster labels and colors map based on categories
-        final Map<String, Color> categoryColors = {
-          "Top Seller": Colors.green[700]!,
-          "Seasonal": Colors.amber[700]!,
-          "Low Seller": Colors.red[700]!,
-          "Standard": Colors.blue[700]!, // Standard cluster color
-        };
+        );
 
         // Maps for cluster labels and colors
         final Map<int, String> clusterLabels = {};
@@ -97,12 +91,22 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
 
         // Process each classification result
         for (var classification in classifications) {
-          // Set cluster label and color
+          // Set cluster label - keep the full label including "Seasonal" prefix
           clusterLabels[classification.cluster] = classification.category;
-          clusterColors[classification.cluster] = categoryColors[
-                  classification.category] ??
-              Colors
-                  .blue; // Create a ProductCluster directly from classification data
+
+          // Set color based on base category (ignoring seasonal modifier)
+          String baseCategory = classification.category;
+          if (baseCategory.startsWith("Seasonal ")) {
+            baseCategory = baseCategory.substring(9);
+          }
+
+          if (baseCategory == "Top Seller") {
+            clusterColors[classification.cluster] = Colors.green[700]!;
+          } else if (baseCategory == "Low Seller") {
+            clusterColors[classification.cluster] = Colors.red[700]!;
+          } else {
+            clusterColors[classification.cluster] = Colors.blue[700]!;
+          } // Create a ProductCluster directly from classification data
           final ProductCluster classifiedProduct = ProductCluster(
             upc: classification.upc,
             totalSales: classification.totalSales,
@@ -115,6 +119,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
             daysSinceLastSale: classification.daysSinceLastSale,
             txCount: classification.txCount,
             cluster: classification.cluster,
+            category: classification.category,
           );
 
           // Add to list of all product clusters
