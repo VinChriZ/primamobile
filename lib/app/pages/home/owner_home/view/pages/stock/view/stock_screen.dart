@@ -15,9 +15,8 @@ class StockScreen extends StatelessWidget {
     context.read<StockBloc>().add(LoadProducts());
   }
 
-  /// Helper widget to build a row for a given label/value pair.
+  /// build row for a label
   Widget _buildAttributeRow(String label, String value) {
-    // Extract the base label without the colon
     String baseLabel =
         label.endsWith(':') ? label.substring(0, label.length - 1) : label;
 
@@ -26,7 +25,7 @@ class StockScreen extends StatelessWidget {
       children: [
         Container(
           width: 150,
-          padding: const EdgeInsets.only(right: 5), // Add right padding
+          padding: const EdgeInsets.only(right: 5),
           child: Text(
             baseLabel,
             style: const TextStyle(
@@ -36,7 +35,7 @@ class StockScreen extends StatelessWidget {
             textAlign: TextAlign.left,
           ),
         ),
-        const SizedBox(width: 5), // Space before colon
+        const SizedBox(width: 5),
         const Text(
           ":",
           style: TextStyle(
@@ -44,18 +43,18 @@ class StockScreen extends StatelessWidget {
             fontSize: 14,
           ),
         ),
-        const SizedBox(width: 10), // Space after colon
+        const SizedBox(width: 10),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(fontSize: 14), // Decreased from 16
+            style: const TextStyle(fontSize: 14),
           ),
         ),
       ],
     );
   }
 
-  /// Helper widget to build a card with consistent styling across the app.
+  /// widget to build a card
   Widget _buildCard({
     required Widget child,
     Color? color,
@@ -300,7 +299,7 @@ class StockScreen extends StatelessWidget {
               ),
             ),
 
-            // PRODUCT LIST WITH REFRESH INDICATOR
+            // PRODUCT LIST
             Expanded(
               child: BlocBuilder<StockBloc, StockState>(
                 builder: (context, stockState) {
@@ -361,8 +360,7 @@ class StockScreen extends StatelessWidget {
                                             },
                                             child: _buildCard(
                                               title: product.name,
-                                              titleWrapping:
-                                                  true, // Enable text wrapping for long titles
+                                              titleWrapping: true,
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.stretch,

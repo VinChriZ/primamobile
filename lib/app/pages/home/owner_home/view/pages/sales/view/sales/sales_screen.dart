@@ -10,8 +10,7 @@ import 'package:primamobile/utils/globals.dart';
 class SalesScreen extends StatelessWidget {
   const SalesScreen({super.key});
 
-  /// Handles date range changes. Based on the selected value,
-  /// determines the appropriate start/end dates and dispatches a FetchSales event.
+  /// Handles date range changes
   Future<void> _handleDateRangeChange(
       BuildContext context, String? value, SalesState state) async {
     String selectedDateRange = value ?? 'Last 7 Days';
@@ -47,7 +46,7 @@ class SalesScreen extends StatelessWidget {
         }
       }
     } else if (selectedDateRange == 'All Dates') {
-      // "All Dates" - set start and end dates to null
+      // set start and end dates to null
       startDate = null;
       endDate = null;
     }
@@ -69,7 +68,7 @@ class SalesScreen extends StatelessWidget {
         );
   }
 
-  /// Helper widget to build a card with consistent styling across the app.
+  /// widget to build a card
   Widget _buildCard({
     required Widget child,
     Color? color,
@@ -138,7 +137,7 @@ class SalesScreen extends StatelessWidget {
       body: SafeArea(
         child: BlocBuilder<SalesBloc, SalesState>(
           builder: (context, state) {
-            // Provide defaults if the state is not yet SalesLoaded.
+            // Provide defaults value if the state is not yet SalesLoaded.
             final selectedDateRange = (state is SalesLoaded)
                 ? state.selectedDateRange
                 : 'Last 7 Days';
@@ -148,7 +147,6 @@ class SalesScreen extends StatelessWidget {
                 (state is SalesLoaded) ? state.selectedSortOrder : 'desc';
             return Column(
               children: [
-                // Remove the title bar and just keep the filters
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(
@@ -583,9 +581,8 @@ class SalesScreen extends StatelessWidget {
     );
   }
 
-  /// Helper widget to build a row for a given label/value pair.
+  /// widget to build a row
   Widget _buildAttributeRow(String label, String value) {
-    // Extract the base label without the colon
     String baseLabel =
         label.endsWith(':') ? label.substring(0, label.length - 1) : label;
 
@@ -604,7 +601,7 @@ class SalesScreen extends StatelessWidget {
             textAlign: TextAlign.left,
           ),
         ),
-        const SizedBox(width: 5), // Space before colon
+        const SizedBox(width: 5),
         const Text(
           ":",
           style: TextStyle(
@@ -612,7 +609,7 @@ class SalesScreen extends StatelessWidget {
             fontSize: 14,
           ),
         ),
-        const SizedBox(width: 10), // Space after colon
+        const SizedBox(width: 10),
         Expanded(
           child: Text(
             value,

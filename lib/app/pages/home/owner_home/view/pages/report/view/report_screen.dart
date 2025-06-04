@@ -91,7 +91,7 @@ class _ReportScreenState extends State<ReportScreen> {
     return interval < 1 ? 1 : interval;
   }
 
-  /// Build a summary card showing key metrics
+  /// Build a summary card
   Widget _buildSummaryCard(ReportLoaded state) {
     // Calculate total sales, profits, and transactions
     final totalSales = state.salesLineChart.values.fold(0.0, (p, c) => p + c);
@@ -171,12 +171,12 @@ class _ReportScreenState extends State<ReportScreen> {
         ),
         const SizedBox(height: 8),
         SizedBox(
-          width: 100, // Fixed width to constrain text
+          width: 100,
           child: Text(
             value,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontSize: 12, // Even smaller font size
+                  fontSize: 12,
                 ),
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
@@ -191,7 +191,7 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  /// Build a bar chart wrapped in its own RepaintBoundary.
+  /// Build a bar chart
   Widget _buildBarChart(
       String title, Map<DateTime, double> dataMap, bool isMonthlyGrouping,
       {double leftReservedSize = 40, required GlobalKey key}) {
@@ -199,7 +199,7 @@ class _ReportScreenState extends State<ReportScreen> {
       ..sort((a, b) => a.key.compareTo(b.key));
     if (entries.isEmpty) {
       return const Center(child: Text('No data available'));
-    } // Calculate dynamic bar width based on number of data points
+    } // Calculate dynamic bar width
     final int dataCount = entries.length;
     double barWidth = dataCount <= 7
         ? 16.0
@@ -207,10 +207,10 @@ class _ReportScreenState extends State<ReportScreen> {
             ? 12.0
             : dataCount <= 21
                 ? 8.0
-                : 6.0; // Always use diagonal rotation (45 degrees) for bottom labels
+                : 6.0; // use diagonal rotation (45 degrees) for bottom labels
     final double labelRotation = 45.0;
 
-    // Adjust reserved space for diagonal labels
+    // reserved space for diagonal labels
     final double bottomReservedSize = 60.0;
 
     final List<BarChartGroupData> barGroups = [];
@@ -301,9 +301,7 @@ class _ReportScreenState extends State<ReportScreen> {
                               return SideTitleWidget(
                                 meta: meta,
                                 space: 8.0,
-                                angle: labelRotation *
-                                    3.14159 /
-                                    180, // Convert to radians
+                                angle: labelRotation * 3.14159 / 180, // radians
                                 child: Text(
                                   label,
                                   style: const TextStyle(
@@ -322,10 +320,9 @@ class _ReportScreenState extends State<ReportScreen> {
                             reservedSize: leftReservedSize,
                             interval: interval,
                             getTitlesWidget: (double value, TitleMeta meta) {
-                              // Format values based on magnitude (use K for thousands, M for millions)
+                              // use K for thousands, M for millions
                               String formattedValue;
                               if (leftReservedSize > 40) {
-                                // Only for Total Profits chart
                                 if (value >= 1000000) {
                                   formattedValue =
                                       '${(value / 1000000).toStringAsFixed(1)}M';
@@ -402,7 +399,7 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  /// Helper to create pie chart sections.
+  /// create pie chart sections.
   List<PieChartSectionData> _createPieChartSections(
       Map<String, double> dataMap, String chartTitle) {
     final total = dataMap.values.fold(0.0, (prev, element) => prev + element);
@@ -459,7 +456,7 @@ class _ReportScreenState extends State<ReportScreen> {
               context: context,
               builder: (context) => AlertDialog(
                 title: Text(
-                  chartTitle, // Use the passed chart title parameter
+                  chartTitle,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -506,7 +503,7 @@ class _ReportScreenState extends State<ReportScreen> {
     }).toList();
   }
 
-  /// Build a pie chart wrapped in its own RepaintBoundary.
+  /// Build a pie chart
   Widget _buildPieChart(String title, Map<String, double> dataMap,
       {required GlobalKey key}) {
     final sections =
@@ -566,7 +563,7 @@ class _ReportScreenState extends State<ReportScreen> {
     }
   }
 
-  /// Generate a PDF where each chart is placed on its own page.
+  /// Generate a PDF
   Future<Uint8List> _generatePdfFromCharts() async {
     final pdf = pw.Document();
     const pageFormat = PdfPageFormat.a4;
@@ -597,7 +594,7 @@ class _ReportScreenState extends State<ReportScreen> {
       ),
     );
 
-    // Order of charts as they appear in the report.
+    // Order of charts
     final List<GlobalKey> chartKeys = [
       _barChartKey1,
       _barChartKey2,
@@ -855,8 +852,7 @@ class _ReportScreenState extends State<ReportScreen> {
                               state.categoryPieChart,
                               key: _pieChartKey2,
                             ),
-                            const SizedBox(
-                                height: 80), // Extra space at bottom for FAB
+                            const SizedBox(height: 80),
                           ],
                         ),
                       );
@@ -900,7 +896,7 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 }
 
-// Badge widget for pie chart labels
+// widget for pie chart labels
 class _Badge extends StatelessWidget {
   final String text;
   final double size;

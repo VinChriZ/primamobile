@@ -13,7 +13,6 @@ class HomeScreen extends StatelessWidget {
   /// Returns the formatted value with thousands separators.
   /// If the value is 0, it now returns "0" with the optional prefix.
   String formatTodayValue(dynamic value, {String prefix = ''}) {
-    // Create a NumberFormat instance for Indonesian format (uses . as thousand separator)
     final NumberFormat formatter = NumberFormat.decimalPattern('id_ID');
 
     if (value == 0) {
@@ -43,7 +42,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(width: 8),
           ] else if (useBullet) ...[
             Text(
-              "➤ ", // Right-pointing arrow bullet
+              "➤ ",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.blue[700],
@@ -144,7 +143,6 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 2,
         toolbarHeight: 80,
-        // Wrap the flexibleSpace with SafeArea to avoid overlapping the notification bar.
         flexibleSpace: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
@@ -232,11 +230,11 @@ class HomeScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
-                      // Card for Low Stock Products - Changed background to white
+                      // Card for Low Stock Products
                       buildCard(
                         title: 'Low Stock Products',
                         titleIcon: Icons.warning,
-                        color: Colors.white, // Changed from red[50] to white
+                        color: Colors.white,
                         child: dashboard.lowStockProducts.isEmpty
                             ? const Padding(
                                 padding: EdgeInsets.symmetric(vertical: 8.0),
@@ -300,7 +298,7 @@ class HomeScreen extends StatelessWidget {
                                 },
                               ),
                       ),
-                      // Sales Card (Now full-width and vertical)
+                      // Sales Card
                       buildCard(
                         title: 'Total Sales',
                         titleIcon: Icons.receipt,
@@ -325,7 +323,7 @@ class HomeScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      // Items Sold Card (Now full-width and vertical)
+                      // Items Sold Card
                       buildCard(
                         title: 'Total Items Sold',
                         titleIcon: Icons.shopping_cart,
@@ -350,7 +348,7 @@ class HomeScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      // Card for Profit with formatted values
+                      // Card for Profit
                       buildCard(
                         title: 'Total Profit',
                         titleIcon: Icons.trending_up,
@@ -376,7 +374,7 @@ class HomeScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      // Card for Total Stock Price with centered value
+                      // Card for Total Stock Price
                       buildCard(
                         title: 'Total Stock Price',
                         titleIcon: Icons.inventory_2,
