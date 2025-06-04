@@ -47,7 +47,7 @@ class WorkerReportScreen extends StatelessWidget {
       endDate = null;
     }
 
-    // Use current sort filters from state, or default values.
+    //  default values.
     String sortBy =
         (state is WorkerReportLoaded) ? state.selectedSortBy : 'date_created';
     String sortOrder =
@@ -64,9 +64,8 @@ class WorkerReportScreen extends StatelessWidget {
         );
   }
 
-  /// Helper widget to build a row for a given label/value pair.
+  /// widget to build a row
   Widget _buildAttributeRow(String label, String value) {
-    // Extract the base label without the colon
     String baseLabel =
         label.endsWith(':') ? label.substring(0, label.length - 1) : label;
 
@@ -85,7 +84,7 @@ class WorkerReportScreen extends StatelessWidget {
             textAlign: TextAlign.left,
           ),
         ),
-        const SizedBox(width: 5), // Space before colon
+        const SizedBox(width: 5),
         const Text(
           ":",
           style: TextStyle(
@@ -93,7 +92,7 @@ class WorkerReportScreen extends StatelessWidget {
             fontSize: 14,
           ),
         ),
-        const SizedBox(width: 10), // Space after colon
+        const SizedBox(width: 10),
         Expanded(
           child: Text(
             value,
@@ -123,7 +122,6 @@ class WorkerReportScreen extends StatelessWidget {
 
             return Column(
               children: [
-                // Remove the title bar and just keep the filters
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(
@@ -286,17 +284,15 @@ class WorkerReportScreen extends StatelessWidget {
                                 );
                           },
                           child: ListView.builder(
-                            // Remove the padding that's making cards appear smaller
                             // padding: const EdgeInsets.all(8.0),
                             itemCount: state.reports.length,
                             itemBuilder: (context, index) {
                               final report = state.reports[index];
                               final status = report.status.toLowerCase();
 
-                              // Check if the report is editable (not approved)
                               final bool isEditable = status != 'approved';
 
-                              // Determine border color based on status
+                              // border color
                               BorderSide borderSide;
                               if (status == 'waiting') {
                                 borderSide = BorderSide(
@@ -310,7 +306,6 @@ class WorkerReportScreen extends StatelessWidget {
                                     color: Colors.red.shade300, width: 1.5);
                               }
 
-                              // Capitalize the status for display
                               String capitalizedStatus = '';
                               if (status == 'waiting') {
                                 capitalizedStatus = 'Waiting';
@@ -322,7 +317,6 @@ class WorkerReportScreen extends StatelessWidget {
                                 capitalizedStatus = report.status;
                               }
 
-                              // Get an icon and color based on status
                               IconData statusIcon;
                               Color statusColor;
                               if (status == 'waiting') {
@@ -338,7 +332,7 @@ class WorkerReportScreen extends StatelessWidget {
 
                               return InkWell(
                                 onTap: () async {
-                                  // Navigate to the worker report detail screen
+                                  // Navigate to worker report detail screen
                                   await Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -347,7 +341,7 @@ class WorkerReportScreen extends StatelessWidget {
                                               report: report),
                                     ),
                                   );
-                                  // Refresh list after returning
+                                  // Refresh list after
                                   context.read<WorkerReportBloc>().add(
                                         FetchWorkerReport(
                                           selectedDateRange:

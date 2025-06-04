@@ -13,11 +13,11 @@ class ClusteringScreen extends StatefulWidget {
 
 class _ClusteringScreenState extends State<ClusteringScreen> {
   int _selectedYear = DateTime.now().year;
-  final int _numberOfClusters = 3; // Fixed value of 3
+  final int _numberOfClusters = 3;
   final int _currentYear = DateTime.now().year;
   List<int> _availableYears = []; // Years with complete data
 
-  // Control whether to show all items or just top 10
+  // Control show all items or just top 10
   final Map<int, bool> _showAllItems = {};
 
   @override
@@ -26,46 +26,41 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
     _fetchAvailableYearsAndInitialize();
   }
 
-  // Fetch years with complete data and initialize with the latest year
+  // Fetch years with complete data and initialize
   Future<void> _fetchAvailableYearsAndInitialize() async {
     try {
       final classificationRepo =
           context.read<ClusteringBloc>().classificationRepository;
-      // Fetch years with complete data from January to December
       final years = await classificationRepo.fetchYearsWithCompleteData();
       setState(() {
         if (years.isNotEmpty) {
-          // Make sure years list has no duplicates
           _availableYears = years.toSet().toList()..sort();
-          // Use the most recent year with data as default
           _selectedYear = _availableYears.last;
-
-          // Load data for the most recent year with complete data
           _loadDataForYear(_selectedYear);
         } else {
-          // Fallback to current year if no years with complete data
+          // Fallback to current year
           _availableYears = [_currentYear];
           _selectedYear = _currentYear;
           print('No years with complete data found, using current year');
 
-          // Load data for current year as fallback
+          // Load data for current
           _loadDataForYear(_currentYear);
         }
       });
     } catch (e) {
-      // Fallback to current year if unable to fetch
+      // Fallback
       setState(() {
         _availableYears = [_currentYear];
         _selectedYear = _currentYear;
         print('Error fetching years with complete data: $e');
 
-        // Load data for current year as fallback
+        // fallback
         _loadDataForYear(_currentYear);
       });
     }
   }
 
-  // Helper method to load data for a specific year
+  // method to load data for year
   void _loadDataForYear(int year) {
     final startDate = DateTime(year, 1, 1);
     final endDate = DateTime(year, 12, 31);
@@ -202,9 +197,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                         },
                         child: const Text('Try Again'),
                       ),
-                      const SizedBox(
-                          width:
-                              12), // Always show Train Model button in error state
+                      const SizedBox(width: 12),
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue[700],
@@ -227,25 +220,24 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
   }
 
   Widget _buildClusteringContent(ClusteringLoaded state) {
-    // Reset the show all items map when loading new data
     if (_showAllItems.length != state.groupedClusters.length) {
       _showAllItems.clear();
       for (var clusterId in state.groupedClusters.keys) {
         _showAllItems[clusterId] = false;
       }
     }
-    // Get the trained year if available from the bloc
+    // Get the trained year
     final int? trainedYear = context.read<ClusteringBloc>().lastTrainedYear;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Clusters list (now contains everything including the button)
+        // Clusters list
         Expanded(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
             children: [
-              // Train Model Elevated Button (now scrolls with content)
+              // Train Model Button
               ElevatedButton.icon(
                 onPressed: () => _showTrainModelConfirmation(context),
                 icon: const Icon(Icons.model_training),
@@ -299,7 +291,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                 ),
               ),
 
-              // Divider for visual separation
+              // Divider
               const Divider(),
               const SizedBox(height: 8),
 
@@ -340,22 +332,21 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: state.groupedClusters.length,
                       itemBuilder: (context, index) {
-                        // Define preferred order for cluster display:
-                        // Green (Top seller), Blue (Standard), Red (Low seller)
+                        // order for cluster display:
                         final Map<String, int> categoryPriority = {
                           "Top Seller": 0,
                           "Standard": 1,
                           "Low Seller": 2,
                         };
 
-                        // Get all cluster IDs and sort them based on the base category priority
+                        // sort cluster on category priority
                         final sortedClusterIds = state.groupedClusters.keys
                             .toList()
                           ..sort((a, b) {
                             final labelA = state.clusterLabels[a] ?? "Standard";
                             final labelB = state.clusterLabels[b] ?? "Standard";
 
-                            // Extract base category (ignoring "Seasonal" modifier)
+                            // Extract base category, remove seasonal
                             final baseA = labelA.contains("Seasonal")
                                 ? labelA.substring(9)
                                 : labelA;
@@ -374,7 +365,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                         String clusterLabel = state.clusterLabels[clusterId] ??
                             'Cluster $clusterId';
 
-                        // Remove "Seasonal" from the cluster label
+                        // remove seasonal
                         if (clusterLabel.startsWith("Seasonal ")) {
                           clusterLabel = clusterLabel.substring(9);
                         }
@@ -389,7 +380,6 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                           clusterColor = Colors.blue[700]!; // Standard
                         }
 
-                        // We don't need a label icon anymore
                         Widget? labelIcon;
 
                         return Padding(
@@ -413,7 +403,6 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
 
   void _showTrainModelConfirmation(BuildContext context) {
     final clusteringState = context.read<ClusteringBloc>().state;
-    // Store the bloc reference before showing dialog
     final clusteringBloc = context.read<ClusteringBloc>();
 
     DateTime? startDate;
@@ -502,8 +491,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                     foregroundColor: Colors.white,
                   ),
                   onPressed: () {
-                    Navigator.pop(
-                        dialogContext); // Create new start and end dates based on the selected year
+                    Navigator.pop(dialogContext);
                     final newStartDate = DateTime(selectedTrainingYear, 1, 1);
                     final newEndDate = DateTime(selectedTrainingYear, 12, 31);
 
@@ -521,9 +509,9 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                       ),
                     );
 
-                    // Add a small delay before starting model training
+                    // Add a small delay
                     Future.delayed(const Duration(milliseconds: 500), () {
-                      // Start model training after setting the new date range
+                      // Start model training
                       clusteringBloc.add(const RetrainModelEvent());
                     });
                   },
@@ -541,10 +529,10 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
   Widget _buildClusterSection(int clusterId, String clusterLabel,
       Color clusterColor, List<ProductClassification> products,
       {Widget? labelIcon}) {
-    // Sort products by total sales in descending order within each cluster
+    // Sort products by total sales
     products.sort((a, b) => b.totalSales.compareTo(a.totalSales));
 
-    // Check if we should show all items or just top 10
+    // show all items or just top 10
     final bool showAll = _showAllItems[clusterId] ?? false;
     final displayProducts = showAll ? products : products.take(10).toList();
     final hasMore = products.length > 10;
@@ -591,8 +579,8 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
             ),
           ],
         ),
-        collapsedBackgroundColor: clusterColor.withAlpha(13), // 0.05 * 255 = 13
-        backgroundColor: clusterColor.withAlpha(13), // 0.05 * 255 = 13
+        collapsedBackgroundColor: clusterColor.withAlpha(13),
+        backgroundColor: clusterColor.withAlpha(13),
         children: [
           Container(
             padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
@@ -601,7 +589,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
               children: [
                 _buildProductsDataTable(displayProducts),
 
-                // Show all button when we have more than 10 products
+                // Show all button
                 if (hasMore)
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
@@ -637,15 +625,13 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
   }
 
   Widget _buildProductsDataTable(List<ProductClassification> products) {
-    // access the category directly from each product
-
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: products.length,
       itemBuilder: (context, index) {
         final product = products[index];
-        // Check if the product is seasonal directly from its category property
+        // Check if the product is seasonal
         final bool isSeasonal = product.category.contains('Seasonal');
 
         // Print debug info
@@ -696,7 +682,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                         ),
                       ],
                     ),
-                    // Show seasonal indicator directly without using FutureBuilder
+                    // Show seasonal indicator
                     if (isSeasonal)
                       Padding(
                         padding: const EdgeInsets.only(top: 4.0),
@@ -818,10 +804,10 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
   void _showFilterDialog() async {
     final currentState = context.read<ClusteringBloc>().state;
 
-    // Set selected year based on current state or default to current year
+    // Set selected year
     int yearToUse = currentState.startDate?.year ?? _currentYear;
 
-    // Make sure the selected year exists in the available years list
+    // Make sure the selected year exists
     if (!_availableYears.contains(yearToUse)) {
       yearToUse =
           _availableYears.isNotEmpty ? _availableYears.last : _currentYear;

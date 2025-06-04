@@ -46,7 +46,7 @@ class OwnerApprovalScreen extends StatelessWidget {
       endDate = null;
     }
 
-    // Get current sort and filter values or use defaults
+    //defaults
     String sortBy = 'date_created';
     String sortOrder = 'desc';
     String? status;
@@ -72,7 +72,7 @@ class OwnerApprovalScreen extends StatelessWidget {
         );
   }
 
-  /// Helper widget to build a card with consistent styling across the app.
+  /// Helper widget to build a card
   // ignore: unused_element
   Widget _buildCard({
     required Widget child,
@@ -110,16 +110,16 @@ class OwnerApprovalScreen extends StatelessWidget {
                     Text(
                       title,
                       style: const TextStyle(
-                        fontSize: 16, // Decreased from 18
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10), // Decreased from 12
+                const SizedBox(height: 10),
                 Divider(color: Colors.blue.shade100, thickness: 1),
-                const SizedBox(height: 6), // Decreased from 8
+                const SizedBox(height: 6),
               ],
               child,
             ],
@@ -129,9 +129,8 @@ class OwnerApprovalScreen extends StatelessWidget {
     );
   }
 
-  /// Helper widget to build a row for a given label/value pair.
+  /// widget to build a row
   Widget _buildAttributeRow(String label, String value) {
-    // Extract the base label without the colon
     String baseLabel =
         label.endsWith(':') ? label.substring(0, label.length - 1) : label;
 
@@ -145,31 +144,31 @@ class OwnerApprovalScreen extends StatelessWidget {
             baseLabel,
             style: const TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 14, // Decreased from 16
+              fontSize: 14,
             ),
             textAlign: TextAlign.left,
           ),
         ),
-        const SizedBox(width: 5), // Space before colon
+        const SizedBox(width: 5),
         const Text(
           ":",
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            fontSize: 14, // Decreased from 16
+            fontSize: 14,
           ),
         ),
-        const SizedBox(width: 10), // Space after colon
+        const SizedBox(width: 10),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(fontSize: 14), // Decreased from 16
+            style: const TextStyle(fontSize: 14),
           ),
         ),
       ],
     );
   }
 
-  /// Show dialog to get notes from owner before approving or denying
+  /// Show dialog before approving or denying
   Future<void> _showNoteDialog(
       BuildContext context, Report report, bool isApprove) async {
     final TextEditingController noteController =
@@ -216,13 +215,11 @@ class OwnerApprovalScreen extends StatelessWidget {
               onPressed: () {
                 final note = noteController.text.trim();
 
-                // First update the note, then approve or deny the report
                 context.read<OwnerApprovalBloc>().add(
                       UpdateReportNote(
                         reportId: report.reportId,
                         note: note,
                         onSuccess: () {
-                          // After note is updated, proceed with approval/denial
                           if (isApprove) {
                             context.read<OwnerApprovalBloc>().add(
                                   ApproveReport(report.reportId),
@@ -289,7 +286,6 @@ class OwnerApprovalScreen extends StatelessWidget {
 
             return Column(
               children: [
-                // Remove the title bar and just keep the filters
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(
@@ -508,7 +504,6 @@ class OwnerApprovalScreen extends StatelessWidget {
                                 );
                           },
                           child: ListView.builder(
-                            // Remove the padding that's making cards appear smaller
                             // padding: const EdgeInsets.all(8.0),
                             itemCount: reports.length,
                             itemBuilder: (context, index) {
@@ -529,7 +524,6 @@ class OwnerApprovalScreen extends StatelessWidget {
                                     color: Colors.red.shade300, width: 1.5);
                               }
 
-                              // Capitalize the status
                               String capitalizedStatus = '';
                               if (status == 'waiting') {
                                 capitalizedStatus = 'Waiting';
@@ -541,7 +535,6 @@ class OwnerApprovalScreen extends StatelessWidget {
                                 capitalizedStatus = report.status;
                               }
 
-                              // Get an icon and color based on status
                               IconData statusIcon;
                               Color statusColor;
                               if (status == 'waiting') {
@@ -599,13 +592,12 @@ class OwnerApprovalScreen extends StatelessWidget {
                                           Text(
                                             'Report: ${DateFormat('yyyy-MM-dd').format(report.dateCreated)}',
                                             style: const TextStyle(
-                                              fontSize: 16, // Decreased from 18
+                                              fontSize: 16,
                                               fontWeight: FontWeight.bold,
                                               color: Colors.black,
                                             ),
                                           ),
-                                          const SizedBox(
-                                              height: 10), // Decreased from 12
+                                          const SizedBox(height: 10),
                                           Divider(
                                               color: status == 'waiting'
                                                   ? Colors.blue.shade300
