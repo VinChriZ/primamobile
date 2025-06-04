@@ -84,10 +84,31 @@ class _ReportScreenState extends State<ReportScreen> {
     }
   }
 
-  double _computeInterval(Map<DateTime, double> dataMap) {
+  double _computeInterval(Map<DateTime, double> dataMap,
+      {bool isProfitChart = false}) {
     if (dataMap.isEmpty) return 1;
     final maxVal = dataMap.values.reduce((a, b) => a > b ? a : b);
-    double interval = (maxVal / 4).ceilToDouble();
+
+    // For profit chart
+    if (isProfitChart) {
+      if (maxVal >= 1000000) {
+        // For values over 1M
+        // Using 1/5 of max value, rounded to millions for clean values
+        return ((maxVal / 1000000).ceil() * 1000000 / 5).ceilToDouble();
+      } else if (maxVal >= 100000) {
+        // For values over 100K, use 50K intervals
+        return 50000;
+      } else if (maxVal >= 10000) {
+        // For values over 10K, use 5K intervals
+        return 5000;
+      } else if (maxVal >= 1000) {
+        // For values over 1K, use 500 intervals
+        return 500;
+      }
+    }
+
+    // For other charts, use 5 divisions
+    double interval = (maxVal / 5).ceilToDouble();
     return interval < 1 ? 1 : interval;
   }
 
@@ -241,7 +262,8 @@ class _ReportScreenState extends State<ReportScreen> {
           : DateFormat.MMMd().format(date);
       dateLabels[i] = label;
     }
-    final double interval = _computeInterval(dataMap);
+    final double interval =
+        _computeInterval(dataMap, isProfitChart: title == 'Total Profits');
 
     return RepaintBoundary(
       key: key,
@@ -320,20 +342,30 @@ class _ReportScreenState extends State<ReportScreen> {
                             reservedSize: leftReservedSize,
                             interval: interval,
                             getTitlesWidget: (double value, TitleMeta meta) {
-                              // use K for thousands, M for millions
+                              // profit chart
                               String formattedValue;
-                              if (leftReservedSize > 40) {
+                              if (title == 'Total Profits') {
+                                // scaled notation
+                                if (value >= 1000000) {
+                                  formattedValue =
+                                      '${(value / 1000000).toStringAsFixed(0)}M';
+                                } else if (value >= 1000) {
+                                  formattedValue =
+                                      '${(value / 1000).toStringAsFixed(0)}K';
+                                } else {
+                                  formattedValue = value.toStringAsFixed(0);
+                                }
+                              } else {
+                                // For other charts
                                 if (value >= 1000000) {
                                   formattedValue =
                                       '${(value / 1000000).toStringAsFixed(1)}M';
                                 } else if (value >= 1000) {
                                   formattedValue =
-                                      '${(value / 1000).toStringAsFixed(1)}K';
+                                      '${(value / 1000).toStringAsFixed(0)}K';
                                 } else {
                                   formattedValue = value.toStringAsFixed(0);
                                 }
-                              } else {
-                                formattedValue = value.toStringAsFixed(0);
                               }
 
                               return SideTitleWidget(
