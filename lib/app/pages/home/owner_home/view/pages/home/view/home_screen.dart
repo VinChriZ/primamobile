@@ -214,11 +214,7 @@ class HomeScreen extends StatelessWidget {
               ),
             );
           } else if (state is HomeLoaded) {
-            // If role_id is not 1 or 2, hide all cards.
-            if (Globals.userSession.user.roleId != 1 &&
-                Globals.userSession.user.roleId != 2) {
-              return const Center(child: Text("No content available."));
-            }
+            // If role_id is not 1 or 2, only show the low stock products card
             final dashboard = state.dashboardData;
             return RefreshIndicator(
               onRefresh: () async {
@@ -298,100 +294,105 @@ class HomeScreen extends StatelessWidget {
                                 },
                               ),
                       ),
-                      // Sales Card
-                      buildCard(
-                        title: 'Total Sales',
-                        titleIcon: Icons.receipt,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            buildStatRow(
-                              'Today',
-                              formatTodayValue(dashboard.transactionsToday),
-                              useBullet: true,
-                            ),
-                            buildStatRow(
-                              'Month',
-                              dashboard.transactionsMonth.toString(),
-                              useBullet: true,
-                            ),
-                            buildStatRow(
-                              'Year',
-                              dashboard.transactionsYear.toString(),
-                              useBullet: true,
-                            ),
-                          ],
+
+                      // Only show these cards for admin or owner (role_id 1 or 2)
+                      if (Globals.userSession.user.roleId == 1 ||
+                          Globals.userSession.user.roleId == 2) ...[
+                        // Sales Card
+                        buildCard(
+                          title: 'Total Sales',
+                          titleIcon: Icons.receipt,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              buildStatRow(
+                                'Today',
+                                formatTodayValue(dashboard.transactionsToday),
+                                useBullet: true,
+                              ),
+                              buildStatRow(
+                                'Month',
+                                dashboard.transactionsMonth.toString(),
+                                useBullet: true,
+                              ),
+                              buildStatRow(
+                                'Year',
+                                dashboard.transactionsYear.toString(),
+                                useBullet: true,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      // Items Sold Card
-                      buildCard(
-                        title: 'Total Items Sold',
-                        titleIcon: Icons.shopping_cart,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            buildStatRow(
-                              'Today',
-                              formatTodayValue(dashboard.itemsSoldToday),
-                              useBullet: true,
-                            ),
-                            buildStatRow(
-                              'Month',
-                              dashboard.itemsSoldMonth.toString(),
-                              useBullet: true,
-                            ),
-                            buildStatRow(
-                              'Year',
-                              dashboard.itemsSoldYear.toString(),
-                              useBullet: true,
-                            ),
-                          ],
+                        // Items Sold Card
+                        buildCard(
+                          title: 'Total Items Sold',
+                          titleIcon: Icons.shopping_cart,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              buildStatRow(
+                                'Today',
+                                formatTodayValue(dashboard.itemsSoldToday),
+                                useBullet: true,
+                              ),
+                              buildStatRow(
+                                'Month',
+                                dashboard.itemsSoldMonth.toString(),
+                                useBullet: true,
+                              ),
+                              buildStatRow(
+                                'Year',
+                                dashboard.itemsSoldYear.toString(),
+                                useBullet: true,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      // Card for Profit
-                      buildCard(
-                        title: 'Total Profit',
-                        titleIcon: Icons.trending_up,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            buildStatRow(
-                              'Today',
-                              formatTodayValue(dashboard.profitToday,
-                                  prefix: 'Rp. '),
-                              useBullet: true,
-                            ),
-                            buildStatRow(
-                              'Month',
-                              'Rp. ${formatTodayValue(dashboard.profitMonth)}',
-                              useBullet: true,
-                            ),
-                            buildStatRow(
-                              'Year',
-                              'Rp. ${formatTodayValue(dashboard.profitYear)}',
-                              useBullet: true,
-                            ),
-                          ],
+                        // Card for Profit
+                        buildCard(
+                          title: 'Total Profit',
+                          titleIcon: Icons.trending_up,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              buildStatRow(
+                                'Today',
+                                formatTodayValue(dashboard.profitToday,
+                                    prefix: 'Rp. '),
+                                useBullet: true,
+                              ),
+                              buildStatRow(
+                                'Month',
+                                'Rp. ${formatTodayValue(dashboard.profitMonth)}',
+                                useBullet: true,
+                              ),
+                              buildStatRow(
+                                'Year',
+                                'Rp. ${formatTodayValue(dashboard.profitYear)}',
+                                useBullet: true,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      // Card for Total Stock Price
-                      buildCard(
-                        title: 'Total Stock Price',
-                        titleIcon: Icons.inventory_2,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10.0),
-                          child: Center(
-                            child: Text(
-                              'Rp. ${formatTodayValue(dashboard.totalStockPrice)}',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
+                        // Card for Total Stock Price
+                        buildCard(
+                          title: 'Total Stock Price',
+                          titleIcon: Icons.inventory_2,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10.0),
+                            child: Center(
+                              child: Text(
+                                'Rp. ${formatTodayValue(dashboard.totalStockPrice)}',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
