@@ -498,6 +498,61 @@ class TransactionDetailScreen extends StatelessWidget {
       final product = await productRepository.fetchProduct(barcode);
       // ignore: unnecessary_null_comparison
       if (product != null) {
+        // Get current state to check if this product already exists in the transaction
+        final transactionDetailBloc = context.read<TransactionDetailBloc>();
+        final currentState = transactionDetailBloc.state;
+
+        if (currentState is TransactionDetailLoaded) {
+          // Check if this product already exists in the transaction details
+          final existingDetail = currentState.details.firstWhere(
+            (detail) => detail.upc == product.upc,
+            orElse: () => TransactionDetail(
+              detailId: -1,
+              transactionId: transactionId,
+              upc: '',
+              quantity: 0,
+              agreedPrice: 0,
+            ),
+          );
+          if (existingDetail.detailId != -1) {
+            // Product already exists in transaction, update quantity
+            // Check if product is out of stock
+            if (product.stock <= 0) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Product is out of stock.')),
+              );
+              return;
+            }
+
+            // Increment quantity by 1 and update
+            final newQuantity = existingDetail.quantity + 1;
+
+            transactionDetailBloc.add(
+              UpdateTransactionDetail(
+                transactionId,
+                existingDetail.detailId,
+                {
+                  'upc': product.upc,
+                  'quantity': newQuantity,
+                  'agreed_price': existingDetail.agreedPrice,
+                },
+              ),
+            );
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Added 1 more ${product.name}')),
+            );
+            return;
+          }
+        } // Check if product is out of stock before adding
+        if (product.stock <= 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Product is out of stock.')),
+          );
+          return;
+        }
+
+        // Product is not already in the list, add it as a new item
         await _promptAddDetailDialog(context, product, transactionId);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -506,8 +561,9 @@ class TransactionDetailScreen extends StatelessWidget {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error scanning barcode: $e')),
+        const SnackBar(content: Text('Product not found')),
       );
+      print('Product not found: $e');
     }
   }
 
@@ -730,6 +786,63 @@ class TransactionDetailScreen extends StatelessWidget {
         },
       );
       if (selectedProduct != null) {
+        // Get current state to check if this product already exists in the transaction
+        final transactionDetailBloc = context.read<TransactionDetailBloc>();
+        final currentState = transactionDetailBloc.state;
+
+        if (currentState is TransactionDetailLoaded) {
+          // Check if this product already exists in the transaction details
+          final existingDetail = currentState.details.firstWhere(
+            (detail) => detail.upc == selectedProduct.upc,
+            orElse: () => TransactionDetail(
+              detailId: -1,
+              transactionId: transactionId,
+              upc: '',
+              quantity: 0,
+              agreedPrice: 0,
+            ),
+          );
+          if (existingDetail.detailId != -1) {
+            // Product already exists in transaction, update quantity
+            // Check if product is out of stock
+            if (selectedProduct.stock <= 0) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Product is out of stock.')),
+              );
+              return;
+            }
+
+            // Increment quantity by 1 and update
+            final newQuantity = existingDetail.quantity + 1;
+
+            transactionDetailBloc.add(
+              UpdateTransactionDetail(
+                transactionId,
+                existingDetail.detailId,
+                {
+                  'upc': selectedProduct.upc,
+                  'quantity': newQuantity,
+                  'agreed_price': existingDetail.agreedPrice,
+                },
+              ),
+            );
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Added 1 more ${selectedProduct.name}')),
+            );
+            return;
+          }
+        }
+
+        // Product is not already in the list, add it as a new item        // Check if product is out of stock before adding
+        if (selectedProduct.stock <= 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Product is out of stock.')),
+          );
+          return;
+        }
+
+        // Product is not already in the list, add it as a new item
         await _promptAddDetailDialog(context, selectedProduct, transactionId);
       }
     } catch (e) {
@@ -766,7 +879,27 @@ class TransactionDetailScreen extends StatelessWidget {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Available stock: ${product.stock}'),
+                  Text(
+                    'Available stock: ${product.stock}',
+                    style: TextStyle(
+                      color: product.stock <= 0 ? Colors.red : Colors.black,
+                      fontWeight: product.stock <= 0
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                  ),
+                  if (product.stock <= 0)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 4),
+                      child: Text(
+                        'Warning: This product is out of stock!',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 12),
 
                   // Quantity SpinBox
@@ -886,43 +1019,45 @@ class TransactionDetailScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {
-                          if (quantity <= 0) {
-                            setState(() {
-                              errorMessage = 'Enter valid quantity';
-                            });
-                            return;
-                          }
-                          if (agreedPrice <= 0) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('Enter valid price')),
-                            );
-                            return;
-                          }
-                          if (quantity > product.stock) {
-                            setState(() {
-                              errorMessage = 'Quantity exceeds stock';
-                            });
-                            return;
-                          }
-                          transactionDetailBloc.add(
-                            AddTransactionDetail(
-                              transactionId,
-                              {
-                                'upc': product.upc,
-                                'quantity': quantity,
-                                'agreed_price': agreedPrice,
+                        onPressed: product.stock <= 0
+                            ? null
+                            : () {
+                                if (quantity <= 0) {
+                                  setState(() {
+                                    errorMessage = 'Enter valid quantity';
+                                  });
+                                  return;
+                                }
+                                if (agreedPrice <= 0) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text('Enter valid price')),
+                                  );
+                                  return;
+                                }
+                                if (quantity > product.stock) {
+                                  setState(() {
+                                    errorMessage = 'Quantity exceeds stock';
+                                  });
+                                  return;
+                                }
+                                transactionDetailBloc.add(
+                                  AddTransactionDetail(
+                                    transactionId,
+                                    {
+                                      'upc': product.upc,
+                                      'quantity': quantity,
+                                      'agreed_price': agreedPrice,
+                                    },
+                                  ),
+                                );
+                                Navigator.pop(dialogContext);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'Transaction detail added successfully')),
+                                );
                               },
-                            ),
-                          );
-                          Navigator.pop(dialogContext);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    'Transaction detail added successfully')),
-                          );
-                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue.shade600,
                           foregroundColor: Colors.white,

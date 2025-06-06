@@ -143,12 +143,39 @@ class _AddSalesPageState extends State<AddSalesPage> {
       final product = await _productRepository.fetchProduct(barcode);
       // ignore: unnecessary_null_comparison
       if (product != null) {
-        await _promptAddProductDetail(product);
+        // Check if this product is already in the list
+        final existingItemIndex = _salesItems.indexWhere((item) =>
+            item.product.upc ==
+            product.upc); // Check if product is out of stock
+        if (product.stock <= 0) {
+          _showError('Product is out of stock.');
+          return;
+        }
+
+        if (existingItemIndex != -1) {
+          // Product already exists in the list, update its quantity
+          final existingItem = _salesItems[existingItemIndex];
+
+          // Make sure we don't exceed stock limits
+          if (existingItem.quantity >= product.stock) {
+            _showError('Cannot add more items. Maximum stock reached.');
+            return;
+          }
+
+          // Increment quantity by 1 (or show dialog to choose quantity)
+          _editSalesItem(existingItemIndex, incrementQuantity: true);
+        } else {
+          // Product is not in the list, add it as a new item
+          await _promptAddProductDetail(product);
+        }
       } else {
-        _showError('Product not found for barcode: $barcode');
+        _showError('Product not found');
       }
     } catch (e) {
-      _showError('Error scanning barcode: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Product not found')),
+      );
+      print('Product not found: $e');
     }
   }
 
@@ -368,7 +395,32 @@ class _AddSalesPageState extends State<AddSalesPage> {
         },
       );
       if (selectedProduct != null) {
-        await _promptAddProductDetail(selectedProduct);
+        // Check if product is out of stock
+        if (selectedProduct.stock <= 0) {
+          _showError('Product is out of stock.');
+          return;
+        }
+
+        // Check if this product is already in the list
+        final existingItemIndex = _salesItems
+            .indexWhere((item) => item.product.upc == selectedProduct.upc);
+
+        if (existingItemIndex != -1) {
+          // Product already exists in the list, update its quantity
+          final existingItem = _salesItems[existingItemIndex];
+
+          // Make sure we don't exceed stock limits
+          if (existingItem.quantity >= selectedProduct.stock) {
+            _showError('Cannot add more items. Maximum stock reached.');
+            return;
+          }
+
+          // Increment quantity by 1
+          _editSalesItem(existingItemIndex, incrementQuantity: true);
+        } else {
+          // Product is not in the list, add it as a new item
+          await _promptAddProductDetail(selectedProduct);
+        }
       }
     } catch (e) {
       _showError('Error searching products: $e');
@@ -578,9 +630,29 @@ class _AddSalesPageState extends State<AddSalesPage> {
   }
 
   /// Edit an existing sales item
-  void _editSalesItem(int index) async {
+  void _editSalesItem(int index, {bool incrementQuantity = false}) async {
     final item = _salesItems[index];
     int quantity = item.quantity;
+    if (incrementQuantity && quantity < item.product.stock) {
+      // Automatically increment quantity by 1 if requested
+      quantity += 1;
+      // Immediately update the item
+      setState(() {
+        _salesItems[index] = SalesProductItem(
+          product: item.product,
+          quantity: quantity,
+          agreedPrice: item.agreedPrice,
+        );
+      });
+      // Show a brief notification that the item was added
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Added 1 more ${item.product.name}'),
+          duration: const Duration(seconds: 1),
+        ),
+      );
+      return; // Skip opening dialog for quick add
+    }
     double agreedPrice = item.agreedPrice;
     String? errorMessage;
 

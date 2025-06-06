@@ -126,12 +126,46 @@ class _AddReportPageState extends State<AddReportPage> {
       final product = await _productRepository.fetchProduct(barcode);
       // ignore: unnecessary_null_comparison
       if (product != null) {
-        await _promptAddProductDetail(product);
+        // For "return" type reports, check available stock
+        if (_selectedType == "return" && product.stock <= 0) {
+          _showError('Product is out of stock');
+          return;
+        }
+
+        // Check if this product is already in the list
+        final existingItemIndex = _reportDetails
+            .indexWhere((item) => item.product.upc == product.upc);
+
+        if (existingItemIndex != -1) {
+          final existingItem = _reportDetails[existingItemIndex];
+
+          // For "return" type reports, check if quantity exceeds available stock
+          if (_selectedType == "return" &&
+              existingItem.quantity + 1 > product.stock) {
+            _showError('Quantity exceeds available stock');
+            return;
+          }
+
+          // Product already exists in the list, automatically increment quantity
+          setState(() {
+            _reportDetails[existingItemIndex] = ReportDetailItem(
+                product: existingItem.product,
+                quantity: existingItem.quantity + 1);
+          });
+          // Show confirmation to the user
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Added 1 more ${product.name}'),
+              duration: const Duration(seconds: 1)));
+        } else {
+          // Product is not in the list, add it as a new item
+          await _promptAddProductDetail(product);
+        }
       } else {
         _showError('Product not found for barcode: $barcode');
       }
     } catch (e) {
-      _showError('Error scanning barcode: $e');
+      _showError('Product not found');
+      print('Product not found: $e');
     }
   }
 
@@ -321,8 +355,42 @@ class _AddReportPageState extends State<AddReportPage> {
           );
         },
       );
+
       if (selectedProduct != null) {
-        await _promptAddProductDetail(selectedProduct);
+        // For "return" type reports, check available stock
+        if (_selectedType == "return" && selectedProduct.stock <= 0) {
+          _showError('Product is out of stock');
+          return;
+        }
+
+        // Check if this product is already in the list
+        final existingItemIndex = _reportDetails
+            .indexWhere((item) => item.product.upc == selectedProduct.upc);
+
+        if (existingItemIndex != -1) {
+          final existingItem = _reportDetails[existingItemIndex];
+
+          // For "return" type reports, check if quantity exceeds available stock
+          if (_selectedType == "return" &&
+              existingItem.quantity + 1 > selectedProduct.stock) {
+            _showError('Quantity exceeds available stock');
+            return;
+          }
+
+          // Product already exists in the list, automatically increment quantity
+          setState(() {
+            _reportDetails[existingItemIndex] = ReportDetailItem(
+                product: existingItem.product,
+                quantity: existingItem.quantity + 1);
+          });
+          // Show confirmation to the user
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Added 1 more ${selectedProduct.name}'),
+              duration: const Duration(seconds: 1)));
+        } else {
+          // Product is not in the list, add it as a new item
+          await _promptAddProductDetail(selectedProduct);
+        }
       }
     } catch (e) {
       _showError('Error searching products: $e');

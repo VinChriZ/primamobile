@@ -28,7 +28,6 @@ class WorkerReportDetailScreen extends StatelessWidget {
   }
 
   Widget _buildAttributeRow({required String label, required String value}) {
-    // Updated to align label left with consistent spacing
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4.0),
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -37,8 +36,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(8.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withAlpha(
-                26), // Changed from withOpacity(0.1) to withAlpha(26)
+            color: Colors.grey.withAlpha(26),
             spreadRadius: 1,
             blurRadius: 2,
             offset: const Offset(0, 1),
@@ -53,7 +51,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
               label,
               style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 13.0, // Reduced from 15.0
+                  fontSize: 13.0,
                   color: Colors.black),
               textAlign: TextAlign.left,
             ),
@@ -62,14 +60,13 @@ class WorkerReportDetailScreen extends StatelessWidget {
             ' : ',
             style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 13.0, // Reduced from 15.0
+                fontSize: 13.0,
                 color: Colors.black),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                  fontSize: 13.0, color: Colors.black), // Reduced from 15.0
+              style: const TextStyle(fontSize: 13.0, color: Colors.black),
             ),
           ),
         ],
@@ -108,7 +105,6 @@ class WorkerReportDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Fetch and display the product name instead of UPC.
             FutureBuilder(
               future: productRepository.fetchProduct(detail.upc),
               builder: (context, snapshot) {
@@ -147,7 +143,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                         product?.name ?? detail.upc,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 14.0, // Reduced from 16.0
+                          fontSize: 14.0,
                           color: Colors.black,
                         ),
                       ),
@@ -155,7 +151,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                       Text(
                         'UPC: ${detail.upc}',
                         style: const TextStyle(
-                          fontSize: 11.0, // Reduced from 12.0
+                          fontSize: 11.0,
                           color: Colors.black54,
                         ),
                       ),
@@ -166,7 +162,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                     detail.upc,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 14.0, // Reduced from 16.0
+                      fontSize: 14.0,
                       color: Colors.black,
                     ),
                   );
@@ -176,8 +172,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
             const Divider(),
             Text(
               'Quantity: ${detail.quantity}',
-              style: const TextStyle(
-                  fontSize: 13.0, color: Colors.black), // Reduced from 15.0
+              style: const TextStyle(fontSize: 13.0, color: Colors.black),
             ),
 
             // Only show edit/delete buttons if the report is editable
@@ -289,9 +284,8 @@ class WorkerReportDetailScreen extends StatelessWidget {
                               border: Border.all(color: Colors.grey.shade300),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            height: 36, // Height for better tap target
-                            alignment:
-                                Alignment.center, // Center content vertically
+                            height: 36,
+                            alignment: Alignment.center,
                             child: SpinBox(
                               min: 1,
                               max: report.type.toLowerCase() == "return" &&
@@ -301,11 +295,9 @@ class WorkerReportDetailScreen extends StatelessWidget {
                               value: quantity.toDouble(),
                               decimals: 0,
                               step: 1,
-                              textAlign:
-                                  TextAlign.center, // Center the value text
-                              iconSize:
-                                  22, // Smaller icons for better alignment
-                              spacing: 1, // Reduce spacing between elements
+                              textAlign: TextAlign.center,
+                              iconSize: 22,
+                              spacing: 1,
                               decoration: const InputDecoration.collapsed(
                                 hintText: '',
                               ),
@@ -354,7 +346,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                             report.reportId,
                             detail.reportDetailId,
                             {
-                              'upc': detail.upc, // Keep the original UPC
+                              'upc': detail.upc,
                               'quantity': quantity,
                             },
                           ),
@@ -414,7 +406,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
     );
   }
 
-  // New functions to support adding a report detail (similar to the transaction detail screen).
+  // functions to support adding a report detail.
   void _openAddProductOptions(BuildContext context, int reportId) {
     showModalBottomSheet(
       context: context,
@@ -462,6 +454,61 @@ class WorkerReportDetailScreen extends StatelessWidget {
       final product = await productRepository.fetchProduct(barcode);
       // ignore: unnecessary_null_comparison
       if (product != null) {
+        // For "return" type reports, check available stock
+        if (report.type.toLowerCase() == "return" && product.stock <= 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Product is out of stock')),
+          );
+          return;
+        }
+
+        // Get current state to check if this product already exists in the transaction
+        final workerReportDetailBloc = context.read<WorkerReportDetailBloc>();
+        final currentState = workerReportDetailBloc.state;
+
+        if (currentState is WorkerReportDetailLoaded) {
+          // Check if this product already exists in the report details
+          final existingDetail = currentState.details.firstWhere(
+            (detail) => detail.upc == product.upc,
+            orElse: () => ReportDetail(
+                reportDetailId: -1, reportId: reportId, upc: '', quantity: 0),
+          );
+
+          if (existingDetail.reportDetailId != -1) {
+            // For "return" type reports, check if quantity exceeds available stock
+            if (report.type.toLowerCase() == "return" &&
+                existingDetail.quantity + 1 > product.stock) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text('Quantity exceeds available stock')),
+              );
+              return;
+            }
+
+            // Product already exists in the report, increment quantity
+            final workerReportDetailBloc =
+                context.read<WorkerReportDetailBloc>();
+            final newQuantity = existingDetail.quantity + 1;
+
+            workerReportDetailBloc.add(
+              UpdateWorkerReportDetail(
+                reportId,
+                existingDetail.reportDetailId,
+                {
+                  'upc': existingDetail.upc,
+                  'quantity': newQuantity,
+                },
+              ),
+            );
+
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Added 1 more item'),
+                duration: const Duration(seconds: 1)));
+            return;
+          }
+        }
+
+        // Product is not already in the list, add it as a new item
         await _promptAddDetailDialog(context, product, reportId);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -470,8 +517,9 @@ class WorkerReportDetailScreen extends StatelessWidget {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error scanning barcode: $e')),
+        SnackBar(content: Text('Product not found')),
       );
+      print('Product not found: $e');
     }
   }
 
@@ -663,6 +711,63 @@ class WorkerReportDetailScreen extends StatelessWidget {
         },
       );
       if (selectedProduct != null) {
+        // For "return" type reports, check available stock
+        if (report.type.toLowerCase() == "return" &&
+            selectedProduct.stock <= 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Product is out of stock')),
+          );
+          return;
+        }
+
+        // Get current state to check if this product already exists in the transaction
+        final workerReportDetailBloc = context.read<WorkerReportDetailBloc>();
+        final currentState = workerReportDetailBloc.state;
+
+        if (currentState is WorkerReportDetailLoaded) {
+          // Check if this product already exists in the report details
+          final existingDetail = currentState.details.firstWhere(
+            (detail) => detail.upc == selectedProduct.upc,
+            orElse: () => ReportDetail(
+                reportDetailId: -1, reportId: reportId, upc: '', quantity: 0),
+          );
+
+          if (existingDetail.reportDetailId != -1) {
+            // For "return" type reports, check if quantity exceeds available stock
+            if (report.type.toLowerCase() == "return" &&
+                existingDetail.quantity + 1 > selectedProduct.stock) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text('Quantity exceeds available stock')),
+              );
+              return;
+            }
+
+            // Product already exists in the report, increment quantity
+            final workerReportDetailBloc =
+                context.read<WorkerReportDetailBloc>();
+            final newQuantity = existingDetail.quantity + 1;
+
+            workerReportDetailBloc.add(
+              UpdateWorkerReportDetail(
+                reportId,
+                existingDetail.reportDetailId,
+                {
+                  'upc': existingDetail.upc,
+                  'quantity': newQuantity,
+                },
+              ),
+            );
+
+            // Show confirmation message
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Added 1 more ${selectedProduct.name}'),
+                duration: const Duration(seconds: 1)));
+            return;
+          }
+        }
+
+        // Product is not already in the list, add it as a new item
         await _promptAddDetailDialog(context, selectedProduct, reportId);
       }
     } catch (e) {
@@ -718,9 +823,8 @@ class WorkerReportDetailScreen extends StatelessWidget {
                           border: Border.all(color: Colors.grey.shade300),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        height: 36, // Height for better tap target
-                        alignment:
-                            Alignment.center, // Center content vertically
+                        height: 36,
+                        alignment: Alignment.center,
                         child: SpinBox(
                           min: 1,
                           max: report.type.toLowerCase() == "return"
@@ -729,9 +833,9 @@ class WorkerReportDetailScreen extends StatelessWidget {
                           value: quantity.toDouble(),
                           decimals: 0,
                           step: 1,
-                          textAlign: TextAlign.center, // Center the value text
-                          iconSize: 22, // Smaller icons for better alignment
-                          spacing: 1, // Reduce spacing between elements
+                          textAlign: TextAlign.center,
+                          iconSize: 22,
+                          spacing: 1,
                           decoration: const InputDecoration.collapsed(
                             hintText: '',
                           ),
@@ -887,7 +991,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                             const Text(
                               'Report Information',
                               style: TextStyle(
-                                fontSize: 16.0, // Reduced from 18.0
+                                fontSize: 16.0,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black,
                               ),
@@ -930,7 +1034,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                       child: Text(
                         'Report Details',
                         style: TextStyle(
-                          fontSize: 16, // Reduced from 18
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
@@ -954,7 +1058,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                                   Text(
                                     'No report details available',
                                     style: TextStyle(
-                                      fontSize: 14, // Reduced from 16
+                                      fontSize: 14,
                                       color: Colors.black54,
                                     ),
                                   ),
@@ -1005,8 +1109,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
                 children: [
                   Text(
                     state.message,
-                    style: const TextStyle(
-                        fontSize: 14, color: Colors.black), // Reduced from 16
+                    style: const TextStyle(fontSize: 14, color: Colors.black),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
@@ -1061,7 +1164,7 @@ class WorkerReportDetailScreen extends StatelessWidget {
               foregroundColor: Colors.white,
             ),
             onPressed: () async {
-              Navigator.pop(dialogContext); // Close dialog first
+              Navigator.pop(dialogContext);
 
               // Show loading indicator
               ScaffoldMessenger.of(context).showSnackBar(
@@ -1072,7 +1175,6 @@ class WorkerReportDetailScreen extends StatelessWidget {
               );
 
               try {
-                // Use the repository directly for more reliable resubmission
                 final updatedReport =
                     await reportRepository.resubmitReport(report.reportId);
 
@@ -1120,8 +1222,6 @@ class WorkerReportDetailScreen extends StatelessWidget {
   }
 }
 
-// A minimal BarcodeScannerPage for demonstration purposes.
-// In your actual app, implement barcode scanning using mobile_scanner or a similar package.
 class BarcodeScannerPage extends StatefulWidget {
   const BarcodeScannerPage({super.key});
 
