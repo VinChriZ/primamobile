@@ -5,9 +5,9 @@ class ProductCluster {
   final double totalSales;
   final int daysSold;
   final double avgDailySales;
-  final double maxDailySales;
+  // final double maxDailySales; // Temporarily marked as unused
   final double stdDailySales;
-  final int daysSinceLastSale;
+  // final int daysSinceLastSale; // Temporarily marked as unused
   final int txCount;
   final int cluster;
 
@@ -16,9 +16,9 @@ class ProductCluster {
     required this.totalSales,
     required this.daysSold,
     required this.avgDailySales,
-    required this.maxDailySales,
+    // required this.maxDailySales, // Temporarily marked as unused
     required this.stdDailySales,
-    required this.daysSinceLastSale,
+    // required this.daysSinceLastSale, // Temporarily marked as unused
     required this.txCount,
     required this.cluster,
   });
@@ -29,9 +29,9 @@ class ProductCluster {
       totalSales: (json['total_sales'] as num).toDouble(),
       daysSold: json['days_sold'],
       avgDailySales: (json['avg_daily_sales'] as num).toDouble(),
-      maxDailySales: (json['max_daily_sales'] as num).toDouble(),
+      // maxDailySales: (json['max_daily_sales'] as num).toDouble(),
       stdDailySales: (json['std_daily_sales'] as num).toDouble(),
-      daysSinceLastSale: json['days_since_last_sale'],
+      // daysSinceLastSale: json['days_since_last_sale'],
       txCount: json['tx_count'],
       cluster: json['cluster'],
     );
@@ -43,9 +43,9 @@ class ProductCluster {
       'total_sales': totalSales,
       'days_sold': daysSold,
       'avg_daily_sales': avgDailySales,
-      'max_daily_sales': maxDailySales,
+      // 'max_daily_sales': maxDailySales,
       'std_daily_sales': stdDailySales,
-      'days_since_last_sale': daysSinceLastSale,
+      // 'days_since_last_sale': daysSinceLastSale,
       'tx_count': txCount,
       'cluster': cluster,
     };

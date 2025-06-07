@@ -6,9 +6,9 @@ class ProductClassification extends Equatable {
   final double totalSales;
   final int daysSold;
   final double avgDailySales;
-  final double maxDailySales;
+  // final double maxDailySales; // Will keep but mark as unused
   final double stdDailySales;
-  final int daysSinceLastSale;
+  // final int daysSinceLastSale; // Will keep but mark as unused
   final int txCount;
   final int cluster;
   final String category;
@@ -18,9 +18,9 @@ class ProductClassification extends Equatable {
     required this.totalSales,
     required this.daysSold,
     required this.avgDailySales,
-    required this.maxDailySales,
+    // required this.maxDailySales, // Marked for temporary non-usage
     required this.stdDailySales,
-    required this.daysSinceLastSale,
+    // required this.daysSinceLastSale, // Marked for temporary non-usage
     required this.txCount,
     required this.cluster,
     required this.category,
@@ -32,9 +32,9 @@ class ProductClassification extends Equatable {
       totalSales: json['total_sales'].toDouble(),
       daysSold: json['days_sold'],
       avgDailySales: json['avg_daily_sales'].toDouble(),
-      maxDailySales: json['max_daily_sales'].toDouble(),
+      // maxDailySales: json['max_daily_sales'].toDouble(),
       stdDailySales: json['std_daily_sales'].toDouble(),
-      daysSinceLastSale: json['days_since_last_sale'],
+      // daysSinceLastSale: json['days_since_last_sale'],
       txCount: json['tx_count'],
       cluster: json['cluster'],
       category: json['category'],
@@ -47,9 +47,9 @@ class ProductClassification extends Equatable {
       'total_sales': totalSales,
       'days_sold': daysSold,
       'avg_daily_sales': avgDailySales,
-      'max_daily_sales': maxDailySales,
+      // 'max_daily_sales': maxDailySales,
       'std_daily_sales': stdDailySales,
-      'days_since_last_sale': daysSinceLastSale,
+      // 'days_since_last_sale': daysSinceLastSale,
       'tx_count': txCount,
       'cluster': cluster,
       'category': category,
@@ -62,9 +62,9 @@ class ProductClassification extends Equatable {
         totalSales,
         daysSold,
         avgDailySales,
-        maxDailySales,
+        // maxDailySales,
         stdDailySales,
-        daysSinceLastSale,
+        // daysSinceLastSale,
         txCount,
         cluster,
         category,

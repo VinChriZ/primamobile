@@ -669,7 +669,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                             size: 14, color: Colors.blue),
                         const SizedBox(width: 4),
                         Text(
-                          'Sales: ${product.totalSales.toStringAsFixed(0)}',
+                          'Qty: ${product.totalSales.toStringAsFixed(0)}',
                           style: const TextStyle(fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(width: 12),
@@ -677,7 +677,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                             size: 14, color: Colors.green),
                         const SizedBox(width: 4),
                         Text(
-                          'Days: ${product.daysSold}',
+                          'Tx: ${product.txCount}',
                           style: const TextStyle(fontWeight: FontWeight.w500),
                         ),
                       ],
@@ -709,7 +709,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                 children: [
                   _buildProductStatRow('Sales Statistics', [
                     ProductStat(
-                        'Total',
+                        'Total Sales',
                         '${product.totalSales.toStringAsFixed(0)}',
                         Icons.shopping_cart_checkout),
                     ProductStat(
@@ -721,10 +721,10 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                   ]),
                   const SizedBox(height: 12),
                   _buildProductStatRow('Sales Range', [
-                    ProductStat(
-                        'Max',
-                        '${product.maxDailySales.toStringAsFixed(0)}',
-                        Icons.arrow_upward),
+                    // ProductStat(
+                    //     'Max',
+                    //     '${product.maxDailySales.toStringAsFixed(0)}',
+                    //     Icons.arrow_upward),
                     ProductStat(
                         'Std Dev',
                         '${product.stdDailySales.toStringAsFixed(2)}',
@@ -732,11 +732,11 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                     ProductStat(
                         'Tx Count', '${product.txCount}', Icons.receipt_long),
                   ]),
-                  const SizedBox(height: 12),
-                  _buildProductStatRow('Additional Info', [
-                    ProductStat('Days Since Last Sale',
-                        '${product.daysSinceLastSale}', Icons.access_time),
-                  ]),
+                  // const SizedBox(height: 12),
+                  // _buildProductStatRow('Additional Info', [
+                  //   ProductStat('Days Since Last Sale',
+                  //       '${product.daysSinceLastSale}', Icons.access_time),
+                  // ]),
                 ],
               ),
             );
