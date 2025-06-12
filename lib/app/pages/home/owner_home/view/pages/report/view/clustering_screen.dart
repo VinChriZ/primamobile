@@ -714,7 +714,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                         Icons.shopping_cart_checkout),
                     ProductStat(
                         'Avg Daily',
-                        '${product.avgDailySales.toStringAsFixed(1)}',
+                        '${product.avgDailySales.toStringAsFixed(3)}',
                         Icons.trending_up),
                     ProductStat('Days Sold', '${product.daysSold}',
                         Icons.calendar_month),
@@ -727,7 +727,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                     //     Icons.arrow_upward),
                     ProductStat(
                         'Std Dev',
-                        '${product.stdDailySales.toStringAsFixed(2)}',
+                        '${product.stdDailySales.toStringAsFixed(3)}',
                         Icons.show_chart),
                     ProductStat(
                         'Tx Count', '${product.txCount}', Icons.receipt_long),
