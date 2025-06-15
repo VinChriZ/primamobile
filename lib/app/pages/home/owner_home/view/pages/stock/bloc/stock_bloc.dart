@@ -2,14 +2,28 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:primamobile/app/models/product/product.dart';
 import 'package:primamobile/repository/product_repository.dart';
+import 'package:primamobile/repository/transaction_detail_repository.dart';
+import 'package:primamobile/repository/report_detail_repository.dart';
 
 part 'stock_event.dart';
 part 'stock_state.dart';
 
 class StockBloc extends Bloc<StockEvent, StockState> {
   final ProductRepository productRepository;
+  final TransactionDetailRepository transactionDetailRepository;
+  final ReportDetailRepository reportDetailRepository;
 
-  StockBloc({required this.productRepository}) : super(StockInitial()) {
+  // Repository access getters - used by the UI
+  TransactionDetailRepository get getTransactionDetailRepository =>
+      transactionDetailRepository;
+  ReportDetailRepository get getReportDetailRepository =>
+      reportDetailRepository;
+
+  StockBloc({
+    required this.productRepository,
+    required this.transactionDetailRepository,
+    required this.reportDetailRepository,
+  }) : super(StockInitial()) {
     on<LoadProducts>(_onLoadProducts);
     on<AddProduct>(_onAddProduct);
     on<DeleteProduct>(_onDeleteProduct);
@@ -110,15 +124,21 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       DeleteProduct event, Emitter<StockState> emit) async {
     if (state is StockLoaded) {
       try {
+        print('Deleting product with UPC: ${event.upc}');
         await productRepository.removeProduct(event.upc);
+        print('Product deleted successfully');
+
         // Reload products after deletion
         add(LoadProducts());
       } catch (e) {
+        print('Error in delete product: $e');
         if (e.toString().contains("401")) {
           emit(const StockError(
               'Login expired, please restart the app and login again'));
         } else {
-          emit(const StockError('Failed to delete product.'));
+          emit(const StockError('Failed to delete product'));
+          print(
+              'Failed to delete product with UPC ${event.upc}: ${e.toString()}');
         }
       }
     }
