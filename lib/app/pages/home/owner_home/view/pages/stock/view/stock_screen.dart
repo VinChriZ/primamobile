@@ -570,18 +570,22 @@ class StockScreen extends StatelessWidget {
                                                                             (dialogContext) =>
                                                                                 AlertDialog(
                                                                           title:
-                                                                              const Row(
-                                                                            children: [
-                                                                              Icon(Icons.warning, color: Colors.orange, size: 20),
-                                                                              SizedBox(width: 8),
-                                                                              Text(
-                                                                                'Cannot Delete',
-                                                                                style: TextStyle(
-                                                                                  fontSize: 16,
-                                                                                  fontWeight: FontWeight.w600,
+                                                                              const Center(
+                                                                            child:
+                                                                                Row(
+                                                                              mainAxisAlignment: MainAxisAlignment.center,
+                                                                              children: [
+                                                                                Icon(Icons.warning, color: Colors.orange, size: 20),
+                                                                                SizedBox(width: 8),
+                                                                                Text(
+                                                                                  'Cannot Delete',
+                                                                                  style: TextStyle(
+                                                                                    fontSize: 23,
+                                                                                    fontWeight: FontWeight.w600,
+                                                                                  ),
                                                                                 ),
-                                                                              ),
-                                                                            ],
+                                                                              ],
+                                                                            ),
                                                                           ),
                                                                           content:
                                                                               Text(
