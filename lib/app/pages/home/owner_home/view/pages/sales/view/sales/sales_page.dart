@@ -14,6 +14,7 @@ class SalesPage extends StatelessWidget {
         // Calculate the default date range for Last 7 Days
         final now = DateTime.now();
         final startDate = now.subtract(const Duration(days: 7));
+        // final startDate = DateTime(now.year, now.month - 1, now.day);
 
         return SalesBloc(
           transactionRepository:
