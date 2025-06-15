@@ -211,7 +211,7 @@ class SalesScreen extends StatelessWidget {
                                     style: TextStyle(fontSize: 13))),
                             DropdownMenuItem(
                                 value: 'quantity',
-                                child: Text('Stock',
+                                child: Text('Quantity',
                                     style: TextStyle(fontSize: 13))),
                             DropdownMenuItem(
                                 value: 'profit',
