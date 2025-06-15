@@ -32,8 +32,7 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
 
       // Determine if we should group by month based on date range and number of days
       final int daysDifference = endDate.difference(startDate).inDays;
-      final bool groupByMonth =
-          daysDifference > 21; // Reduce threshold to 21 days
+      final bool groupByMonth = daysDifference > 21;
 
       // Fetch transactions based on the date range.
       final transactions = await transactionRepository.fetchTransactions(
