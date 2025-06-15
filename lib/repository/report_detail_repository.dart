@@ -25,4 +25,9 @@ class ReportDetailRepository {
   Future<void> removeReportDetail(int reportId, int detailId) async {
     await _provider.deleteReportDetail(reportId, detailId);
   }
+
+  // Check if a UPC exists in any report detail
+  Future<bool> checkUpcExists(String upc) async {
+    return await _provider.checkUpcExists(upc);
+  }
 }

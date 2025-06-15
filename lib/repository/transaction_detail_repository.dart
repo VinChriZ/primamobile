@@ -26,4 +26,9 @@ class TransactionDetailRepository {
   Future<void> removeTransactionDetail(int transactionId, int detailId) async {
     await _provider.deleteTransactionDetail(transactionId, detailId);
   }
+
+  // Check if a UPC exists in any transaction detail
+  Future<bool> checkUpcExists(String upc) async {
+    return await _provider.checkUpcExists(upc);
+  }
 }

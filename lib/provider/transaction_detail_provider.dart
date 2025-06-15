@@ -100,4 +100,30 @@ class TransactionDetailProvider {
       rethrow;
     }
   }
+
+  // Check if a UPC exists in any transaction detail
+  Future<bool> checkUpcExists(String upc) async {
+    final RequestParam param = RequestParam(parameters: {});
+    final RequestObject request = RequestObjectFunction(requestParam: param);
+
+    try {
+      final response = await dioClient.get(
+        '/transactions/check-upc/$upc',
+        queryParameters: await request.toJson(),
+      );
+      print('Check UPC Exists Response: ${response.data}');
+
+      if (response.statusCode == 200) {
+        final data = response.data as Map<String, dynamic>;
+        return data['exists'] as bool;
+      } else {
+        throw Exception(
+          'Failed to check UPC existence with status code: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      print('Error checking UPC existence: $e');
+      rethrow;
+    }
+  }
 }
