@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -13,8 +12,6 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:primamobile/utils/helpers/permission_helper.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:printing/printing.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 // Bluetooth printer packages
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
@@ -291,22 +288,6 @@ class InvoicePrintPreviewPage extends StatelessWidget {
     }
   }
 
-  void _exportToPdf(BuildContext context) async {
-    try {
-      final pdfData = await _generateInvoicePdf(context);
-      final tempDir = await getTemporaryDirectory();
-      final file = File('${tempDir.path}/invoice.pdf');
-      await file.writeAsBytes(pdfData);
-      await Share.shareXFiles([XFile(file.path)], text: 'Invoice PDF');
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error exporting PDF: $e')),
-        );
-      }
-    }
-  }
-
   void _printThermal(BuildContext context) async {
     try {
       // Show loading indicator
@@ -478,7 +459,7 @@ class InvoicePrintPreviewPage extends StatelessWidget {
       ),
     );
     bytes += gen.text(
-      toAscii('Jl. Raya Pasirian 45'),
+      toAscii('Jl. Raya Nomor 45'),
       styles: const PosStyles(align: PosAlign.center),
     );
     bytes += gen.text('--------------------------------');
@@ -629,23 +610,6 @@ class InvoicePrintPreviewPage extends StatelessWidget {
                     onPressed: () => _printInvoice(context),
                     icon: const Icon(Icons.print, color: Colors.black),
                     label: const Text('Print Invoice',
-                        style: TextStyle(color: Colors.black)),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12.0),
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        side: BorderSide(color: Colors.grey.shade300),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12.0),
-                  ElevatedButton.icon(
-                    onPressed: () => _exportToPdf(context),
-                    icon: const Icon(Icons.picture_as_pdf, color: Colors.black),
-                    label: const Text('Export to PDF',
                         style: TextStyle(color: Colors.black)),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12.0),
