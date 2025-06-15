@@ -28,37 +28,39 @@ class AdminHomeScreen extends StatelessWidget {
           const ProfilePage()
         ];
 
-        return Scaffold(
-          body: pages[selectedIndex],
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: selectedIndex,
-            onTap: (index) => context
-                .read<AdminHomeBloc>()
-                .add(AdminHomeNavigationChanged(index)),
-            selectedItemColor: Colors.blue.shade800,
-            unselectedItemColor: Colors.grey,
-            selectedIconTheme: const IconThemeData(size: 30),
-            unselectedIconTheme: const IconThemeData(size: 25),
-            selectedLabelStyle: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
+        return SafeArea(
+          child: Scaffold(
+            body: pages[selectedIndex],
+            bottomNavigationBar: BottomNavigationBar(
+              currentIndex: selectedIndex,
+              onTap: (index) => context
+                  .read<AdminHomeBloc>()
+                  .add(AdminHomeNavigationChanged(index)),
+              selectedItemColor: Colors.blue.shade800,
+              unselectedItemColor: Colors.grey,
+              selectedIconTheme: const IconThemeData(size: 30),
+              unselectedIconTheme: const IconThemeData(size: 25),
+              selectedLabelStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.normal,
+              ),
+              items: const [
+                BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.inventory), label: 'Stock'),
+                BottomNavigationBarItem(icon: Icon(Icons.sell), label: 'Sales'),
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.bar_chart), label: 'Report'),
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.person_add), label: 'Account'),
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.person), label: 'Profile'),
+              ],
             ),
-            unselectedLabelStyle: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.normal,
-            ),
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.inventory), label: 'Stock'),
-              BottomNavigationBarItem(icon: Icon(Icons.sell), label: 'Sales'),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.bar_chart), label: 'Report'),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.person_add), label: 'Account'),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.person), label: 'Profile'),
-            ],
           ),
         );
       },
