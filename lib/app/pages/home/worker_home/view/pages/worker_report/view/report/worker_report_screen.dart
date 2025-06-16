@@ -268,8 +268,29 @@ class WorkerReportScreen extends StatelessWidget {
                         return const Center(child: CircularProgressIndicator());
                       } else if (state is WorkerReportLoaded) {
                         if (state.reports.isEmpty) {
-                          return const Center(
-                              child: Text('No reports available.'));
+                          return RefreshIndicator(
+                            onRefresh: () async {
+                              context.read<WorkerReportBloc>().add(
+                                    FetchWorkerReport(
+                                      selectedDateRange:
+                                          state.selectedDateRange,
+                                      startDate: state.startDate,
+                                      endDate: state.endDate,
+                                      sortBy: state.selectedSortBy,
+                                      sortOrder: state.selectedSortOrder,
+                                    ),
+                                  );
+                            },
+                            child: const SingleChildScrollView(
+                              physics: AlwaysScrollableScrollPhysics(),
+                              child: SizedBox(
+                                height: 300,
+                                child: Center(
+                                  child: Text('No reports available.'),
+                                ),
+                              ),
+                            ),
+                          );
                         }
                         return RefreshIndicator(
                           onRefresh: () async {
@@ -619,23 +640,44 @@ class WorkerReportScreen extends StatelessWidget {
                           ),
                         );
                       } else if (state is WorkerReportError) {
-                        return SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          child: SizedBox(
-                            height: 300,
-                            child: Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.error_outline,
-                                      size: 48, color: Colors.red),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'Error: ${state.message}',
-                                    style: const TextStyle(fontSize: 16),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
+                        return RefreshIndicator(
+                          onRefresh: () async {
+                            context.read<WorkerReportBloc>().add(
+                                  const FetchWorkerReport(),
+                                );
+                          },
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: SizedBox(
+                              height: 300,
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.error_outline,
+                                      size: 64,
+                                      color: Colors.red[400],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      state.message,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.red,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'Pull down to retry',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
