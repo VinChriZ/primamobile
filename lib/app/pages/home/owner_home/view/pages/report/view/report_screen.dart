@@ -87,24 +87,37 @@ class _ReportScreenState extends State<ReportScreen> {
   double _computeInterval(Map<DateTime, double> dataMap,
       {bool isProfitChart = false}) {
     if (dataMap.isEmpty) return 1;
-    final maxVal = dataMap.values.reduce((a, b) => a > b ? a : b);
-
-    // For profit chart
+    final maxVal =
+        dataMap.values.reduce((a, b) => a > b ? a : b); // For profit chart
     if (isProfitChart) {
-      if (maxVal >= 1000000) {
-        // For values over 1M
-        // Using 1/5 of max value, rounded to millions for clean values
-        return ((maxVal / 1000000).ceil() * 1000000 / 5).ceilToDouble();
+      // Calculate interval that ensures maxVal fits within 4-5 intervals
+      double interval;
+      if (maxVal >= 1000000000) {
+        // For values over 1B, round up to nearest 100M
+        interval = ((maxVal / 4) / 100000000).ceil() * 100000000.0;
+      } else if (maxVal >= 100000000) {
+        // For values over 100M, round up to nearest 10M
+        interval = ((maxVal / 4) / 10000000).ceil() * 10000000.0;
+      } else if (maxVal >= 10000000) {
+        // For values over 10M, round up to nearest 1M
+        interval = ((maxVal / 4) / 1000000).ceil() * 1000000.0;
+      } else if (maxVal >= 1000000) {
+        // For values over 1M, round up to nearest clean interval
+        interval = ((maxVal / 4) / 100000).ceil() * 100000.0;
       } else if (maxVal >= 100000) {
-        // For values over 100K, use 50K intervals
-        return 50000;
+        // For values over 100K, round up to nearest 25K
+        interval = ((maxVal / 4) / 25000).ceil() * 25000.0;
       } else if (maxVal >= 10000) {
-        // For values over 10K, use 5K intervals
-        return 5000;
+        // For values over 10K, round up to nearest 5K
+        interval = ((maxVal / 4) / 5000).ceil() * 5000.0;
       } else if (maxVal >= 1000) {
-        // For values over 1K, use 500 intervals
-        return 500;
+        // For values over 1K, round up to nearest 500
+        interval = ((maxVal / 4) / 500).ceil() * 500.0;
+      } else {
+        // For small values, round up to nearest 100
+        interval = ((maxVal / 4) / 100).ceil() * 100.0;
       }
+      return interval;
     }
 
     // For other charts, use 5 divisions
