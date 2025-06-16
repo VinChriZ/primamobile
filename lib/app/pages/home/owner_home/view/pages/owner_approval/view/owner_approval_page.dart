@@ -9,10 +9,19 @@ class OwnerApprovalPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // final now = DateTime.now();
     return BlocProvider(
       create: (context) => OwnerApprovalBloc(
         reportRepository: RepositoryProvider.of<ReportRepository>(context),
-      )..add(const FetchOwnerApprovals()),
+      )..add(FetchOwnerApprovals(
+          // selectedDateRange: 'All Dates', // Your desired default
+          // startDate: now.subtract(const Duration(days: 7)),
+          // endDate: now,
+          // sortBy: 'date_created',
+          // sortOrder: 'desc',
+          // status: null, // or whatever default status you want
+          // reportType: null, // or a specific report type
+          )),
       child: const OwnerApprovalScreen(),
     );
   }

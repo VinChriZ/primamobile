@@ -9,10 +9,17 @@ class WorkerReportPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // final now = DateTime.now();
     return BlocProvider(
       create: (context) => WorkerReportBloc(
         reportRepository: RepositoryProvider.of<ReportRepository>(context),
-      )..add(const FetchWorkerReport()),
+      )..add(FetchWorkerReport(
+          // selectedDateRange: 'Last 7 Days', // Your desired default
+          // startDate: now.subtract(const Duration(days: 7)),
+          // endDate: now,
+          // sortBy: 'date_created',
+          // sortOrder: 'desc',
+          )),
       child: const WorkerReportScreen(),
     );
   }
