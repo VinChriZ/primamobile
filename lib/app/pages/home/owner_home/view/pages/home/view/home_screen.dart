@@ -142,13 +142,13 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 2,
-        toolbarHeight: 80,
+        toolbarHeight: 100,
         flexibleSpace: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Container(
               width: double.infinity,
-              height: 60,
+              constraints: const BoxConstraints(minHeight: 60),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Colors.blue[800]!, Colors.blue[600]!],
@@ -164,24 +164,32 @@ class HomeScreen extends StatelessWidget {
                   )
                 ],
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.store,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    "Welcome, ${Globals.userSession.user.username}!",
-                    style: const TextStyle(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.store,
                       color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                      size: 28,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        "Welcome, ${Globals.userSession.user.username}!",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
