@@ -8,7 +8,6 @@ import 'package:primamobile/repository/product_repository.dart';
 
 class ClusteringPage extends StatelessWidget {
   const ClusteringPage({super.key});
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider<ClusteringBloc>(
@@ -17,7 +16,7 @@ class ClusteringPage extends StatelessWidget {
         productRepository: RepositoryProvider.of<ProductRepository>(context),
         classificationRepository:
             RepositoryProvider.of<ClassificationRepository>(context),
-      )..add(const LoadClusteringEvent()),
+      )..add(const LoadClusteringEvent(numberOfClusters: 3)),
       child: const ClusteringScreen(),
     );
   }

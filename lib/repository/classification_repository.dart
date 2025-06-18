@@ -4,16 +4,17 @@ import 'package:primamobile/provider/classification_provider.dart';
 
 class ClassificationRepository {
   final ClassificationProvider _provider = ClassificationProvider();
-
   // Fetch product classifications with the Random Forest model
   Future<List<ProductClassification>> fetchProductClassifications({
     required DateTime startDate,
     required DateTime endDate,
+    int volatilityPercentile = 75,
   }) async {
     try {
       return await _provider.getProductClassifications(
         startDate: startDate,
         endDate: endDate,
+        volatilityPercentile: volatilityPercentile,
       );
     } catch (e) {
       // Handle specific error cases with user-friendly messages
@@ -32,10 +33,12 @@ class ClassificationRepository {
   Future<Map<String, List<ProductClassification>>> getGroupedClassifications({
     required DateTime startDate,
     required DateTime endDate,
+    int volatilityPercentile = 75,
   }) async {
     final classifications = await fetchProductClassifications(
       startDate: startDate,
       endDate: endDate,
+      volatilityPercentile: volatilityPercentile,
     );
 
     // Group by category

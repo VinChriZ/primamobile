@@ -8,10 +8,12 @@ class ClassificationProvider {
   Future<List<ProductClassification>> getProductClassifications({
     required DateTime startDate,
     required DateTime endDate,
+    int volatilityPercentile = 75,
   }) async {
     final Map<String, dynamic> queryParameters = {
       'start': startDate.toIso8601String().split('T')[0], // YYYY-MM-DD format
       'end': endDate.toIso8601String().split('T')[0], // YYYY-MM-DD format
+      'volatility_percentile': volatilityPercentile,
     };
 
     final RequestParam param = RequestParam(parameters: queryParameters);

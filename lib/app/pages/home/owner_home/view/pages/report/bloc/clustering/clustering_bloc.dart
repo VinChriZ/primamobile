@@ -47,6 +47,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
       startDate: event.startDate,
       endDate: event.endDate,
       numberOfClusters: event.numberOfClusters,
+      volatilityPercentile: event.volatilityPercentile ?? 75,
     ));
 
     try {
@@ -82,6 +83,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
             await classificationRepository.fetchProductClassifications(
           startDate: startDate,
           endDate: endDate,
+          volatilityPercentile: event.volatilityPercentile ?? 75,
         );
 
         // Maps for cluster labels and colors
@@ -125,6 +127,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
             endDate: endDate,
             numberOfClusters: safeNumberOfClusters,
             usesClassificationModel: true,
+            volatilityPercentile: event.volatilityPercentile ?? 75,
           ));
           return;
         }
@@ -139,23 +142,25 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
                   "The classification model needs to be trained before it can be used. Use the 'Train Model' button to create a new model.",
               startDate: startDate,
               endDate: endDate,
-              numberOfClusters: safeNumberOfClusters));
+              numberOfClusters: safeNumberOfClusters,
+              volatilityPercentile: event.volatilityPercentile ?? 75));
           return;
-        }
-
-        // For any other classification errors, show a general error
+        } // For any other classification errors, show a general error
         emit(ClusteringError(
           message:
               "Failed to load product classification data: ${e.toString()}",
           startDate: startDate,
           endDate: endDate,
           numberOfClusters: safeNumberOfClusters,
+          volatilityPercentile: event.volatilityPercentile ?? 75,
         ));
       }
     } catch (e) {
       if (e.toString().contains("401")) {
-        emit(const ClusteringError(
-            message: "Login expired, please restart the app and login again"));
+        emit(ClusteringError(
+            message: "Login expired, please restart the app and login again",
+            numberOfClusters: event.numberOfClusters,
+            volatilityPercentile: event.volatilityPercentile ?? 75));
       } else if (e.toString().contains("404") ||
           e.toString().contains("No sales data available")) {
         emit(ClusteringError(
@@ -163,21 +168,24 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
                 "No clustering data available for ${event.startDate?.year ?? DateTime.now().year}. Please try training the model first or select a different year.",
             startDate: event.startDate,
             endDate: event.endDate,
-            numberOfClusters: event.numberOfClusters));
+            numberOfClusters: event.numberOfClusters,
+            volatilityPercentile: event.volatilityPercentile ?? 75));
       } else if (e.toString().contains("Not enough sales data")) {
         emit(ClusteringError(
             message:
                 "Not enough product sales data to form clusters. Try training the model or select another year with more sales data.",
             startDate: event.startDate,
             endDate: event.endDate,
-            numberOfClusters: event.numberOfClusters));
+            numberOfClusters: event.numberOfClusters,
+            volatilityPercentile: event.volatilityPercentile ?? 75));
       } else if (e.toString().contains("Model not trained yet")) {
         emit(ClusteringError(
             message:
                 "The classification model needs to be trained before it can be used. Please use the 'Train Model' button below to create a new model.",
             startDate: event.startDate,
             endDate: event.endDate,
-            numberOfClusters: event.numberOfClusters));
+            numberOfClusters: event.numberOfClusters,
+            volatilityPercentile: event.volatilityPercentile ?? 75));
       } else {
         emit(ClusteringError(
           message:
@@ -185,6 +193,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
           startDate: event.startDate,
           endDate: event.endDate,
           numberOfClusters: event.numberOfClusters,
+          volatilityPercentile: event.volatilityPercentile ?? 75,
         ));
       }
     }
@@ -194,11 +203,11 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
       LoadClusteringByYearEvent event, Emitter<ClusteringState> emit) async {
     final startDate = DateTime(event.year, 1, 1);
     final endDate = DateTime(event.year, 12, 31);
-
     add(LoadClusteringEvent(
       startDate: startDate,
       endDate: endDate,
       numberOfClusters: event.numberOfClusters,
+      volatilityPercentile: event.volatilityPercentile,
     ));
   }
 
@@ -208,6 +217,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
       startDate: event.startDate,
       endDate: event.endDate,
       numberOfClusters: event.numberOfClusters,
+      volatilityPercentile: event.volatilityPercentile,
     ));
   }
 
@@ -220,11 +230,11 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
           DateTime.now().subtract(const Duration(days: 365));
       final endDate = currentState.endDate ?? DateTime.now();
       final numberOfClusters = currentState.numberOfClusters;
-
       emit(ClusteringTrainingModel(
         startDate: startDate,
         endDate: endDate,
         numberOfClusters: numberOfClusters,
+        volatilityPercentile: currentState.volatilityPercentile,
       ));
 
       try {
@@ -233,22 +243,22 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
           endDate: endDate,
           k: numberOfClusters,
         );
-
         emit(ClusteringModelTrained(
           message: result,
           startDate: startDate,
           endDate: endDate,
           numberOfClusters: numberOfClusters,
+          volatilityPercentile: currentState.volatilityPercentile,
         )); // Update the last trained year to the year we trained on, not the current year
         lastTrainedYear = startDate.year;
 
         // Reload data after 3 seconds to allow the model to finish training
         await Future.delayed(const Duration(seconds: 3));
-
         add(LoadClusteringEvent(
           startDate: startDate,
           endDate: endDate,
           numberOfClusters: numberOfClusters,
+          volatilityPercentile: currentState.volatilityPercentile,
         ));
       } catch (e) {
         emit(ClusteringError(
@@ -256,6 +266,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
           startDate: startDate,
           endDate: endDate,
           numberOfClusters: numberOfClusters,
+          volatilityPercentile: currentState.volatilityPercentile,
         ));
       }
     }

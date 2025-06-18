@@ -11,43 +11,51 @@ class LoadClusteringEvent extends ClusteringEvent {
   final DateTime? startDate;
   final DateTime? endDate;
   final int numberOfClusters;
+  final int? volatilityPercentile;
 
   const LoadClusteringEvent({
     this.startDate,
     this.endDate,
-    this.numberOfClusters = 3,
+    required this.numberOfClusters,
+    this.volatilityPercentile,
   });
 
   @override
-  List<Object?> get props => [startDate, endDate, numberOfClusters];
+  List<Object?> get props =>
+      [startDate, endDate, numberOfClusters, volatilityPercentile];
 }
 
 class LoadClusteringByYearEvent extends ClusteringEvent {
   final int year;
   final int numberOfClusters;
+  final int? volatilityPercentile;
 
   const LoadClusteringByYearEvent({
     required this.year,
     this.numberOfClusters = 3,
+    this.volatilityPercentile,
   });
 
   @override
-  List<Object> get props => [year, numberOfClusters];
+  List<Object?> get props => [year, numberOfClusters, volatilityPercentile];
 }
 
 class ChangeClusteringFilterEvent extends ClusteringEvent {
   final DateTime? startDate;
   final DateTime? endDate;
   final int numberOfClusters;
+  final int? volatilityPercentile;
 
   const ChangeClusteringFilterEvent({
     this.startDate,
     this.endDate,
-    this.numberOfClusters = 3,
+    required this.numberOfClusters,
+    this.volatilityPercentile,
   });
 
   @override
-  List<Object?> get props => [startDate, endDate, numberOfClusters];
+  List<Object?> get props =>
+      [startDate, endDate, numberOfClusters, volatilityPercentile];
 }
 
 class RetrainModelEvent extends ClusteringEvent {

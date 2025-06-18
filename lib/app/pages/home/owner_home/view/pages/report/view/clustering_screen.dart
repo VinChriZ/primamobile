@@ -16,14 +16,23 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
   final int _numberOfClusters = 3;
   final int _currentYear = DateTime.now().year;
   List<int> _availableYears = []; // Years with complete data
+  int _volatilityPercentile = 75; // Default volatility percentile
+  final TextEditingController _volatilityController = TextEditingController();
+  bool _isThresholdValid = true; // Track if threshold input is valid
 
   // Control show all items or just top 10
   final Map<int, bool> _showAllItems = {};
-
   @override
   void initState() {
     super.initState();
+    _volatilityController.text = _volatilityPercentile.toString();
     _fetchAvailableYearsAndInitialize();
+  }
+
+  @override
+  void dispose() {
+    _volatilityController.dispose();
+    super.dispose();
   }
 
   // Fetch years with complete data and initialize
@@ -70,6 +79,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
             startDate: startDate,
             endDate: endDate,
             numberOfClusters: _numberOfClusters,
+            volatilityPercentile: _volatilityPercentile,
           ),
         );
   }
@@ -192,6 +202,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                                   startDate: state.startDate,
                                   endDate: state.endDate,
                                   numberOfClusters: state.numberOfClusters,
+                                  volatilityPercentile: _volatilityPercentile,
                                 ),
                               );
                         },
@@ -225,9 +236,17 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
       for (var clusterId in state.groupedClusters.keys) {
         _showAllItems[clusterId] = false;
       }
-    }
-    // Get the trained year
+    } // Get the trained year
     final int? trainedYear = context.read<ClusteringBloc>().lastTrainedYear;
+
+    // Update local volatility percentile from state
+    if (state.volatilityPercentile != _volatilityPercentile) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _volatilityPercentile = state.volatilityPercentile;
+        });
+      });
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -247,44 +266,71 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-              ),
-
-              // Year and Trained information
+              ), // Year, Threshold and Trained information
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Icon(Icons.calendar_today,
-                            size: 16, color: Colors.blue),
-                        const SizedBox(width: 6),
-                        const Text(
-                          'Year: ',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                        Row(
+                          children: [
+                            const Icon(Icons.calendar_today,
+                                size: 16, color: Colors.blue),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'Year: ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '${state.startDate?.year ?? _currentYear}',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                          ],
                         ),
-                        Text(
-                          '${state.startDate?.year ?? _currentYear}',
-                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        Row(
+                          children: [
+                            const Icon(Icons.tune,
+                                size: 16, color: Colors.orange),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'Threshold: ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '${state.volatilityPercentile}%',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                          ],
                         ),
                       ],
                     ),
+                    const SizedBox(height: 8),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Icon(Icons.model_training,
-                            size: 16, color: Colors.green),
-                        const SizedBox(width: 6),
-                        const Text(
-                          'Trained: ',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                        Row(
+                          children: [
+                            const Icon(Icons.model_training,
+                                size: 16, color: Colors.green),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'Trained: ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              trainedYear != null
+                                  ? '$trainedYear'
+                                  : 'Not Yet Trained',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                          ],
                         ),
-                        Text(
-                          trainedYear != null
-                              ? '$trainedYear'
-                              : 'Not Yet Trained',
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                        ),
+                        const SizedBox(), // Empty space for alignment
                       ],
                     ),
                   ],
@@ -498,14 +544,13 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                     // Update the selected year in the parent widget
                     setState(() {
                       _selectedYear = selectedTrainingYear;
-                    });
-
-                    // Call the LoadClusteringEvent with the new dates
+                    }); // Call the LoadClusteringEvent with the new dates
                     clusteringBloc.add(
                       LoadClusteringEvent(
                         startDate: newStartDate,
                         endDate: newEndDate,
                         numberOfClusters: 3,
+                        volatilityPercentile: _volatilityPercentile,
                       ),
                     );
 
@@ -869,16 +914,71 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                       }
                     },
                   ),
-                  const SizedBox(height: 8),
-                  const Center(
-                    child: Text(
-                      'Products will be classified into 3 categories',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey,
-                        fontStyle: FontStyle.italic,
+                  const SizedBox(height: 16),
+                  const Row(
+                    children: [
+                      Icon(Icons.tune, size: 20, color: Colors.orange),
+                      SizedBox(width: 8),
+                      Text(
+                        'Seasonal Threshold:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _volatilityController,
+                    decoration: InputDecoration(
+                      labelText: 'Volatility Percentile',
+                      hintText: '1 - 99',
+                      hintStyle: TextStyle(
+                        color: Colors.grey.withOpacity(0.6),
+                      ),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: _isThresholdValid ? Colors.grey : Colors.red,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: _isThresholdValid ? Colors.grey : Colors.red,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: _isThresholdValid ? Colors.blue : Colors.red,
+                        ),
+                      ),
+                      errorBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 12),
+                      suffixText: '%',
                     ),
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) {
+                      final intValue = int.tryParse(value);
+                      bool isValid =
+                          intValue != null && intValue >= 1 && intValue <= 99;
+
+                      setState(() {
+                        _isThresholdValid = isValid;
+                        if (isValid) {
+                          _volatilityPercentile = intValue;
+                        }
+                      });
+                    },
+                    validator: (value) {
+                      final intValue = int.tryParse(value ?? '');
+                      if (intValue == null) {
+                        return 'Please enter a valid number';
+                      }
+                      if (intValue < 1 || intValue > 99) {
+                        return 'Value must be between 1 and 99';
+                      }
+                      return null;
+                    },
                   ),
                 ],
               ),

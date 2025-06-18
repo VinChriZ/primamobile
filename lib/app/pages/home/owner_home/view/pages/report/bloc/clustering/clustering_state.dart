@@ -4,28 +4,30 @@ abstract class ClusteringState extends Equatable {
   final DateTime? startDate;
   final DateTime? endDate;
   final int numberOfClusters;
-  final int?
-      trainedYear; // Added trained year to track when the model was last trained
+  final int volatilityPercentile;
 
   const ClusteringState({
     this.startDate,
     this.endDate,
-    this.numberOfClusters = 3,
-    this.trainedYear,
+    required this.numberOfClusters,
+    this.volatilityPercentile = 75,
   });
 
   @override
   List<Object?> get props =>
-      [startDate, endDate, numberOfClusters, trainedYear];
+      [startDate, endDate, numberOfClusters, volatilityPercentile];
 }
 
-class ClusteringInitial extends ClusteringState {}
+class ClusteringInitial extends ClusteringState {
+  const ClusteringInitial() : super(numberOfClusters: 3);
+}
 
 class ClusteringLoading extends ClusteringState {
   const ClusteringLoading({
     super.startDate,
     super.endDate,
-    super.numberOfClusters,
+    required super.numberOfClusters,
+    super.volatilityPercentile,
   });
 }
 
@@ -33,18 +35,19 @@ class ClusteringTrainingModel extends ClusteringState {
   const ClusteringTrainingModel({
     super.startDate,
     super.endDate,
-    super.numberOfClusters,
+    required super.numberOfClusters,
+    super.volatilityPercentile,
   });
 }
 
 class ClusteringModelTrained extends ClusteringState {
   final String message;
-
   const ClusteringModelTrained({
     required this.message,
     super.startDate,
     super.endDate,
-    super.numberOfClusters,
+    required super.numberOfClusters,
+    super.volatilityPercentile,
   });
 
   @override
@@ -65,7 +68,8 @@ class ClusteringLoaded extends ClusteringState {
     required this.groupedClusters,
     super.startDate,
     super.endDate,
-    super.numberOfClusters,
+    required super.numberOfClusters,
+    super.volatilityPercentile,
     this.usesClassificationModel = false,
   });
 
@@ -84,12 +88,12 @@ class ClusteringLoaded extends ClusteringState {
 
 class ClusteringError extends ClusteringState {
   final String message;
-
   const ClusteringError({
     required this.message,
     super.startDate,
     super.endDate,
-    super.numberOfClusters,
+    required super.numberOfClusters,
+    super.volatilityPercentile,
   });
 
   @override
