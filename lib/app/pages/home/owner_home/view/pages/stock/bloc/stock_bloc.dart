@@ -55,10 +55,8 @@ class StockBloc extends Bloc<StockEvent, StockState> {
 
       // Sort categories and brands alphabetically
       categories.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
-      brands.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
-
-      // Apply sorting before emitting
-      final sortedProducts = _applySorting(allProducts, 'Last Updated');
+      brands.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));      // Apply sorting before emitting
+      final sortedProducts = _applySorting(allProducts, 'Alphabetical');
 
       emit(StockLoaded(
         allProducts: allProducts,
@@ -68,7 +66,7 @@ class StockBloc extends Bloc<StockEvent, StockState> {
         selectedCategory: "All Categories",
         selectedBrand: "All Brands",
         searchQuery: '',
-        sortOption: 'Last Updated',
+        sortOption: 'Alphabetical',
       ));
     } catch (e) {
       if (e.toString().contains("401")) {
@@ -254,11 +252,13 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       ));
     }
   }
-
   /// Helper method to apply sorting to a list of products.
   List<Product> _applySorting(List<Product> products, String sortOption) {
     List<Product> sorted = List<Product>.from(products);
     switch (sortOption) {
+      case 'Alphabetical':
+        sorted.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        break;
       case 'Lowest Stock':
         sorted.sort((a, b) => a.stock.compareTo(b.stock));
         break;
@@ -273,6 +273,8 @@ class StockBloc extends Bloc<StockEvent, StockState> {
         });
         break;
       default:
+        // Default to alphabetical if unknown sort option
+        sorted.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
         break;
     }
     return sorted;

@@ -269,8 +269,7 @@ class StockScreen extends StatelessWidget {
                               border: OutlineInputBorder(),
                               contentPadding: EdgeInsets.symmetric(
                                   horizontal: 10.0, vertical: 8.0),
-                            ),
-                            value: state.sortOption ?? 'Last Updated',
+                            ),                            value: state.sortOption ?? 'Alphabetical',
                             onChanged: (value) {
                               if (value != null) {
                                 context
@@ -279,6 +278,7 @@ class StockScreen extends StatelessWidget {
                               }
                             },
                             items: [
+                              'Alphabetical',
                               'Lowest Stock',
                               'Highest Stock',
                               'Last Updated',
