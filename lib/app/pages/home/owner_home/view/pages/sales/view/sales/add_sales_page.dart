@@ -448,99 +448,140 @@ class _AddSalesPageState extends State<AddSalesPage> {
                 textAlign: TextAlign.center,
               ),
             ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Available stock: ${product.stock}'),
-                const SizedBox(height: 12),
-
-                // Quantity SpinBox
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            content: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.6,
+                maxWidth: double.maxFinite,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'Quantity:',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      height: 36, // Height for better tap target
-                      alignment: Alignment.center, // Center content vertically
-                      child: SpinBox(
-                        min: 1,
-                        max: product.stock.toDouble(),
-                        value: quantity.toDouble(),
-                        decimals: 0,
-                        step: 1,
-                        textAlign: TextAlign.center, // Center the value text
-                        iconSize: 22, // Smaller icons for better alignment
-                        spacing: 1, // Reduce spacing between elements
-                        decoration: const InputDecoration.collapsed(
-                          hintText: '',
+                    Text('Available stock: ${product.stock}'),
+                    Text('Net price: Rp${_formatCurrency(product.netPrice)}'),
+                    const SizedBox(height: 12),
+
+                    // Quantity SpinBox
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Quantity:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey,
+                          ),
                         ),
-                        onChanged: (value) {
-                          setState(() {
-                            quantity = value.toInt();
-                            if (errorMessage != null) {
-                              errorMessage = null;
-                            }
-                          });
-                        },
-                      ),
+                        const SizedBox(height: 6),
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          height: 36, // Height for better tap target
+                          alignment:
+                              Alignment.center, // Center content vertically
+                          child: SpinBox(
+                            min: 1,
+                            max: product.stock.toDouble(),
+                            value: quantity.toDouble(),
+                            decimals: 0,
+                            step: 1,
+                            textAlign:
+                                TextAlign.center, // Center the value text
+                            iconSize: 22, // Smaller icons for better alignment
+                            spacing: 1, // Reduce spacing between elements
+                            decoration: const InputDecoration.collapsed(
+                              hintText: '',
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                quantity = value.toInt();
+                                if (errorMessage != null) {
+                                  errorMessage = null;
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Agreed Price SpinBox
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Agreed Price (Rp):',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          height: 36, // Height for better tap target
+                          alignment:
+                              Alignment.center, // Center content vertically
+                          child: SpinBox(
+                            min: 0,
+                            max: 100000000, // Set a reasonable maximum price
+                            value: agreedPrice,
+                            step: 10000, // Increment by 10k as requested
+                            textAlign:
+                                TextAlign.center, // Center the value text
+                            iconSize: 22, // Smaller icons for better alignment
+                            spacing: 1, // Reduce spacing between elements
+                            decoration: const InputDecoration.collapsed(
+                              hintText: '',
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                agreedPrice = value;
+                                if (errorMessage != null) {
+                                  errorMessage = null;
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                        // Warning messages
+                        if (agreedPrice == 0)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              '⚠️ This product will be free',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.orange.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          )
+                        else if (agreedPrice < product.netPrice)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              '⚠️ Price below net price',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.red.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-
-                // Agreed Price SpinBox
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Agreed Price (Rp):',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      height: 36, // Height for better tap target
-                      alignment: Alignment.center, // Center content vertically
-                      child: SpinBox(
-                        min: 0,
-                        max: 100000000, // Set a reasonable maximum price
-                        value: agreedPrice,
-                        step: 10000, // Increment by 10k as requested
-                        textAlign: TextAlign.center, // Center the value text
-                        iconSize: 22, // Smaller icons for better alignment
-                        spacing: 1, // Reduce spacing between elements
-                        decoration: const InputDecoration.collapsed(
-                          hintText: '',
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            agreedPrice = value;
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
             actions: [
               Row(
@@ -574,12 +615,6 @@ class _AddSalesPageState extends State<AddSalesPage> {
                           setState(() {
                             errorMessage = 'Enter valid quantity';
                           });
-                          return;
-                        }
-                        if (agreedPrice <= 0) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Enter valid price')),
-                          );
                           return;
                         }
                         if (quantity > product.stock) {
@@ -655,7 +690,6 @@ class _AddSalesPageState extends State<AddSalesPage> {
     }
     double agreedPrice = item.agreedPrice;
     String? errorMessage;
-
     final result = await showDialog<SalesProductItem>(
       context: context,
       builder: (context) {
@@ -671,99 +705,138 @@ class _AddSalesPageState extends State<AddSalesPage> {
                 textAlign: TextAlign.center,
               ),
             ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Available stock: ${item.product.stock}'),
-                const SizedBox(height: 12),
-
-                // Quantity SpinBox
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            content: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.6,
+                maxWidth: double.maxFinite,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'Quantity:',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      height: 36, // Height for better tap target
-                      alignment: Alignment.center, // Center content vertically
-                      child: SpinBox(
-                        min: 1,
-                        max: item.product.stock.toDouble(),
-                        value: quantity.toDouble(),
-                        decimals: 0,
-                        step: 1,
-                        textAlign: TextAlign.center, // Center the value text
-                        iconSize: 20, // Smaller icons for better alignment
-                        spacing: 1, // Reduce spacing between elements
-                        decoration: const InputDecoration.collapsed(
-                          hintText: '',
+                    Text('Available stock: ${item.product.stock}'),
+                    Text(
+                        'Net price: Rp${_formatCurrency(item.product.netPrice)}'),
+                    const SizedBox(height: 12),
+
+                    // Quantity SpinBox
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Quantity:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey,
+                          ),
                         ),
-                        onChanged: (value) {
-                          setState(() {
-                            quantity = value.toInt();
-                            if (errorMessage != null) {
-                              errorMessage = null;
-                            }
-                          });
-                        },
-                      ),
+                        const SizedBox(height: 6),
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          height: 36, // Height for better tap target
+                          alignment:
+                              Alignment.center, // Center content vertically
+                          child: SpinBox(
+                            min: 1,
+                            max: item.product.stock.toDouble(),
+                            value: quantity.toDouble(),
+                            decimals: 0,
+                            step: 1,
+                            textAlign:
+                                TextAlign.center, // Center the value text
+                            iconSize: 20, // Smaller icons for better alignment
+                            spacing: 1, // Reduce spacing between elements
+                            decoration: const InputDecoration.collapsed(
+                              hintText: '',
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                quantity = value.toInt();
+                                if (errorMessage != null) {
+                                  errorMessage = null;
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Agreed Price SpinBox
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Agreed Price (Rp):',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          height: 36, // Height for better tap target
+                          alignment:
+                              Alignment.center, // Center content vertically
+                          child: SpinBox(
+                            min: 0,
+                            max: 100000000, // Set a reasonable maximum price
+                            value: agreedPrice,
+                            step: 10000, // Increment by 25k as requested
+                            textAlign:
+                                TextAlign.center, // Center the value text
+                            iconSize: 20, // Smaller icons for better alignment
+                            spacing: 1, // Reduce spacing between elements
+                            decoration: const InputDecoration.collapsed(
+                              hintText: '',
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                agreedPrice = value;
+                              });
+                            },
+                          ),
+                        ),
+                        // Warning messages
+                        if (agreedPrice == 0)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              '⚠️ This product will be free',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.orange.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          )
+                        else if (agreedPrice < item.product.netPrice)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              '⚠️ Price below net price',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.red.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-
-                // Agreed Price SpinBox
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Agreed Price (Rp):',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      height: 36, // Height for better tap target
-                      alignment: Alignment.center, // Center content vertically
-                      child: SpinBox(
-                        min: 0,
-                        max: 100000000, // Set a reasonable maximum price
-                        value: agreedPrice,
-                        step: 10000, // Increment by 25k as requested
-                        textAlign: TextAlign.center, // Center the value text
-                        iconSize: 20, // Smaller icons for better alignment
-                        spacing: 1, // Reduce spacing between elements
-                        decoration: const InputDecoration.collapsed(
-                          hintText: '',
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            agreedPrice = value;
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
             actions: [
               Row(
