@@ -195,6 +195,7 @@ class _AddProductPageState extends State<AddProductPage> {
         stock: int.parse(stockText),
         category: category,
         brand: brand,
+        active: true,
       );
 
       context.read<StockBloc>().add(AddProduct(product));

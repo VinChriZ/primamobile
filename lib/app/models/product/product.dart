@@ -6,8 +6,8 @@ class Product {
   final int stock;
   final String category;
   final String brand;
+  final bool active;
   final DateTime? lastUpdated;
-
   Product({
     required this.upc,
     required this.name,
@@ -16,9 +16,9 @@ class Product {
     required this.stock,
     required this.category,
     required this.brand,
+    required this.active,
     this.lastUpdated,
   });
-
   // Factory constructor for deserializing from JSON
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
@@ -29,12 +29,12 @@ class Product {
       stock: json['stock'] as int,
       category: json['category'] as String,
       brand: json['brand'] as String,
+      active: json['active'] as bool,
       lastUpdated: json['last_updated'] != null
           ? DateTime.parse(json['last_updated'] as String)
           : null, // Parse date if available
     );
   }
-
   // Method for serializing to JSON
   Map<String, dynamic> toJson() {
     return {
@@ -45,6 +45,7 @@ class Product {
       'stock': stock,
       'category': category,
       'brand': brand,
+      'active': active,
       if (lastUpdated != null) 'last_updated': lastUpdated!.toIso8601String(),
     };
   }
@@ -59,7 +60,7 @@ class Product {
     map['stock'] = stock;
     map['category'] = category;
     map['brand'] = brand;
-    // Exclude 'upc' and 'last_updated'
+    // Exclude 'upc', 'active', and 'last_updated'
     return map;
   }
 }

@@ -221,6 +221,14 @@ class ProductDetailPage extends StatelessWidget {
                             icon: Icons.branding_watermark,
                           ),
 
+                          _buildAttributeRow(
+                            'Status',
+                            product.active ? 'Active' : 'Inactive',
+                            icon: product.active
+                                ? Icons.check_circle
+                                : Icons.cancel,
+                          ),
+
                           if (product.lastUpdated != null) const Divider(),
 
                           // Last Updated
