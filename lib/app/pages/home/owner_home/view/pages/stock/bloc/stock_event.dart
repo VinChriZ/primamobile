@@ -51,6 +51,16 @@ class FilterProducts extends StockEvent {
   List<Object?> get props => [category, brand];
 }
 
+// Filter products by status
+class FilterByStatus extends StockEvent {
+  final String status;
+
+  const FilterByStatus(this.status);
+
+  @override
+  List<Object?> get props => [status];
+}
+
 // Sort products based on selected option
 class SortProducts extends StockEvent {
   final String sortOption;

@@ -18,7 +18,6 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       transactionDetailRepository;
   ReportDetailRepository get getReportDetailRepository =>
       reportDetailRepository;
-
   StockBloc({
     required this.productRepository,
     required this.transactionDetailRepository,
@@ -29,6 +28,7 @@ class StockBloc extends Bloc<StockEvent, StockState> {
     on<DeleteProduct>(_onDeleteProduct);
     on<SearchProducts>(_onSearchProducts);
     on<FilterProducts>(_onFilterProducts);
+    on<FilterByStatus>(_onFilterByStatus);
     on<SortProducts>(_onSortProducts);
     on<UpdateProduct>(_onUpdateProduct);
   }
@@ -59,7 +59,6 @@ class StockBloc extends Bloc<StockEvent, StockState> {
           .toLowerCase()
           .compareTo(b.toLowerCase())); // Apply sorting before emitting
       final sortedProducts = _applySorting(allProducts, 'Alphabetical');
-
       emit(StockLoaded(
         allProducts: allProducts,
         displayedProducts: sortedProducts,
@@ -151,9 +150,8 @@ class StockBloc extends Bloc<StockEvent, StockState> {
       final query = event.query.trim().toLowerCase();
 
       // Start with the master list of products.
-      List<Product> filteredProducts = currentState.allProducts;
-
-      // Apply the search filter if the query is not empty.
+      List<Product> filteredProducts = currentState
+          .allProducts; // Apply the search filter if the query is not empty.
       if (query.isNotEmpty) {
         filteredProducts = filteredProducts.where((product) {
           return product.name.toLowerCase().contains(query);
@@ -175,6 +173,11 @@ class StockBloc extends Bloc<StockEvent, StockState> {
           return product.brand == currentState.selectedBrand;
         }).toList();
       }
+
+      // Filter by status - using pattern from existing filter method
+      filteredProducts = filteredProducts.where((product) {
+        return product.active == true; // Default to active products
+      }).toList();
 
       // Apply sorting if available.
       if (currentState.sortOption != null) {
@@ -215,6 +218,10 @@ class StockBloc extends Bloc<StockEvent, StockState> {
             .toList();
       }
 
+      // Apply status filter - default to active products
+      filteredProducts =
+          filteredProducts.where((product) => product.active == true).toList();
+
       // Apply search filter if available
       if (currentState.searchQuery != null &&
           currentState.searchQuery!.trim().isNotEmpty) {
@@ -235,6 +242,60 @@ class StockBloc extends Bloc<StockEvent, StockState> {
         displayedProducts: filteredProducts,
         selectedCategory: selectedCategory,
         selectedBrand: selectedBrand,
+      ));
+    }
+  }
+
+  /// Handles filtering products by status.
+  void _onFilterByStatus(FilterByStatus event, Emitter<StockState> emit) {
+    if (state is StockLoaded) {
+      final currentState = state as StockLoaded;
+
+      // Start filtering from the master list
+      List<Product> filteredProducts = currentState.allProducts;
+
+      // Apply status filter
+      if (event.status == "Active") {
+        filteredProducts = filteredProducts
+            .where((product) => product.active == true)
+            .toList();
+      } else if (event.status == "Inactive") {
+        filteredProducts = filteredProducts
+            .where((product) => product.active == false)
+            .toList();
+      }
+
+      // Apply existing filters
+      if (currentState.selectedCategory != "All Categories") {
+        filteredProducts = filteredProducts
+            .where(
+                (product) => product.category == currentState.selectedCategory)
+            .toList();
+      }
+
+      if (currentState.selectedBrand != "All Brands") {
+        filteredProducts = filteredProducts
+            .where((product) => product.brand == currentState.selectedBrand)
+            .toList();
+      }
+
+      // Apply search filter if available
+      if (currentState.searchQuery != null &&
+          currentState.searchQuery!.trim().isNotEmpty) {
+        final query = currentState.searchQuery!.trim().toLowerCase();
+        filteredProducts = filteredProducts
+            .where((product) => product.name.toLowerCase().contains(query))
+            .toList();
+      }
+
+      // Apply sorting if available
+      if (currentState.sortOption != null) {
+        filteredProducts =
+            _applySorting(filteredProducts, currentState.sortOption!);
+      }
+
+      emit(currentState.copyWith(
+        displayedProducts: filteredProducts,
       ));
     }
   }

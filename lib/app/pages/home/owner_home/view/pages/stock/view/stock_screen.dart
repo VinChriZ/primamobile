@@ -7,9 +7,15 @@ import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/edit
 import 'package:primamobile/app/pages/home/owner_home/view/pages/stock/view/product_detail.dart';
 import 'package:primamobile/utils/globals.dart';
 
-class StockScreen extends StatelessWidget {
+class StockScreen extends StatefulWidget {
   const StockScreen({super.key});
 
+  @override
+  State<StockScreen> createState() => _StockScreenState();
+}
+
+class _StockScreenState extends State<StockScreen> {
+  String _selectedStatus = "Active";
   Future<void> _refreshProducts(BuildContext context) async {
     // Trigger the LoadProducts event to refresh data.
     context.read<StockBloc>().add(LoadProducts());
@@ -247,6 +253,49 @@ class StockScreen extends StatelessWidget {
                                       style: const TextStyle(fontSize: 13)),
                                 );
                               }),
+                            ],
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                  const SizedBox(width: 8.0),
+
+                  // STATUS DROPDOWN
+                  BlocBuilder<StockBloc, StockState>(
+                    builder: (context, state) {
+                      if (state is StockLoaded) {
+                        return SizedBox(
+                          width: 150,
+                          child: DropdownButtonFormField<String>(
+                            decoration: const InputDecoration(
+                              labelText: 'Status',
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 10.0, vertical: 8.0),
+                            ),
+                            value: _selectedStatus,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedStatus = value!;
+                              });
+                              // Use the FilterByStatus event
+                              context.read<StockBloc>().add(
+                                    FilterByStatus(value!),
+                                  );
+                            },
+                            items: [
+                              const DropdownMenuItem(
+                                value: "Active",
+                                child: Text("Active",
+                                    style: TextStyle(fontSize: 13)),
+                              ),
+                              const DropdownMenuItem(
+                                value: "Inactive",
+                                child: Text("Inactive",
+                                    style: TextStyle(fontSize: 13)),
+                              ),
                             ],
                           ),
                         );
