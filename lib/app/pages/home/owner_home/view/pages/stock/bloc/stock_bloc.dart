@@ -59,9 +59,14 @@ class StockBloc extends Bloc<StockEvent, StockState> {
           .toLowerCase()
           .compareTo(b.toLowerCase())); // Apply sorting before emitting
       final sortedProducts = _applySorting(allProducts, 'Alphabetical');
+
+      // Filter by default status (Active) to match the UI default
+      final filteredProducts =
+          sortedProducts.where((product) => product.active == true).toList();
+
       emit(StockLoaded(
         allProducts: allProducts,
-        displayedProducts: sortedProducts,
+        displayedProducts: filteredProducts,
         categories: categories,
         brands: brands,
         selectedCategory: "All Categories",

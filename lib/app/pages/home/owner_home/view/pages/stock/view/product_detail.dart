@@ -1,11 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For formatting dates and numbers
 import 'package:primamobile/app/models/product/product.dart';
+import 'package:primamobile/repository/product_repository.dart';
 
-class ProductDetailPage extends StatelessWidget {
+class ProductDetailPage extends StatefulWidget {
   final Product product;
 
   const ProductDetailPage({super.key, required this.product});
+
+  @override
+  State<ProductDetailPage> createState() => _ProductDetailPageState();
+}
+
+class _ProductDetailPageState extends State<ProductDetailPage> {
+  final ProductRepository _productRepository = ProductRepository();
+  late Product _currentProduct;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentProduct = widget.product;
+  }
+
+  Future<void> _toggleProductStatus() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      if (_currentProduct.active) {
+        await _productRepository.deactivateProduct(_currentProduct.upc);
+      } else {
+        await _productRepository.activateProduct(_currentProduct.upc);
+      }
+
+      setState(() {
+        _currentProduct = Product(
+          upc: _currentProduct.upc,
+          name: _currentProduct.name,
+          netPrice: _currentProduct.netPrice,
+          displayPrice: _currentProduct.displayPrice,
+          stock: _currentProduct.stock,
+          category: _currentProduct.category,
+          brand: _currentProduct.brand,
+          active: !_currentProduct.active,
+          lastUpdated: _currentProduct.lastUpdated,
+        );
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_currentProduct.active
+              ? 'Product activated successfully'
+              : 'Product deactivated successfully'),
+          backgroundColor:
+              _currentProduct.active ? Colors.green : Colors.orange,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   /// widget to build a row
   Widget _buildAttributeRow(String label, String value, {IconData? icon}) {
@@ -111,7 +176,7 @@ class ProductDetailPage extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      product.name,
+                      _currentProduct.name,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 28,
@@ -128,7 +193,7 @@ class ProductDetailPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        product.category,
+                        _currentProduct.category,
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w500,
@@ -183,59 +248,62 @@ class ProductDetailPage extends StatelessWidget {
                       child: Column(
                         children: [
                           // UPC
-                          _buildAttributeRow('UPC', product.upc,
+                          _buildAttributeRow('UPC', _currentProduct.upc,
                               icon: Icons.qr_code),
 
                           // Stock
                           _buildAttributeRow(
                             'Stock',
-                            product.stock.toString(),
+                            _currentProduct.stock.toString(),
                             icon: Icons.inventory,
                           ),
 
                           // Net Price
                           _buildAttributeRow(
                             'Net Price',
-                            currencyFormatter.format(product.netPrice),
+                            currencyFormatter.format(_currentProduct.netPrice),
                             icon: Icons.price_change,
                           ),
 
                           // Display Price
                           _buildAttributeRow(
                             'Display Price',
-                            currencyFormatter.format(product.displayPrice),
+                            currencyFormatter
+                                .format(_currentProduct.displayPrice),
                             icon: Icons.attach_money,
                           ),
 
                           // Category
                           _buildAttributeRow(
                             'Category',
-                            product.category,
+                            _currentProduct.category,
                             icon: Icons.category,
                           ),
 
                           // Brand
                           _buildAttributeRow(
                             'Brand',
-                            product.brand,
+                            _currentProduct.brand,
                             icon: Icons.branding_watermark,
                           ),
 
                           _buildAttributeRow(
                             'Status',
-                            product.active ? 'Active' : 'Inactive',
-                            icon: product.active
+                            _currentProduct.active ? 'Active' : 'Inactive',
+                            icon: _currentProduct.active
                                 ? Icons.check_circle
                                 : Icons.cancel,
                           ),
 
-                          if (product.lastUpdated != null) const Divider(),
+                          if (_currentProduct.lastUpdated != null)
+                            const Divider(),
 
                           // Last Updated
-                          if (product.lastUpdated != null)
+                          if (_currentProduct.lastUpdated != null)
                             _buildAttributeRow(
                               'Last Updated',
-                              dateFormatter.format(product.lastUpdated!),
+                              dateFormatter
+                                  .format(_currentProduct.lastUpdated!),
                               icon: Icons.update,
                             ),
                         ],
@@ -245,25 +313,72 @@ class ProductDetailPage extends StatelessWidget {
                 ),
               ),
 
+              // Activate/Deactivate Button
+              Container(
+                margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _isLoading ? null : _toggleProductStatus,
+                  icon: _isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : Icon(
+                          _currentProduct.active
+                              ? Icons.block
+                              : Icons.check_circle,
+                          color: Colors.white,
+                        ),
+                  label: Text(
+                    _isLoading
+                        ? 'Processing...'
+                        : (_currentProduct.active
+                            ? 'Deactivate Product'
+                            : 'Activate Product'),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _currentProduct.active
+                        ? Colors.red[600]
+                        : Colors.green[600],
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 3,
+                  ),
+                ),
+              ),
+
               // Stock Status Card
               Container(
                 margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: _getStockStatusColor(product.stock),
+                  color: _getStockStatusColor(_currentProduct.stock),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
                   children: [
                     Icon(
-                      _getStockStatusIcon(product.stock),
+                      _getStockStatusIcon(_currentProduct.stock),
                       color: Colors.white,
                       size: 28,
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(
-                        _getStockStatusMessage(product.stock),
+                        _getStockStatusMessage(_currentProduct.stock),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 14,

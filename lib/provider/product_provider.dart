@@ -184,4 +184,26 @@ class ProductProvider {
       throw Exception('Error fetching brands: $e');
     }
   }
+
+  // Activate a product
+  Future<void> activateProduct(String upc) async {
+    try {
+      final response = await dioClient.patch('/products/$upc/activate');
+      print('Response received: ${response.data}'); // Debug log
+    } catch (e) {
+      print('Error activating product: $e'); // Debug log
+      throw Exception('Error activating product: $e');
+    }
+  }
+
+  // Deactivate a product
+  Future<void> deactivateProduct(String upc) async {
+    try {
+      final response = await dioClient.patch('/products/$upc/deactivate');
+      print('Response received: ${response.data}'); // Debug log
+    } catch (e) {
+      print('Error deactivating product: $e'); // Debug log
+      throw Exception('Error deactivating product: $e');
+    }
+  }
 }

@@ -16,9 +16,19 @@ class StockScreen extends StatefulWidget {
 
 class _StockScreenState extends State<StockScreen> {
   String _selectedStatus = "Active";
+
   Future<void> _refreshProducts(BuildContext context) async {
     // Trigger the LoadProducts event to refresh data.
     context.read<StockBloc>().add(LoadProducts());
+  }
+
+  Future<void> _refreshWithStatusFilter(BuildContext context) async {
+    // Refresh products and maintain current status filter
+    context.read<StockBloc>().add(LoadProducts());
+    // Re-apply the current status filter after a short delay
+    Future.delayed(const Duration(milliseconds: 100), () {
+      context.read<StockBloc>().add(FilterByStatus(_selectedStatus));
+    });
   }
 
   /// build row for a label
@@ -421,8 +431,9 @@ class _StockScreenState extends State<StockScreen> {
                                             final product = stockState
                                                 .displayedProducts[index];
                                             return InkWell(
-                                              onTap: () {
-                                                Navigator.push(
+                                              onTap: () async {
+                                                final result =
+                                                    await Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
                                                     builder: (context) =>
@@ -430,6 +441,12 @@ class _StockScreenState extends State<StockScreen> {
                                                             product: product),
                                                   ),
                                                 );
+
+                                                // If result is true, refresh with status filter
+                                                if (result == true) {
+                                                  _refreshWithStatusFilter(
+                                                      context);
+                                                }
                                               },
                                               child: _buildCard(
                                                 title: product.name,

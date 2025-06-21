@@ -50,4 +50,14 @@ class ProductRepository {
   Future<List<String>> fetchUniqueBrands() async {
     return await _provider.getUniqueBrands();
   }
+
+  // Activate a product
+  Future<void> activateProduct(String upc) async {
+    await _provider.activateProduct(upc);
+  }
+
+  // Deactivate a product
+  Future<void> deactivateProduct(String upc) async {
+    await _provider.deactivateProduct(upc);
+  }
 }
