@@ -365,7 +365,7 @@ class TransactionDetailScreen extends StatelessWidget {
                                       '⚠️ This product will be free',
                                       style: TextStyle(
                                         fontSize: 11,
-                                        color: Colors.orange.shade700,
+                                        color: Colors.red.shade700,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -378,7 +378,7 @@ class TransactionDetailScreen extends StatelessWidget {
                                       '⚠️ Price below net price',
                                       style: TextStyle(
                                         fontSize: 11,
-                                        color: Colors.red.shade700,
+                                        color: Colors.orange.shade700,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),

@@ -560,7 +560,7 @@ class _AddSalesPageState extends State<AddSalesPage> {
                               '⚠️ This product will be free',
                               style: TextStyle(
                                 fontSize: 11,
-                                color: Colors.orange.shade700,
+                                color: Colors.red.shade700,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -572,7 +572,7 @@ class _AddSalesPageState extends State<AddSalesPage> {
                               '⚠️ Price below net price',
                               style: TextStyle(
                                 fontSize: 11,
-                                color: Colors.red.shade700,
+                                color: Colors.orange.shade700,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
