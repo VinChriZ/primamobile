@@ -239,68 +239,76 @@ class HomeScreen extends StatelessWidget {
                         title: 'Low Stock Products',
                         titleIcon: Icons.warning,
                         color: Colors.white,
-                        child: dashboard.lowStockProducts.isEmpty
-                            ? const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 8.0),
-                                child: Text(
-                                  'No products with low stock.',
-                                  style: TextStyle(
-                                    color: Colors.green,
-                                    fontWeight: FontWeight.w500,
+                        child: () {
+                          // Filter only active products
+                          final activeLowStockProducts = dashboard
+                              .lowStockProducts
+                              .where((product) => product.active == true)
+                              .toList();
+
+                          return activeLowStockProducts.isEmpty
+                              ? const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Text(
+                                    'No active products with low stock.',
+                                    style: TextStyle(
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
-                                ),
-                              )
-                            : ListView.separated(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: dashboard.lowStockProducts.length,
-                                separatorBuilder: (context, index) => Divider(
-                                  color: Colors.red.shade100,
-                                ),
-                                itemBuilder: (context, index) {
-                                  final product =
-                                      dashboard.lowStockProducts[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 4.0),
-                                    child: Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.inventory,
-                                          color: Colors.red,
-                                          size: 20,
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          child: Text(
-                                            product.name,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14),
+                                )
+                              : ListView.separated(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: activeLowStockProducts.length,
+                                  separatorBuilder: (context, index) => Divider(
+                                    color: Colors.red.shade100,
+                                  ),
+                                  itemBuilder: (context, index) {
+                                    final product =
+                                        activeLowStockProducts[index];
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 4.0),
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.inventory,
+                                            color: Colors.red,
+                                            size: 20,
                                           ),
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 10, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: Colors.red[100],
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                          ),
-                                          child: Text(
-                                            'Stock: ${product.stock}',
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.red,
-                                              fontSize: 13,
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Text(
+                                              product.name,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14),
                                             ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 10, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red[100],
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              'Stock: ${product.stock}',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.red,
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                );
+                        }(),
                       ),
 
                       // Only show these cards for admin or owner (role_id 1 or 2)
