@@ -329,96 +329,61 @@ class InvoicePrintPreviewPage extends StatelessWidget {
       // Check connection
       bool isConnected = await PrintBluetoothThermal.connectionStatus;
       if (!isConnected) {
-        final paired = await PrintBluetoothThermal.pairedBluetooths;
-        if (paired.isEmpty) {
+        final allPaired = await PrintBluetoothThermal.pairedBluetooths;
+
+        if (allPaired.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No paired Bluetooth printers found')),
+            const SnackBar(content: Text('No paired Bluetooth devices found')),
           );
           return;
         }
 
-        // Show list of paired devices
-        await showDialog(
-          context: context,
-          builder: (ctx) => Dialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('Select Printer',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  const Divider(),
-                  ConstrainedBox(
-                    constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(ctx).size.height * 0.5),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: paired.length,
-                      itemBuilder: (_, i) {
-                        final device = paired[i];
-                        return ListTile(
-                          leading: const Icon(Icons.print, color: Colors.blue),
-                          title: Text(device.name,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: Text(device.macAdress),
-                          onTap: () async {
-                            Navigator.of(ctx).pop(); // close selection
-                            try {
-                              // Show loader
-                              showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (_) => const Center(
-                                    child: CircularProgressIndicator()),
-                              );
+        // Filter to show only likely printer devices
+        final printerDevices = allPaired.where((device) {
+          final name = device.name.toLowerCase();
+          return name.contains('print') ||
+              name.contains('pos') ||
+              name.contains('thermal') ||
+              name.contains('receipt') ||
+              name.contains('escpos') ||
+              name.contains('esc') ||
+              name.contains('ticket') ||
+              name.contains('58mm') ||
+              name.contains('80mm') ||
+              name.contains('rpp') ||
+              name.contains('bt') ||
+              name.contains('pt-') ||
+              name.contains('printer');
+        }).toList();
 
-                              final ok = await PrintBluetoothThermal.connect(
-                                  macPrinterAddress: device.macAdress);
-                              if (!ok) throw Exception('Connect failed');
-
-                              final bytes = await _generateThermalBytes();
-                              final wrote =
-                                  await PrintBluetoothThermal.writeBytes(bytes);
-                              if (!wrote) throw Exception('Write failed');
-
-                              Navigator.of(context).pop(); // hide loader
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Print completed successfully'),
-                                  backgroundColor: Colors.green,
-                                ),
-                              );
-                            } catch (e) {
-                              Navigator.of(context).pop(); // hide loader
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Printer Error: $e'),
-                                  backgroundColor: Colors.red,
-                                  duration: const Duration(seconds: 5),
-                                ),
-                              );
-                            }
-                          },
-                          trailing: const Icon(Icons.chevron_right),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    child: const Text('Cancel'),
-                  ),
-                ],
-              ),
+        if (printerDevices.isEmpty) {
+          // No printer devices found, ask user if they want to see all devices
+          await showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('No Printer Devices Found'),
+              content: const Text(
+                  'No Bluetooth printer devices were detected. Would you like to view all paired devices instead?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    _showDeviceSelectionDialog(context, allPaired, false);
+                  },
+                  child: const Text('Show All Devices'),
+                ),
+              ],
             ),
-          ),
-        );
+          );
+          return;
+        }
+
+        // Show only printer devices
+        await _showDeviceSelectionDialog(context, printerDevices, true);
       } else {
         // Already connected → print directly
         final bytes = await _generateThermalBytes();
@@ -433,6 +398,103 @@ class InvoicePrintPreviewPage extends StatelessWidget {
         SnackBar(content: Text('Error connecting to printer: $e')),
       );
     }
+  }
+
+  // Helper method to show device selection dialog
+  Future<void> _showDeviceSelectionDialog(BuildContext context,
+      List<BluetoothInfo> devices, bool printersOnly) async {
+    return showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                printersOnly ? 'Select Printer' : 'Select Bluetooth Device',
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              if (!printersOnly)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text(
+                    'Warning: Non-printer devices may not be compatible with thermal printing.',
+                    style: TextStyle(fontSize: 12, color: Colors.orange),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              const Divider(),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(ctx).size.height * 0.5),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: devices.length,
+                  itemBuilder: (_, i) {
+                    final device = devices[i];
+                    return ListTile(
+                      leading: const Icon(Icons.print, color: Colors.blue),
+                      title: Text(
+                        device.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(device.macAdress),
+                      onTap: () async {
+                        Navigator.of(ctx).pop(); // close selection
+                        try {
+                          // Show loader
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (_) => const Center(
+                                child: CircularProgressIndicator()),
+                          );
+
+                          final ok = await PrintBluetoothThermal.connect(
+                              macPrinterAddress: device.macAdress);
+                          if (!ok) throw Exception('Connect failed');
+
+                          final bytes = await _generateThermalBytes();
+                          final wrote =
+                              await PrintBluetoothThermal.writeBytes(bytes);
+                          if (!wrote) throw Exception('Write failed');
+
+                          Navigator.of(context).pop(); // hide loader
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Print completed successfully'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        } catch (e) {
+                          Navigator.of(context).pop(); // hide loader
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Printer Error: $e'),
+                              backgroundColor: Colors.red,
+                              duration: const Duration(seconds: 5),
+                            ),
+                          );
+                        }
+                      },
+                      trailing: const Icon(Icons.chevron_right),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<List<int>> _generateThermalBytes() async {
