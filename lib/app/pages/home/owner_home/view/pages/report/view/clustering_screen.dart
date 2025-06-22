@@ -737,7 +737,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                                 size: 14, color: Colors.amber[700]),
                             const SizedBox(width: 4),
                             Text(
-                              'Seasonal product',
+                              'Unstable Product',
                               style: TextStyle(
                                 fontStyle: FontStyle.italic,
                                 fontSize: 12,
