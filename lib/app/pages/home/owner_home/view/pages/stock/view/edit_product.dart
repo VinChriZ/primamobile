@@ -57,6 +57,7 @@ class _EditProductPageState extends State<EditProductPage> {
         'stock': int.tryParse(_stockController.text.trim()),
         'category': _categoryController.text.trim(),
         'brand': _brandController.text.trim(),
+        'active': true
       };
 
       // Remove null values to prevent sending them.
