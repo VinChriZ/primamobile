@@ -48,6 +48,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
       endDate: event.endDate,
       numberOfClusters: event.numberOfClusters,
       volatilityPercentile: event.volatilityPercentile ?? 75,
+      minPeaks: event.minPeaks ?? 3,
     ));
 
     try {
@@ -84,6 +85,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
           startDate: startDate,
           endDate: endDate,
           volatilityPercentile: event.volatilityPercentile ?? 75,
+          minPeaks: event.minPeaks ?? 3,
         );
 
         // Maps for cluster labels and colors
@@ -128,6 +130,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
             numberOfClusters: safeNumberOfClusters,
             usesClassificationModel: true,
             volatilityPercentile: event.volatilityPercentile ?? 75,
+            minPeaks: event.minPeaks ?? 3,
           ));
           return;
         }
@@ -143,9 +146,12 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
               startDate: startDate,
               endDate: endDate,
               numberOfClusters: safeNumberOfClusters,
-              volatilityPercentile: event.volatilityPercentile ?? 75));
+              volatilityPercentile: event.volatilityPercentile ?? 75,
+              minPeaks: event.minPeaks ?? 3));
           return;
-        } // For any other classification errors, show a general error
+        }
+
+        // For any other classification errors, show a general error
         emit(ClusteringError(
           message:
               "Failed to load product classification data: ${e.toString()}",
@@ -153,6 +159,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
           endDate: endDate,
           numberOfClusters: safeNumberOfClusters,
           volatilityPercentile: event.volatilityPercentile ?? 75,
+          minPeaks: event.minPeaks ?? 3,
         ));
       }
     } catch (e) {
@@ -160,7 +167,8 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
         emit(ClusteringError(
             message: "Login expired, please restart the app and login again",
             numberOfClusters: event.numberOfClusters,
-            volatilityPercentile: event.volatilityPercentile ?? 75));
+            volatilityPercentile: event.volatilityPercentile ?? 75,
+            minPeaks: event.minPeaks ?? 3));
       } else if (e.toString().contains("404") ||
           e.toString().contains("No sales data available")) {
         emit(ClusteringError(
@@ -169,7 +177,8 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
             startDate: event.startDate,
             endDate: event.endDate,
             numberOfClusters: event.numberOfClusters,
-            volatilityPercentile: event.volatilityPercentile ?? 75));
+            volatilityPercentile: event.volatilityPercentile ?? 75,
+            minPeaks: event.minPeaks ?? 3));
       } else if (e.toString().contains("Not enough sales data")) {
         emit(ClusteringError(
             message:
@@ -177,7 +186,8 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
             startDate: event.startDate,
             endDate: event.endDate,
             numberOfClusters: event.numberOfClusters,
-            volatilityPercentile: event.volatilityPercentile ?? 75));
+            volatilityPercentile: event.volatilityPercentile ?? 75,
+            minPeaks: event.minPeaks ?? 3));
       } else if (e.toString().contains("Model not trained yet")) {
         emit(ClusteringError(
             message:
@@ -185,7 +195,8 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
             startDate: event.startDate,
             endDate: event.endDate,
             numberOfClusters: event.numberOfClusters,
-            volatilityPercentile: event.volatilityPercentile ?? 75));
+            volatilityPercentile: event.volatilityPercentile ?? 75,
+            minPeaks: event.minPeaks ?? 3));
       } else {
         emit(ClusteringError(
           message:
@@ -194,6 +205,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
           endDate: event.endDate,
           numberOfClusters: event.numberOfClusters,
           volatilityPercentile: event.volatilityPercentile ?? 75,
+          minPeaks: event.minPeaks ?? 3,
         ));
       }
     }
@@ -208,6 +220,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
       endDate: endDate,
       numberOfClusters: event.numberOfClusters,
       volatilityPercentile: event.volatilityPercentile,
+      minPeaks: event.minPeaks,
     ));
   }
 
@@ -218,6 +231,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
       endDate: event.endDate,
       numberOfClusters: event.numberOfClusters,
       volatilityPercentile: event.volatilityPercentile,
+      minPeaks: event.minPeaks,
     ));
   }
 
@@ -235,6 +249,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
         endDate: endDate,
         numberOfClusters: numberOfClusters,
         volatilityPercentile: currentState.volatilityPercentile,
+        minPeaks: currentState.minPeaks,
       ));
 
       try {
@@ -249,6 +264,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
           endDate: endDate,
           numberOfClusters: numberOfClusters,
           volatilityPercentile: currentState.volatilityPercentile,
+          minPeaks: currentState.minPeaks,
         )); // Update the last trained year to the year we trained on, not the current year
         lastTrainedYear = startDate.year;
 
@@ -259,6 +275,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
           endDate: endDate,
           numberOfClusters: numberOfClusters,
           volatilityPercentile: currentState.volatilityPercentile,
+          minPeaks: currentState.minPeaks,
         ));
       } catch (e) {
         emit(ClusteringError(
@@ -267,6 +284,7 @@ class ClusteringBloc extends Bloc<ClusteringEvent, ClusteringState> {
           endDate: endDate,
           numberOfClusters: numberOfClusters,
           volatilityPercentile: currentState.volatilityPercentile,
+          minPeaks: currentState.minPeaks,
         ));
       }
     }

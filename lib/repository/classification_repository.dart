@@ -9,12 +9,14 @@ class ClassificationRepository {
     required DateTime startDate,
     required DateTime endDate,
     int volatilityPercentile = 75,
+    int minPeaks = 3,
   }) async {
     try {
       return await _provider.getProductClassifications(
         startDate: startDate,
         endDate: endDate,
         volatilityPercentile: volatilityPercentile,
+        minPeaks: minPeaks,
       );
     } catch (e) {
       // Handle specific error cases with user-friendly messages
@@ -34,11 +36,13 @@ class ClassificationRepository {
     required DateTime startDate,
     required DateTime endDate,
     int volatilityPercentile = 75,
+    int minPeaks = 3,
   }) async {
     final classifications = await fetchProductClassifications(
       startDate: startDate,
       endDate: endDate,
       volatilityPercentile: volatilityPercentile,
+      minPeaks: minPeaks,
     );
 
     // Group by category

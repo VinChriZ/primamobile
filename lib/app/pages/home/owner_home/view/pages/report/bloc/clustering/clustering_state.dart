@@ -5,17 +5,19 @@ abstract class ClusteringState extends Equatable {
   final DateTime? endDate;
   final int numberOfClusters;
   final int volatilityPercentile;
+  final int minPeaks;
 
   const ClusteringState({
     this.startDate,
     this.endDate,
     required this.numberOfClusters,
     this.volatilityPercentile = 75,
+    this.minPeaks = 3,
   });
 
   @override
   List<Object?> get props =>
-      [startDate, endDate, numberOfClusters, volatilityPercentile];
+      [startDate, endDate, numberOfClusters, volatilityPercentile, minPeaks];
 }
 
 class ClusteringInitial extends ClusteringState {
@@ -28,6 +30,7 @@ class ClusteringLoading extends ClusteringState {
     super.endDate,
     required super.numberOfClusters,
     super.volatilityPercentile,
+    super.minPeaks,
   });
 }
 
@@ -37,6 +40,7 @@ class ClusteringTrainingModel extends ClusteringState {
     super.endDate,
     required super.numberOfClusters,
     super.volatilityPercentile,
+    super.minPeaks,
   });
 }
 
@@ -48,10 +52,12 @@ class ClusteringModelTrained extends ClusteringState {
     super.endDate,
     required super.numberOfClusters,
     super.volatilityPercentile,
+    super.minPeaks,
   });
 
   @override
-  List<Object?> get props => [message, startDate, endDate, numberOfClusters];
+  List<Object?> get props =>
+      [message, startDate, endDate, numberOfClusters, minPeaks];
 }
 
 class ClusteringLoaded extends ClusteringState {
@@ -70,6 +76,7 @@ class ClusteringLoaded extends ClusteringState {
     super.endDate,
     required super.numberOfClusters,
     super.volatilityPercentile,
+    super.minPeaks,
     this.usesClassificationModel = false,
   });
 
@@ -83,6 +90,7 @@ class ClusteringLoaded extends ClusteringState {
         endDate,
         numberOfClusters,
         usesClassificationModel,
+        minPeaks,
       ];
 }
 
@@ -94,8 +102,10 @@ class ClusteringError extends ClusteringState {
     super.endDate,
     required super.numberOfClusters,
     super.volatilityPercentile,
+    super.minPeaks,
   });
 
   @override
-  List<Object?> get props => [message, startDate, endDate, numberOfClusters];
+  List<Object?> get props =>
+      [message, startDate, endDate, numberOfClusters, minPeaks];
 }

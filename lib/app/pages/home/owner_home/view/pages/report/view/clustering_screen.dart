@@ -17,8 +17,11 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
   final int _currentYear = DateTime.now().year;
   List<int> _availableYears = []; // Years with complete data
   int _volatilityPercentile = 75; // Default volatility percentile
+  int _minPeaks = 3; // Default minimum peaks
   final TextEditingController _volatilityController = TextEditingController();
+  final TextEditingController _minPeaksController = TextEditingController();
   bool _isThresholdValid = true; // Track if threshold input is valid
+  bool _isMinPeaksValid = true; // Track if min peaks input is valid
 
   // Control show all items or just top 10
   final Map<int, bool> _showAllItems = {};
@@ -26,12 +29,14 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
   void initState() {
     super.initState();
     _volatilityController.text = _volatilityPercentile.toString();
+    _minPeaksController.text = _minPeaks.toString();
     _fetchAvailableYearsAndInitialize();
   }
 
   @override
   void dispose() {
     _volatilityController.dispose();
+    _minPeaksController.dispose();
     super.dispose();
   }
 
@@ -80,152 +85,158 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
             endDate: endDate,
             numberOfClusters: _numberOfClusters,
             volatilityPercentile: _volatilityPercentile,
+            minPeaks: _minPeaks,
           ),
         );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: BlocBuilder<ClusteringBloc, ClusteringState>(
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: BlocBuilder<ClusteringBloc, ClusteringState>(
+            builder: (context, state) {
+              if (state is ClusteringLoaded && state.startDate != null) {
+                return Text('Yearly Report ${state.startDate!.year}');
+              }
+              return const Text('Yearly Report');
+            },
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.filter_alt),
+              onPressed: _showFilterDialog,
+              tooltip: 'Filter Options',
+            ),
+          ],
+        ),
+        body: BlocBuilder<ClusteringBloc, ClusteringState>(
           builder: (context, state) {
-            if (state is ClusteringLoaded && state.startDate != null) {
-              return Text('Yearly Report ${state.startDate!.year}');
+            if (state is ClusteringInitial) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is ClusteringLoading) {
+              return const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('Analyzing product sales patterns...'),
+                  ],
+                ),
+              );
+            } else if (state is ClusteringTrainingModel) {
+              return const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text(
+                      'Training Classification Model...',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'This process will take a few moments.',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'The model will identify product categories automatically.',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  ],
+                ),
+              );
+            } else if (state is ClusteringModelTrained) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.check_circle_outline,
+                        size: 60, color: Colors.green[700]),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Model Training Completed',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                      child: Text(
+                        state.message,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Loading results...',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 8),
+                    const CircularProgressIndicator(strokeWidth: 2),
+                  ],
+                ),
+              );
+            } else if (state is ClusteringLoaded) {
+              return _buildClusteringContent(state);
+            } else if (state is ClusteringError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline,
+                        size: 60, color: Colors.red),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Text(
+                        state.message,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            context.read<ClusteringBloc>().add(
+                                  LoadClusteringEvent(
+                                    startDate: state.startDate,
+                                    endDate: state.endDate,
+                                    numberOfClusters: state.numberOfClusters,
+                                    volatilityPercentile: _volatilityPercentile,
+                                  ),
+                                );
+                          },
+                          child: const Text('Try Again'),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue[700],
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () => _showTrainModelConfirmation(context),
+                          icon: const Icon(Icons.model_training),
+                          label: const Text('Train Model'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
             }
-            return const Text('Yearly Report');
+            return Container();
           },
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_alt),
-            onPressed: _showFilterDialog,
-            tooltip: 'Filter Options',
-          ),
-        ],
-      ),
-      body: BlocBuilder<ClusteringBloc, ClusteringState>(
-        builder: (context, state) {
-          if (state is ClusteringInitial) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is ClusteringLoading) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Analyzing product sales patterns...'),
-                ],
-              ),
-            );
-          } else if (state is ClusteringTrainingModel) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text(
-                    'Training Classification Model...',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'This process will take a few moments.',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'The model will identify product categories automatically.',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                ],
-              ),
-            );
-          } else if (state is ClusteringModelTrained) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.check_circle_outline,
-                      size: 60, color: Colors.green[700]),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Model Training Completed',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                    child: Text(
-                      state.message,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Loading results...',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 8),
-                  const CircularProgressIndicator(strokeWidth: 2),
-                ],
-              ),
-            );
-          } else if (state is ClusteringLoaded) {
-            return _buildClusteringContent(state);
-          } else if (state is ClusteringError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 60, color: Colors.red),
-                  const SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: Text(
-                      state.message,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          context.read<ClusteringBloc>().add(
-                                LoadClusteringEvent(
-                                  startDate: state.startDate,
-                                  endDate: state.endDate,
-                                  numberOfClusters: state.numberOfClusters,
-                                  volatilityPercentile: _volatilityPercentile,
-                                ),
-                              );
-                        },
-                        child: const Text('Try Again'),
-                      ),
-                      const SizedBox(width: 12),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue[700],
-                          foregroundColor: Colors.white,
-                        ),
-                        onPressed: () => _showTrainModelConfirmation(context),
-                        icon: const Icon(Icons.model_training),
-                        label: const Text('Train Model'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          }
-          return Container();
-        },
       ),
     );
   }
@@ -239,11 +250,19 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
     } // Get the trained year
     final int? trainedYear = context.read<ClusteringBloc>().lastTrainedYear;
 
-    // Update local volatility percentile from state
+    // Update local values from state
     if (state.volatilityPercentile != _volatilityPercentile) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           _volatilityPercentile = state.volatilityPercentile;
+        });
+      });
+    }
+
+    if (state.minPeaks != _minPeaks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _minPeaks = state.minPeaks;
         });
       });
     }
@@ -300,7 +319,7 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              '${state.volatilityPercentile}%',
+                              '${state.volatilityPercentile}',
                               style:
                                   const TextStyle(fontWeight: FontWeight.w500),
                             ),
@@ -330,7 +349,22 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(), // Empty space for alignment
+                        Row(
+                          children: [
+                            const Icon(Icons.trending_up,
+                                size: 16, color: Colors.purple),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'Min Peaks: ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '${state.minPeaks}',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ],
@@ -875,112 +909,192 @@ class _ClusteringScreenState extends State<ClusteringScreen> {
                   Text('Filter Options'),
                 ],
               ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(height: 8),
-                  const Row(
+              content: SizedBox(
+                width: double.maxFinite,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.calendar_today, size: 20, color: Colors.blue),
-                      SizedBox(width: 8),
-                      Text(
-                        'Select Year:',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      const SizedBox(height: 8),
+                      const Row(
+                        children: [
+                          Icon(Icons.calendar_today,
+                              size: 20, color: Colors.blue),
+                          SizedBox(width: 8),
+                          Text(
+                            'Select Year:',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<int>(
-                    decoration: const InputDecoration(
-                      labelText: 'Year',
-                      border: OutlineInputBorder(),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                    ),
-                    value: _availableYears.contains(_selectedYear)
-                        ? _selectedYear
-                        : _availableYears.first,
-                    items: _availableYears
-                        .map((year) => DropdownMenuItem<int>(
-                              value: year,
-                              child: Text('$year'),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedYear = value;
-                        });
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  const Row(
-                    children: [
-                      Icon(Icons.tune, size: 20, color: Colors.orange),
-                      SizedBox(width: 8),
-                      Text(
-                        'Seasonal Threshold:',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _volatilityController,
-                    decoration: InputDecoration(
-                      labelText: 'Volatility Percentile',
-                      hintText: '1 - 99',
-                      hintStyle: TextStyle(
-                        color: Colors.grey.withOpacity(0.6),
-                      ),
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: _isThresholdValid ? Colors.grey : Colors.red,
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<int>(
+                        decoration: const InputDecoration(
+                          labelText: 'Year',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 12),
                         ),
+                        value: _availableYears.contains(_selectedYear)
+                            ? _selectedYear
+                            : _availableYears.first,
+                        items: _availableYears
+                            .map((year) => DropdownMenuItem<int>(
+                                  value: year,
+                                  child: Text('$year'),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              _selectedYear = value;
+                            });
+                          }
+                        },
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: _isThresholdValid ? Colors.grey : Colors.red,
+                      const SizedBox(height: 16),
+                      const Row(
+                        children: [
+                          Icon(Icons.tune, size: 20, color: Colors.orange),
+                          SizedBox(width: 8),
+                          Text(
+                            'Seasonal Threshold:',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _volatilityController,
+                        decoration: InputDecoration(
+                          labelText: 'Volatility Percentile',
+                          hintText: '1 - 99',
+                          hintStyle: TextStyle(
+                            color: Colors.grey.withOpacity(0.6),
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color:
+                                  _isThresholdValid ? Colors.grey : Colors.red,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color:
+                                  _isThresholdValid ? Colors.grey : Colors.red,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color:
+                                  _isThresholdValid ? Colors.blue : Colors.red,
+                            ),
+                          ),
+                          errorBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.red),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 12),
+                          suffixText: '%',
                         ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: _isThresholdValid ? Colors.blue : Colors.red,
-                        ),
-                      ),
-                      errorBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.red),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 12),
-                      suffixText: '%',
-                    ),
-                    keyboardType: TextInputType.number,
-                    onChanged: (value) {
-                      final intValue = int.tryParse(value);
-                      bool isValid =
-                          intValue != null && intValue >= 1 && intValue <= 99;
+                        keyboardType: TextInputType.number,
+                        onChanged: (value) {
+                          final intValue = int.tryParse(value);
+                          bool isValid = intValue != null &&
+                              intValue >= 1 &&
+                              intValue <= 99;
 
-                      setState(() {
-                        _isThresholdValid = isValid;
-                        if (isValid) {
-                          _volatilityPercentile = intValue;
-                        }
-                      });
-                    },
-                    validator: (value) {
-                      final intValue = int.tryParse(value ?? '');
-                      if (intValue == null) {
-                        return 'Please enter a valid number';
-                      }
-                      if (intValue < 1 || intValue > 99) {
-                        return 'Value must be between 1 and 99';
-                      }
-                      return null;
-                    },
+                          setState(() {
+                            _isThresholdValid = isValid;
+                            if (isValid) {
+                              _volatilityPercentile = intValue;
+                            }
+                          });
+                        },
+                        validator: (value) {
+                          final intValue = int.tryParse(value ?? '');
+                          if (intValue == null) {
+                            return 'Please enter a valid number';
+                          }
+                          if (intValue < 1 || intValue > 99) {
+                            return 'Value must be between 1 and 99';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      const Row(
+                        children: [
+                          Icon(Icons.trending_up,
+                              size: 20, color: Colors.purple),
+                          SizedBox(width: 8),
+                          Text(
+                            'Minimum Peaks:',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _minPeaksController,
+                        decoration: InputDecoration(
+                          labelText: 'Minimum Peaks for Seasonal',
+                          hintText: '1 - 10',
+                          hintStyle: TextStyle(
+                            color: Colors.grey.withOpacity(0.6),
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color:
+                                  _isMinPeaksValid ? Colors.grey : Colors.red,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color:
+                                  _isMinPeaksValid ? Colors.grey : Colors.red,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color:
+                                  _isMinPeaksValid ? Colors.blue : Colors.red,
+                            ),
+                          ),
+                          errorBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.red),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 12),
+                        ),
+                        keyboardType: TextInputType.number,
+                        onChanged: (value) {
+                          final intValue = int.tryParse(value);
+                          bool isValid = intValue != null &&
+                              intValue >= 1 &&
+                              intValue <= 10;
+
+                          setState(() {
+                            _isMinPeaksValid = isValid;
+                            if (isValid) {
+                              _minPeaks = intValue;
+                            }
+                          });
+                        },
+                        validator: (value) {
+                          final intValue = int.tryParse(value ?? '');
+                          if (intValue == null) {
+                            return 'Please enter a valid number';
+                          }
+                          if (intValue < 1 || intValue > 10) {
+                            return 'Value must be between 1 and 10';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
               actions: [
                 TextButton(
