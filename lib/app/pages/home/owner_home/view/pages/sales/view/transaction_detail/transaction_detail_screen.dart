@@ -605,12 +605,19 @@ class TransactionDetailScreen extends StatelessWidget {
       final productRepository =
           RepositoryProvider.of<ProductRepository>(context);
       final allProducts = await productRepository.fetchProducts();
+
+      // Filter only active products and sort alphabetically
+      final activeProducts = allProducts
+          .where((product) => product.active == true)
+          .toList()
+        ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
       final selectedProduct = await showDialog(
         context: context,
         builder: (dialogContext) {
           final TextEditingController searchController =
               TextEditingController();
-          List<dynamic> filteredProducts = allProducts;
+          List<dynamic> filteredProducts = activeProducts;
           return StatefulBuilder(
             builder: (context, setState) {
               return Dialog(
@@ -661,7 +668,7 @@ class TransactionDetailScreen extends StatelessWidget {
                           style: const TextStyle(fontSize: 13),
                           onChanged: (query) {
                             setState(() {
-                              filteredProducts = allProducts
+                              filteredProducts = activeProducts
                                   .where((p) => p.name
                                       .toLowerCase()
                                       .contains(query.toLowerCase()))

@@ -183,12 +183,19 @@ class _AddSalesPageState extends State<AddSalesPage> {
   Future<void> _searchAndAddProduct() async {
     try {
       final allProducts = await _productRepository.fetchProducts();
+
+      // Filter only active products and sort alphabetically
+      final activeProducts = allProducts
+          .where((product) => product.active == true)
+          .toList()
+        ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
       final selectedProduct = await showDialog<Product?>(
         context: context,
         builder: (context) {
           final TextEditingController searchController =
               TextEditingController();
-          List<Product> filteredProducts = allProducts;
+          List<Product> filteredProducts = activeProducts;
           return StatefulBuilder(
             builder: (context, setState) {
               return Dialog(
@@ -239,7 +246,7 @@ class _AddSalesPageState extends State<AddSalesPage> {
                           style: const TextStyle(fontSize: 13),
                           onChanged: (query) {
                             setState(() {
-                              filteredProducts = allProducts
+                              filteredProducts = activeProducts
                                   .where((p) => p.name
                                       .toLowerCase()
                                       .contains(query.toLowerCase()))
@@ -793,10 +800,9 @@ class _AddSalesPageState extends State<AddSalesPage> {
                             max: 100000000, // Set a reasonable maximum price
                             value: agreedPrice,
                             step: 10000, // Increment by 25k as requested
-                            textAlign:
-                                TextAlign.center, // Center the value text
-                            iconSize: 20, // Smaller icons for better alignment
-                            spacing: 1, // Reduce spacing between elements
+                            textAlign: TextAlign.center,
+                            iconSize: 20,
+                            spacing: 1,
                             decoration: const InputDecoration.collapsed(
                               hintText: '',
                             ),
