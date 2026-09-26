@@ -65,7 +65,7 @@ class _AddReportPageState extends State<AddReportPage> {
             colorScheme: ColorScheme.light(
               primary: Colors.blue.shade700,
             ),
-            dialogTheme: const DialogTheme(
+            dialogTheme: const DialogThemeData(
               backgroundColor: Colors.white,
             ),
           ),

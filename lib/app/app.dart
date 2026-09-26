@@ -79,7 +79,7 @@ class App extends StatelessWidget {
             ),
             primaryColor: Colors.lightBlue,
             primarySwatch: Colors.lightBlue,
-            dialogTheme: DialogTheme(
+            dialogTheme: DialogThemeData(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
                 side: const BorderSide(color: Colors.lightBlue),
