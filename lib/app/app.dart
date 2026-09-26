@@ -1,5 +1,6 @@
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primamobile/app/app_router.dart';
 import 'package:primamobile/app/authentication/bloc/authentication_bloc.dart';
@@ -18,6 +19,12 @@ import 'package:primamobile/repository/token_validator_repository.dart'; // Add 
 
 class App extends StatelessWidget {
   const App({super.key});
+
+  static const _statusBarStyle = SystemUiOverlayStyle(
+    statusBarColor: Colors.black,
+    statusBarIconBrightness: Brightness.light,
+    statusBarBrightness: Brightness.dark,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -101,13 +108,19 @@ class App extends StatelessWidget {
             progressIndicatorTheme: const ProgressIndicatorThemeData(
               color: Colors.lightBlue,
             ),
+            appBarTheme: const AppBarTheme(
+              systemOverlayStyle: _statusBarStyle,
+            ),
             fontFamily: 'Montserrat',
           ),
           initialRoute: '/',
           onGenerateRoute: appRouter.onGenerateRoutes,
           debugShowCheckedModeBanner: false,
           // Device Preview
-          builder: DevicePreview.appBuilder,
+          builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+            value: _statusBarStyle,
+            child: DevicePreview.appBuilder(context, child),
+          ),
           locale: DevicePreview.locale(context),
         ),
       ),

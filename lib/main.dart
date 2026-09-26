@@ -10,6 +10,7 @@ void main() async {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.black, // Status bar color
     statusBarIconBrightness: Brightness.light, // Status bar icon brightness
+    statusBarBrightness: Brightness.dark,
   ));
 
   // Lock the device orientation to portrait
