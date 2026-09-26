@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart'; // New import
 import 'package:flutter_spinbox/flutter_spinbox.dart';
 import 'package:primamobile/app/models/transaction/transaction.dart';
@@ -1159,204 +1160,213 @@ class TransactionDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final dateStr = transaction.dateCreated.toLocal().toString().split(' ')[0];
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(dateStr),
-        centerTitle: true,
-        elevation: 2,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.print),
-            tooltip: 'Print Invoice',
-            onPressed: () {
-              final state = context.read<TransactionDetailBloc>().state;
-              if (state is TransactionDetailLoaded) {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => InvoicePrintPreviewPage(
-                      transaction: state.transaction,
-                      details: state.details,
-                    ),
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Invoice not available yet.')),
-                );
-              }
-            },
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(dateStr),
+          centerTitle: true,
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+          systemOverlayStyle: const SystemUiOverlayStyle(
+            statusBarColor: Colors.black,
+            statusBarIconBrightness: Brightness.light,
+            statusBarBrightness: Brightness.dark,
           ),
-        ],
-      ),
-      body: BlocBuilder<TransactionDetailBloc, TransactionDetailState>(
-        builder: (context, state) {
-          if (state is TransactionDetailLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is TransactionDetailLoaded) {
-            final updatedTransaction = state.transaction;
-            final details = state.details;
-            return Container(
-              color: Colors.grey.shade50,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(12.0),
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                        side: BorderSide(
-                          color: Colors.blue.shade600,
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Transaction Summary',
-                              style: TextStyle(
-                                fontSize: 18.0,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 12.0),
-                            _buildTransactionInfoRow(
-                              label: 'Display Price',
-                              value:
-                                  'Rp${_formatCurrency(updatedTransaction.totalDisplayPrice)}',
-                            ),
-                            _buildTransactionInfoRow(
-                              label: 'Agreed Price',
-                              value:
-                                  'Rp${_formatCurrency(updatedTransaction.totalAgreedPrice)}',
-                            ),
-                            _buildTransactionInfoRow(
-                              label: 'Net Price',
-                              value:
-                                  'Rp${_formatCurrency(updatedTransaction.totalNetPrice)}',
-                            ),
-                            _buildTransactionInfoRow(
-                              label: 'Quantity',
-                              value: updatedTransaction.quantity.toString(),
-                            ),
-                            _buildTransactionInfoRow(
-                              label: 'Date Created',
-                              value: updatedTransaction.dateCreated
-                                  .toLocal()
-                                  .toString()
-                                  .split(' ')[0],
-                            ),
-                            _buildTransactionInfoRow(
-                              label: 'Last Updated',
-                              value: updatedTransaction.lastUpdated
-                                  .toLocal()
-                                  .toString()
-                                  .split(' ')[0],
-                            ),
-                            _buildTransactionInfoRow(
-                              label: 'User ID',
-                              value: state.user.userId.toString(),
-                            ),
-                            _buildTransactionInfoRow(
-                              label: 'Username',
-                              value: state.user.username,
-                            ),
-                          ],
-                        ),
+          elevation: 2,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.print),
+              tooltip: 'Print Invoice',
+              onPressed: () {
+                final state = context.read<TransactionDetailBloc>().state;
+                if (state is TransactionDetailLoaded) {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => InvoicePrintPreviewPage(
+                        transaction: state.transaction,
+                        details: state.details,
                       ),
                     ),
-                    if (updatedTransaction.note != null &&
-                        updatedTransaction.note!.isNotEmpty) ...[
-                      const SizedBox(height: 12.0),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Invoice not available yet.')),
+                  );
+                }
+              },
+            ),
+          ],
+        ),
+        body: BlocBuilder<TransactionDetailBloc, TransactionDetailState>(
+          builder: (context, state) {
+            if (state is TransactionDetailLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is TransactionDetailLoaded) {
+              final updatedTransaction = state.transaction;
+              final details = state.details;
+              return Container(
+                color: Colors.grey.shade50,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(12.0),
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
                       Card(
                         elevation: 2,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.0),
+                          side: BorderSide(
+                            color: Colors.blue.shade600,
+                            width: 1.5,
+                          ),
                         ),
-                        child: Container(
-                          width: double.infinity,
+                        child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                'Notes:',
+                                'Transaction Summary',
                                 style: TextStyle(
-                                  fontSize: 16.0,
+                                  fontSize: 18.0,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                updatedTransaction.note!,
-                                style: const TextStyle(fontSize: 15.0),
+                              const SizedBox(height: 12.0),
+                              _buildTransactionInfoRow(
+                                label: 'Display Price',
+                                value:
+                                    'Rp${_formatCurrency(updatedTransaction.totalDisplayPrice)}',
+                              ),
+                              _buildTransactionInfoRow(
+                                label: 'Agreed Price',
+                                value:
+                                    'Rp${_formatCurrency(updatedTransaction.totalAgreedPrice)}',
+                              ),
+                              _buildTransactionInfoRow(
+                                label: 'Net Price',
+                                value:
+                                    'Rp${_formatCurrency(updatedTransaction.totalNetPrice)}',
+                              ),
+                              _buildTransactionInfoRow(
+                                label: 'Quantity',
+                                value: updatedTransaction.quantity.toString(),
+                              ),
+                              _buildTransactionInfoRow(
+                                label: 'Date Created',
+                                value: updatedTransaction.dateCreated
+                                    .toLocal()
+                                    .toString()
+                                    .split(' ')[0],
+                              ),
+                              _buildTransactionInfoRow(
+                                label: 'Last Updated',
+                                value: updatedTransaction.lastUpdated
+                                    .toLocal()
+                                    .toString()
+                                    .split(' ')[0],
+                              ),
+                              _buildTransactionInfoRow(
+                                label: 'User ID',
+                                value: state.user.userId.toString(),
+                              ),
+                              _buildTransactionInfoRow(
+                                label: 'Username',
+                                value: state.user.username,
                               ),
                             ],
                           ),
                         ),
                       ),
-                    ],
-                    const SizedBox(height: 16.0),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 4.0),
-                      child: Text(
-                        'Product List',
-                        style: TextStyle(
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.bold,
+                      if (updatedTransaction.note != null &&
+                          updatedTransaction.note!.isNotEmpty) ...[
+                        const SizedBox(height: 12.0),
+                        Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Notes:',
+                                  style: TextStyle(
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  updatedTransaction.note!,
+                                  style: const TextStyle(fontSize: 15.0),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 16.0),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4.0),
+                        child: Text(
+                          'Product List',
+                          style: TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
+                      const SizedBox(height: 8.0),
+                      _buildTransactionDetailsList(
+                          context, details, updatedTransaction.transactionId),
+                      // Add padding at the bottom to ensure FAB doesn't cover content
+                      const SizedBox(height: 80.0),
+                    ],
+                  ),
+                ),
+              );
+            } else if (state is TransactionDetailError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      state.message,
+                      style: const TextStyle(fontSize: 16),
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 8.0),
-                    _buildTransactionDetailsList(
-                        context, details, updatedTransaction.transactionId),
-                    // Add padding at the bottom to ensure FAB doesn't cover content
-                    const SizedBox(height: 80.0),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<TransactionDetailBloc>().add(
+                            FetchTransactionDetails(transaction.transactionId));
+                      },
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text('Try Again'),
+                    ),
                   ],
                 ),
-              ),
-            );
-          } else if (state is TransactionDetailError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    state.message,
-                    style: const TextStyle(fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<TransactionDetailBloc>().add(
-                          FetchTransactionDetails(transaction.transactionId));
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text('Try Again'),
-                  ),
-                ],
-              ),
-            );
-          } else {
-            return const Center(child: Text('Unknown state.'));
-          }
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () =>
-            _openAddProductOptions(context, transaction.transactionId),
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.add),
+              );
+            } else {
+              return const Center(child: Text('Unknown state.'));
+            }
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () =>
+              _openAddProductOptions(context, transaction.transactionId),
+          backgroundColor: Colors.blue,
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
