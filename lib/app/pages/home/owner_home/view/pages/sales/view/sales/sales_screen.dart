@@ -196,6 +196,7 @@ class SalesScreen extends StatelessWidget {
                       SizedBox(
                         width: 150,
                         child: DropdownButtonFormField<String>(
+                          isExpanded: true,
                           decoration: const InputDecoration(
                             labelText: 'Sort By',
                             border: OutlineInputBorder(),
